@@ -1,0 +1,69 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer", "Inceptum.AppServer\Inceptum.AppServer.csproj", "{359FCF49-1498-4FDC-A212-E69522FBCCBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.Configuration", "Inceptum.AppServer.Configuration\Inceptum.AppServer.Configuration.csproj", "{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.Sdk", "Inceptum.AppServer.Sdk\Inceptum.AppServer.Sdk.csproj", "{CAFF34B8-90CD-46D6-BCE8-C7B275473346}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.TestApp", "Inceptum.AppServer.TestApp\Inceptum.AppServer.TestApp.csproj", "{BCCC2E49-7710-44AA-A76E-7C7850692573}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{359FCF49-1498-4FDC-A212-E69522FBCCBF}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{359FCF49-1498-4FDC-A212-E69522FBCCBF}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{359FCF49-1498-4FDC-A212-E69522FBCCBF}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{359FCF49-1498-4FDC-A212-E69522FBCCBF}.Debug|x86.ActiveCfg = Debug|x86
+		{359FCF49-1498-4FDC-A212-E69522FBCCBF}.Debug|x86.Build.0 = Debug|x86
+		{359FCF49-1498-4FDC-A212-E69522FBCCBF}.Release|Any CPU.ActiveCfg = Release|x86
+		{359FCF49-1498-4FDC-A212-E69522FBCCBF}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{359FCF49-1498-4FDC-A212-E69522FBCCBF}.Release|Mixed Platforms.Build.0 = Release|x86
+		{359FCF49-1498-4FDC-A212-E69522FBCCBF}.Release|x86.ActiveCfg = Release|x86
+		{359FCF49-1498-4FDC-A212-E69522FBCCBF}.Release|x86.Build.0 = Release|x86
+		{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}.Release|x86.ActiveCfg = Release|Any CPU
+		{CAFF34B8-90CD-46D6-BCE8-C7B275473346}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAFF34B8-90CD-46D6-BCE8-C7B275473346}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAFF34B8-90CD-46D6-BCE8-C7B275473346}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{CAFF34B8-90CD-46D6-BCE8-C7B275473346}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{CAFF34B8-90CD-46D6-BCE8-C7B275473346}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CAFF34B8-90CD-46D6-BCE8-C7B275473346}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAFF34B8-90CD-46D6-BCE8-C7B275473346}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAFF34B8-90CD-46D6-BCE8-C7B275473346}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CAFF34B8-90CD-46D6-BCE8-C7B275473346}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{CAFF34B8-90CD-46D6-BCE8-C7B275473346}.Release|x86.ActiveCfg = Release|Any CPU
+		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Release|x86.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+		OpenWrap.VisualStudioIntegration2010 = 1;Ensures OpenWrap initialization when a solution is opened.;OpenWrap Visual Studio Solution Add-in
+	EndGlobalSection
+EndGlobal
