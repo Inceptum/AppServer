@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Castle.Facilities.Logging;
@@ -14,8 +16,10 @@ using Inceptum.Core.Utils;
 namespace Inceptum.AppServer
 {
     [Serializable]
-    internal class ApplicationHost : MarshalByRefObject 
+    internal class ApplicationHost : MarshalByRefObject
     {
+        private Dictionary<string, Assembly> m_LoadedAssemblies;
+
         public static IApplicationHost Create(HostedAppInfo appInfo)
         {
             AppDomain domain = AppDomain.CreateDomain(appInfo.Name, null, new AppDomainSetup
@@ -27,33 +31,25 @@ namespace Inceptum.AppServer
                                                                                   // appInfo.ConfigFile
                                                                               });
 
-            var applicationHost = (ApplicationHost) domain.CreateInstanceAndUnwrap(typeof (ApplicationHost).Assembly.FullName, typeof (ApplicationHost).FullName);
+            var applicationHost = (ApplicationHost) domain.CreateInstanceAndUnwrap(typeof (ApplicationHost).Assembly.FullName,typeof (ApplicationHost).FullName);
             return applicationHost.load(appInfo);
         }
 
 
         private IApplicationHost load(HostedAppInfo appInfo)
         {
-            var loadedAssemblies=new Dictionary<string, Assembly>();
-            try
-            {
-                foreach (string assemblyFile in appInfo.AssembliesToLoad)
-                {
-                    Assembly assembly = Assembly.Load(File.ReadAllBytes(assemblyFile));
-                    loadedAssemblies.Add(assembly.FullName,assembly);
-                }
-                AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
-                                                               {
-                                                                   Assembly assembly;
-                                                                   loadedAssemblies.TryGetValue(args.Name, out assembly);
-                                                                   return assembly;
-                                                               };
-               return (IApplicationHost)Activator.CreateInstance(Type.GetType(appInfo.AppType));
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("", ex);
-            }
+            m_LoadedAssemblies = appInfo.AssembliesToLoad
+                .Select(assemblyFile => Assembly.Load(File.ReadAllBytes(assemblyFile)))
+                .ToDictionary(a => a.FullName);
+            AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
+            return (IApplicationHost) Activator.CreateInstance(Type.GetType(appInfo.AppType));
+        }
+
+        private Assembly onAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            Assembly assembly;
+            m_LoadedAssemblies.TryGetValue(args.Name, out assembly);
+            return assembly;
         }
     }
 
@@ -77,6 +73,7 @@ namespace Inceptum.AppServer
             {
                 Environment.CurrentDirectory = Path.GetDirectoryName(GetType().Assembly.Location);
                 AppDomainRenderer.Register();
+
                 m_Container = new WindsorContainer();
                 //castle config
                 string configurationFile = string.Format("castle.{0}.config", AppDomain.CurrentDomain.FriendlyName);
@@ -84,12 +81,11 @@ namespace Inceptum.AppServer
                 {
                     m_Container
                         .Install(Castle.Windsor.Installer.Configuration.FromXmlFile(configurationFile));
-                        
                 }
 
 
                 m_Container
-                    .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig("nlog.config")).AddFacility<TypedFactoryFacility>()
+                    .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig("nlog.config"))
                     .Register(Component.For<IConfigurationProvider>().Instance(configurationProvider))
                     .Install(FromAssembly.Containing<TApp>(new PluginInstallerFactory()))
                     .Register(Component.For<IHostedApplication>().ImplementedBy<TApp>())

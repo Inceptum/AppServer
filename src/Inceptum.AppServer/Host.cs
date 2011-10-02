@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Castle.Core.Logging;
@@ -85,13 +86,16 @@ namespace Inceptum.AppServer
             foreach (var app in m_HostedApps)
             {
                 m_Logger.InfoFormat("Starting application '{0}'", app.Value.Name);
+                Stopwatch sw = Stopwatch.StartNew();
                 try
                 {
                     app.Key.Start(m_ConfigurationProvider);
-                    m_Logger.InfoFormat("Starting application '{0}' complete", app.Value.Name);
+                    sw.Stop();
+                    m_Logger.InfoFormat("Starting application '{0}' complete in {1}ms", app.Value.Name,sw.ElapsedMilliseconds);
                 }
                 catch (Exception e)
                 {
+                    sw.Stop();
                     m_Logger.ErrorFormat(e, "Failed to start application '{0}'", app.Value.Name);
                 }
             }

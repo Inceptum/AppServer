@@ -52,14 +52,10 @@ namespace Inceptum.AppServer.Configuration
 
         public class WebOperationContextWrapper : IWebOperationContext
         {
-            #region IWebOperationContext Members
-
             public Message CreateTextResponse(string content, string contentType, Encoding encoding)
             {
                 return WebOperationContext.Current.CreateTextResponse(content, contentType, encoding);
             }
-
-            #endregion
         }
  
     }
