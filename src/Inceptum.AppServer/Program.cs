@@ -2,12 +2,14 @@
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Reactive.Disposables;
 using System.ServiceProcess;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Inceptum.AppServer.Configuration;
+using Inceptum.AppServer.Management;
 using Inceptum.Core.Utils;
 using Inceptum.Messaging;
 using Inceptum.Messaging.Castle;
@@ -37,7 +39,7 @@ namespace Inceptum.AppServer
                 ServiceBase.Run(servicesToRun);
                 return;
             }
-           
+
             using (createHost())
             {
                 Console.ReadLine();
@@ -60,14 +62,20 @@ namespace Inceptum.AppServer
                             new {configFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration")}))
                 .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
                                                              .Params(new {environment, machineName})
-                                                             .ConfigureTransports("server.transports", "{environment}","{machineName}"))
+                                                             .ConfigureTransports("server.transports", "{environment}", "{machineName}"))
                 //TODO: move to app.config
-                .AddFacility<MessagingFacility>(f => f.JailStrategy = (environment=="dev")?JailStrategy.MachineName : JailStrategy.None)
+                .AddFacility<MessagingFacility>(f => f.JailStrategy = (environment == "dev") ? JailStrategy.MachineName : JailStrategy.None)
                 .Register(
-                    Component.For<Host>().DependsOn(new {appsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"apps")}),
+                    Component.For<Host>().DependsOn(new {appsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "apps")}),
                     Component.For<HostManager>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
                 );
-            return container;
+            var console = new ManagementConsole(container);
+            return Disposable.Create(() =>
+                                         {
+                                             console.Dispose();
+                                             container.Dispose();
+                                         }
+                );
         }
     }
 }
