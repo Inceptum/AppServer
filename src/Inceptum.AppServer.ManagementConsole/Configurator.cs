@@ -29,7 +29,6 @@ namespace Inceptum.AppServer.Management
 
                 ResourceSpace.Has.ResourcesOfType<ConfPage>()
                     .AtUri("/conf")
-                    .And.AtUri("/")
                     .HandledBy<ConfPageHandler>()
                     .TranscodedBy<RazorCodec>(new
                                                   {
@@ -38,11 +37,18 @@ namespace Inceptum.AppServer.Management
 
                 ResourceSpace.Has.ResourcesOfType<AppsPage>()
                     .AtUri("/apps")
+                    .And.AtUri("/apps/switch")
                     .HandledBy<AppsPageHandler>()
                     .TranscodedBy<RazorCodec>(new
                                                   {
                                                       index = "Apps.cshtml"
                                                   });
+/*
+
+                ResourceSpace.Has.ResourcesOfType<AppsPage>()
+                    .AtUri("/apps/switch")
+                    .HandledBy<AppsPageHandler>();                
+*/
             }
         }
 

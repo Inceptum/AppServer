@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Castle.DynamicProxy;
 using Castle.Facilities.Logging;
 using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
@@ -15,6 +16,33 @@ using Inceptum.Core.Utils;
 
 namespace Inceptum.AppServer
 {
+        class ApplicationHostProxy : IApplicationHost
+    {
+        private readonly AppDomain m_Domain;
+        private readonly IApplicationHost m_ApplicationHost;
+
+        public ApplicationHostProxy(IApplicationHost applicationHost,AppDomain domain)
+        {
+            if (applicationHost == null) throw new ArgumentNullException("applicationHost");
+            if (domain == null) throw new ArgumentNullException("domain");
+            m_ApplicationHost = applicationHost;
+            m_Domain = domain;
+        }
+
+    
+        public void Start(IConfigurationProvider configurationProvider)
+        {
+            m_ApplicationHost.Start(configurationProvider);
+        }
+
+        public void Stop()
+        {
+            m_ApplicationHost.Stop();
+            AppDomain.Unload(m_Domain);
+        }
+    }
+
+
     [Serializable]
     internal class ApplicationHost : MarshalByRefObject
     {
@@ -30,9 +58,9 @@ namespace Inceptum.AppServer
                                                                                   ConfigurationFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile
                                                                                   // appInfo.ConfigFile
                                                                               });
-
             var applicationHost = (ApplicationHost) domain.CreateInstanceAndUnwrap(typeof (ApplicationHost).Assembly.FullName,typeof (ApplicationHost).FullName);
-            return applicationHost.load(appInfo);
+
+            return new ApplicationHostProxy(applicationHost.load(appInfo),domain);
         }
 
 
