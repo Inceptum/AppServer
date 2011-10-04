@@ -200,3 +200,30 @@ ul.queues li{
 }
 
 
+
+
+
+#appGrid td{
+	padding-left:3px;
+}
+#appGrid td.status{
+	padding-left:16px;
+}
+#appGrid td.active{
+	background-image: url("../images/active.png");
+	background-repeat: no-repeat;
+	background-position: left 2px;
+}
+
+#appGrid td.inactive{
+	color:#999;
+	background-image: url("../images/inactive.png");
+	background-repeat: no-repeat;
+	background-position: left 2px;
+}
+
+#appGrid td.pending{
+	background-image: url("../images/pending.png");
+	background-repeat: no-repeat;
+	background-position: left 2px;
+}

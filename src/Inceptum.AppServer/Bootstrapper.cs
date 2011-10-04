@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
 using System.Reactive.Disposables;
-using System.ServiceProcess;
+using System.Threading;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
 using Castle.MicroKernel.Registration;
@@ -16,39 +15,25 @@ using Inceptum.Messaging.Castle;
 
 namespace Inceptum.AppServer
 {
-    internal static class Program
+    public class Bootstrapper
     {
-        /// <summary>
-        ///   The main entry point for the application.
-        /// </summary>
-        [LoaderOptimization(LoaderOptimization.MultiDomainHost)]
-        public static void Main()
+        private readonly IHost m_Host;
+        private readonly string[] m_AppsToStart;
+
+        public Bootstrapper(IHost host,string [] appsToStart)
         {
-            if (!Environment.UserInteractive)
-            {
-                const string source = "InternetBank";
-                const string log = "Application";
-
-                if (!EventLog.SourceExists(source)) EventLog.CreateEventSource(source, log);
-                var eLog = new EventLog {Source = source};
-                eLog.WriteEntry(@"Starting the service in " + AppDomain.CurrentDomain.BaseDirectory,
-                                EventLogEntryType.Information);
-
-                Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-                var servicesToRun = new ServiceBase[] {new ServiceHostSvc(createHost)};
-                ServiceBase.Run(servicesToRun);
-                return;
-            }
-
-            using (createHost())
-            {
-                Console.ReadLine();
-            }
+            m_AppsToStart = appsToStart;
+            m_Host = host;
         }
 
-        private static IDisposable createHost()
+        private void start()
         {
-            return Bootstrapper.Start();
+            m_Host.LoadApps();
+            m_Host.StartApps(m_AppsToStart);
+        }
+
+        public static IDisposable Start()
+        {
             string environment = ConfigurationManager.AppSettings["Environment"];
             string confSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"];
             string machineName = Environment.MachineName;
@@ -64,13 +49,19 @@ namespace Inceptum.AppServer
                 .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
                                                              .Params(new {environment, machineName})
                                                              .ConfigureTransports("server.transports", "{environment}", "{machineName}"))
-                //TODO: move to app.config
+                
+                                                             //TODO: move to app.config
                 .AddFacility<MessagingFacility>(f => f.JailStrategy = (environment == "dev") ? JailStrategy.MachineName : JailStrategy.None)
                 .Register(
-                    Component.For<IHost>().ImplementedBy<Host>().DependsOn(new {appsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "apps")}),
-                    Component.For<HbSender>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
+                    Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { appsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "apps"), name = environment }),
+                    Component.For<HbSender>(),
+                    Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
                 );
+            
+
+            //TODO: facility?
             var console = new ManagementConsole(container);
+            container.Resolve<Bootstrapper>().start();
             return Disposable.Create(() =>
                                          {
                                              console.Dispose();

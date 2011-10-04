@@ -9,20 +9,18 @@ using Inceptum.Core.Utils;
 namespace Inceptum.AppServer
 {
 
-    internal class HostManager : IDisposable, IStartable
+    internal class HbSender : IDisposable, IStartable
     {
         private const int HB_PERIOD = 10000;
-        private readonly Host m_Host;
+        private readonly IHost m_Host;
         private readonly IMessagingEngine m_Engine;
         private readonly string m_ManagementTransport;
         private readonly string m_HbTopic;
         private PeriodicalBackgroundWorker m_PeriodicalBackgroundWorker;
         private readonly ILogger m_Logger;
-        private readonly string[] m_AppsToStart;
-
-        public HostManager(Host host, IMessagingEngine engine, SonicEndpoint hbEndpoint,ILogger logger,string [] appsToStart)
+        
+        public HbSender(IHost host, IMessagingEngine engine, SonicEndpoint hbEndpoint,ILogger logger)
         {
-            m_AppsToStart = appsToStart;
             m_Logger = logger;
             m_Engine = engine;
             m_ManagementTransport = hbEndpoint.TransportId;
@@ -46,8 +44,6 @@ namespace Inceptum.AppServer
 
         public void Start()
         {
-            m_Host.LoadApps();
-            m_Host.StartApps(m_AppsToStart);
             m_PeriodicalBackgroundWorker = new PeriodicalBackgroundWorker("Server HB sender", HB_PERIOD, sendHb);
         }
 

@@ -49,10 +49,10 @@
     <Compile Include="AppDiscovery\AssemblyTester.cs" />
     <Compile Include="AppDiscovery\FolderApplicationBrowser.cs" />
     <Compile Include="ApplicationHost.cs" />
+    <Compile Include="Bootstrapper.cs" />
     <Compile Include="Host.cs" />
-    <Compile Include="HostedAppInfo.cs" />
     <Compile Include="HostHbMessage.cs" />
-    <Compile Include="HostManager.cs" />
+    <Compile Include="HbSender.cs" />
     <Compile Include="IApplicationActivator.cs" />
     <Compile Include="IApplicationBrowser.cs" />
     <Compile Include="IApplicationHost.cs" />
