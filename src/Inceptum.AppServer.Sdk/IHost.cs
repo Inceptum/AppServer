@@ -4,9 +4,9 @@ namespace Inceptum.AppServer
     {
         string Name { get; }
         string MachineName { get; }
-        HostedAppInfo[] DiscoveredApps { get; }
+        AppInfo[] DiscoveredApps { get; }
         HostedAppInfo[] HostedApps { get; }
-        void LoadApps();
+        void RediscoverApps();
         void StartApps(params string[] appsToStart);
         void StopApps(params string[] appsToStart);
     }

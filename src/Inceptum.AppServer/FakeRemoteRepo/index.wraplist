@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package-list>
+  <wrap name="newtonsoft-json" version="4.0.2">
+    <link rel="package" href="newtonsoft-json-4.0.2.wrap" />
+  </wrap>
+<wrap name="TestApp" version="1.0.0"><link rel="package" href="TestApp-1.0.0.wrap" /><depends>newtonsoft-json = 4.0.2</depends></wrap></package-list>

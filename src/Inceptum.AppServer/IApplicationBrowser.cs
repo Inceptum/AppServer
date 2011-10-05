@@ -5,6 +5,7 @@ namespace Inceptum.AppServer
 {
     public interface IApplicationBrowser
     {
-        IEnumerable<HostedAppInfo> GetAvailabelApps();
+        IEnumerable<AppInfo> GetAvailabelApps();
+        HostedAppInfo GetAppLoadParams(AppInfo appInfo);
     }
 }

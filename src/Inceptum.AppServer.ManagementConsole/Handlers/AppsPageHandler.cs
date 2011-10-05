@@ -34,11 +34,11 @@ namespace Inceptum.AppServer.Management.Handlers
                                                    Name = m_Host.Name,
                                                    MachineName = m_Host.MachineName,
                                                    Apps = 
-                                                        m_Host.DiscoveredApps.Select(a => new AppInfo{Name=a.Name,IsStarted = m_Host.HostedApps.Contains(a)}).
+                                                        m_Host.DiscoveredApps.Select(a => new Application{Name=a.Name,IsStarted = m_Host.HostedApps.Any(app=>app.Name==a.Name&& app.Version==a.Version)}).
                                                         Concat(new []
                                                                    {
-                                                                       new AppInfo{Name="Fake inactive application",IsStarted = false},
-                                                                       new AppInfo{Name="Fake active application",IsStarted = true}
+                                                                       new Application{Name="Fake inactive application",IsStarted = false},
+                                                                       new Application{Name="Fake active application",IsStarted = true}
                                                                    }).
                                                         ToArray()
                                                }

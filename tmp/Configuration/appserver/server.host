@@ -1,0 +1,3 @@
+{
+	"appsToStart":["TestApp","Backend","Orchestrator","DiasoftAdapter"]
+}

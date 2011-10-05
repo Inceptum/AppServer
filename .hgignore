@@ -41,5 +41,6 @@ _cache\*
 
 wraps
 wraps\*
-syntax: regexp
-^[^\/]*.wrap
+*.wrap
+/*syntax: regexp
+^[^\/]*.wrap*/

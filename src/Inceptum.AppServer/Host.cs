@@ -15,23 +15,18 @@ namespace Inceptum.AppServer
         private static ILogger m_Logger = NullLogger.Instance;
         private readonly List<IApplicationBrowser> m_ApplicationBrowsers = new List<IApplicationBrowser>();
         private readonly IConfigurationProvider m_ConfigurationProvider;
-        private readonly List<HostedAppInfo> m_DiscoveredApps = new List<HostedAppInfo>();
+        private readonly List<AppInfo> m_DiscoveredApps = new List<AppInfo>();
 
         private readonly Dictionary<IApplicationHost, HostedAppInfo> m_HostedApps =
             new Dictionary<IApplicationHost, HostedAppInfo>();
 
-        public Host(string appsFolder = null, ILogger logger = null, IConfigurationProvider configurationProvider = null, string name = null)
+        public Host(IApplicationBrowser applicationBrowser, ILogger logger = null, IConfigurationProvider configurationProvider = null, string name = null)
         {
+            if (applicationBrowser == null) throw new ArgumentNullException("applicationBrowser");
             Name = name ?? MachineName;
             m_ConfigurationProvider = configurationProvider;
-            if (appsFolder == null) throw new ArgumentNullException("appsFolder");
             m_Logger = logger ?? NullLogger.Instance;
-            if (!Directory.Exists(appsFolder))
-                Directory.CreateDirectory(appsFolder);
-            m_ApplicationBrowsers.Add(new FolderApplicationBrowser(appsFolder)
-                                          {
-                                              Logger = m_Logger.CreateChildLogger(typeof (FolderApplicationBrowser).Name)
-                                          });
+            m_ApplicationBrowsers.Add(applicationBrowser);
         }
 
         #region IDisposable Members
@@ -55,18 +50,20 @@ namespace Inceptum.AppServer
             get { return Environment.MachineName; }
         }
 
-        public virtual HostedAppInfo[] DiscoveredApps
+        public virtual AppInfo[] DiscoveredApps
         {
             get { return m_DiscoveredApps.ToArray(); }
         }
 
 
-        public void LoadApps()
+        public void RediscoverApps()
         {
-            IEnumerable<HostedAppInfo> hostedAppInfos = m_ApplicationBrowsers.SelectMany(b => b.GetAvailabelApps());
+            m_Logger.InfoFormat("Discovering applications");
+
+            IEnumerable<AppInfo> hostedAppInfos = m_ApplicationBrowsers.SelectMany(b => b.GetAvailabelApps());
             lock (m_DiscoveredApps)
             {
-                foreach (HostedAppInfo appInfo in hostedAppInfos.Where(a => !m_DiscoveredApps.Contains(a)))
+                foreach (AppInfo appInfo in hostedAppInfos.Where(a => !m_DiscoveredApps.Contains(a)))
                 {
                     m_DiscoveredApps.Add(appInfo);
                     m_Logger.InfoFormat("Discovered application {0}", appInfo.Name);
@@ -76,15 +73,17 @@ namespace Inceptum.AppServer
 
         public void StartApps(params string[] appsToStart)
         {
-            m_Logger.Info("Starting service host.");
             AppDomain.CurrentDomain.UnhandledException += processUnhandledException;
 
-            foreach (HostedAppInfo appInfo in DiscoveredApps.Where(a => appsToStart == null || appsToStart.Length == 0 || appsToStart.Contains(a.Name)))
+            foreach (AppInfo appInfo in DiscoveredApps.Where(a => appsToStart == null || appsToStart.Length == 0 || appsToStart.Contains(a.Name)))
             {
                 try
                 {
-                    IApplicationHost app = CreateApplicationHost(appInfo);
-                    m_HostedApps.Add(app, appInfo);
+                    //TODO: hack!!!
+                    var browser = m_ApplicationBrowsers.First();
+                    var appLoadParams = browser.GetAppLoadParams(appInfo);
+                    IApplicationHost app = CreateApplicationHost(appLoadParams);
+                    m_HostedApps.Add(app, appLoadParams);
                     m_Logger.InfoFormat("Loaded application {0}", appInfo.Name);
                 }
                 catch (Exception e)
@@ -110,7 +109,6 @@ namespace Inceptum.AppServer
                 }
             }
 
-            m_Logger.Info("Service host is started.");
         }
 
         public void StopApps(params string[] apps)
