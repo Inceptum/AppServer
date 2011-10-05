@@ -69,7 +69,12 @@ namespace Inceptum.AppServer
                 // Component.For<HbSender>(),
                     Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}"),
                     //Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(new { folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "apps") }),
-                    Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(new { remoteRepository = "FakeRemoteRepo", localRepository = "LocalRepository" }),
+                    Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
+                            new
+                                {
+                                    remoteRepository = "FakeRemoteRepo", 
+                                    localRepository = "LocalRepository"
+                                }),
                     Component.For<ManagementConsole>().DependsOn(new { container })
                 );
             

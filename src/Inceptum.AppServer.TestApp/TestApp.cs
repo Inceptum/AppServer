@@ -32,6 +32,7 @@ namespace Inceptum.AppServer.TestApp
 
         public void Start()
         {
+            m_Logger.InfoFormat("Test App v1.0.1");
             m_Logger.InfoFormat("Value from config: '{0}'",m_Config.Value);
             m_JObject = JObject.Parse("{}");
         }
