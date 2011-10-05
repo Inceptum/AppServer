@@ -29,14 +29,17 @@ namespace Inceptum.AppServer.AppDiscovery
             m_ServiceRegistry = new ServiceRegistry();
             m_ServiceRegistry.Initialize();
 
-            m_RemoteRepository = new IndexedFolderRepository("", new Win32Directory(remoteRepository));
+            m_RemoteRepository = new IndexedFolderRepository("", new Win32Directory(Path.GetFullPath(remoteRepository)));
             m_PackageManager = ServiceLocator.GetService<IPackageManager>();
             m_Environment = new ExecutionEnvironment
             {
                 Platform = (IntPtr.Size == 4) ? "x86" : "x64",
                 Profile = (Environment.Version.Major >= 4) ? "net40" : "net35"
             };
-            m_ProjectRepository = new FolderRepository(new Win32Directory(localRepository));
+            var localPath = Path.GetFullPath(localRepository);
+            if (!Directory.Exists(localPath))
+                Directory.CreateDirectory(localPath);
+            m_ProjectRepository = new FolderRepository(new Win32Directory(localPath));
 
         }
 
@@ -57,12 +60,13 @@ namespace Inceptum.AppServer.AppDiscovery
                                                                       {
                                                                           new GenericDescriptorEntry("name", "test"),
                                                                           new GenericDescriptorEntry("version","0.0.0.1"),
-                                                                          new GenericDescriptorEntry("depends",appInfo.Name)
+                                                                          new GenericDescriptorEntry("depends",appInfo.Name+" = "+appInfo.Version)
                                                                       });
          
 
             //TODO: take version into account
             IPackageAddResult addProjectPackage = m_PackageManager.AddSystemPackage(PackageRequest.Any(appInfo.Name), new[] { m_RemoteRepository }, m_ProjectRepository);
+            //var addProjectPackage = m_PackageManager.UpdateSystemPackages(new[] { m_RemoteRepository }, m_ProjectRepository,appInfo.Name);
             //TODO: errors processing 
             //iterrating is nessesary for add operation to complete
             foreach (var res in addProjectPackage)
@@ -70,6 +74,8 @@ namespace Inceptum.AppServer.AppDiscovery
                 /*if (!res.Success && res.ToOutput().Type==CommandResultType.Error)
                     return null;*/
             }
+
+            m_PackageManager.UpdateSystemPackages(new[] {m_RemoteRepository}, m_ProjectRepository).Count();
 
             IEnumerable<IGrouping<string, Exports.IAssembly>> projectExports =m_PackageManager.GetProjectExports<Exports.IAssembly>(descriptor, m_ProjectRepository, m_Environment);
             var path = Path.GetFullPath(Path.Combine("apps",appInfo.Name));
