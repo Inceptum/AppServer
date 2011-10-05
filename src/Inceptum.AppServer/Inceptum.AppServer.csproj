@@ -117,6 +117,9 @@
     <Content Include="FakeRemoteRepo\TestApp-1.0.0.wrap">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="FakeRemoteRepo\TestApp-1.0.1.wrap">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="nlog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
