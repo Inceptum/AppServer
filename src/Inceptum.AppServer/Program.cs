@@ -49,34 +49,7 @@ namespace Inceptum.AppServer
         private static IDisposable createHost()
         {
             return Bootstrapper.Start();
-            string environment = ConfigurationManager.AppSettings["Environment"];
-            string confSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"];
-            string machineName = Environment.MachineName;
-            AppDomainRenderer.Register();
-            var container = new WindsorContainer();
-            container
-                .AddFacility<StartableFacility>()
-                .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig("nlog.config"))
-                .Register(
-                    Component.For<IConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>()
-                        .DependsOn(
-                            new {configFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration")}))
-                .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
-                                                             .Params(new {environment, machineName})
-                                                             .ConfigureTransports("server.transports", "{environment}", "{machineName}"))
-                //TODO: move to app.config
-                .AddFacility<MessagingFacility>(f => f.JailStrategy = (environment == "dev") ? JailStrategy.MachineName : JailStrategy.None)
-                .Register(
-                    Component.For<IHost>().ImplementedBy<Host>().DependsOn(new {appsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "apps")}),
-                    Component.For<HbSender>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
-                );
-            var console = new ManagementConsole(container);
-            return Disposable.Create(() =>
-                                         {
-                                             console.Dispose();
-                                             container.Dispose();
-                                         }
-                );
+         
         }
     }
 }

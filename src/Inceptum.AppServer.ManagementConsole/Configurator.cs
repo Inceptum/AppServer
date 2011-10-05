@@ -36,7 +36,8 @@ namespace Inceptum.AppServer.Management
                                                   });
 
                 ResourceSpace.Has.ResourcesOfType<AppsPage>()
-                    .AtUri("/apps")
+                    .AtUri("/apps").
+                    And.AtUri("/")
                     .And.AtUri("/apps/switch")
                     .HandledBy<AppsPageHandler>()
                     .TranscodedBy<RazorCodec>(new

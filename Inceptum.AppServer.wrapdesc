@@ -1,6 +1,8 @@
 ﻿name: Inceptum.AppServer
-depends: openwrap anchored content
 depends: Castle.Windsor
 depends: Inceptum.Framework
 depends: newtonsoft-json = 4.0.2
 depends: Castle.Windsor-NLog
+depends: Mono.Cecil
+depends: openwrap
+directory-structure: src\*{scope: Tests=tests}*\**

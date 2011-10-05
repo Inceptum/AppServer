@@ -52,7 +52,8 @@ namespace Inceptum.AppServer
         {
             AppDomain domain = AppDomain.CreateDomain(appInfo.Name, null, new AppDomainSetup
                                                                               {
-                                                                                  ApplicationBase = appInfo.BaseDirectory,
+                                                                                  ApplicationBase = AppDomain.CurrentDomain.BaseDirectory,
+                                                                                  //ApplicationBase = appInfo.BaseDirectory,
                                                                                   PrivateBinPathProbe = null,
                                                                                   //TODO: use plugin app.config
                                                                                   ConfigurationFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile
@@ -70,7 +71,12 @@ namespace Inceptum.AppServer
                 .Select(assemblyFile => Assembly.Load(File.ReadAllBytes(assemblyFile)))
                 .ToDictionary(a => a.FullName);
             AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
-            return (IApplicationHost) Activator.CreateInstance(Type.GetType(appInfo.AppType));
+            Environment.CurrentDirectory = appInfo.BaseDirectory;
+
+            var hostType = typeof(ApplicationHost<>).MakeGenericType(Type.GetType(appInfo.AppType));
+            return (IApplicationHost)Activator.CreateInstance(hostType);
+
+            //return (IApplicationHost) Activator.CreateInstance(Type.GetType(appInfo.AppType));
         }
 
         private Assembly onAssemblyResolve(object sender, ResolveEventArgs args)

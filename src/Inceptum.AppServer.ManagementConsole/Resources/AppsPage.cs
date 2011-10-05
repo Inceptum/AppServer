@@ -6,11 +6,11 @@ namespace Inceptum.AppServer.Management.Resources
     {
         public string Name { get; set; }
         public string MachineName { get; set; }
-        public AppInfo[] Apps { get; set; }
+        public Application[] Apps { get; set; }
 
     }
 
-    public class AppInfo
+    public class Application
     {
         public string Name { get; set; }
         public bool IsStarted { get; set; }

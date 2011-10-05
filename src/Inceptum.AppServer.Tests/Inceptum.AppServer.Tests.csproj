@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{CAFF34B8-90CD-46D6-BCE8-C7B275473346}</ProjectGuid>
+    <ProjectGuid>{36FEFEBB-7E64-4539-8F4D-3FF44ADF92BC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Inceptum.AppServer</RootNamespace>
-    <AssemblyName>Inceptum.AppServer.Sdk</AssemblyName>
+    <RootNamespace>Inceptum.AppServer.Tests</RootNamespace>
+    <AssemblyName>Inceptum.AppServer.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -32,10 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceModel.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,19 +40,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppInfo.cs" />
-    <Compile Include="Configuration\ComponentRegistrationExtentions.cs" />
-    <Compile Include="Configuration\ConfigurationFacility.cs" />
-    <Compile Include="Configuration\EndpointResolver.cs" />
-    <Compile Include="Configuration\IConfigurationProvider.cs" />
-    <Compile Include="Configuration\IConfigurationService.cs" />
-    <Compile Include="Configuration\SonicEndpoint.cs" />
-    <Compile Include="Configuration\ValidationHelper.cs" />
-    <Compile Include="HostedAppInfo.cs" />
-    <Compile Include="HostedApplicationAttribute.cs" />
-    <Compile Include="IHost.cs" />
-    <Compile Include="IHostedApplication.cs" />
+    <Compile Include="OpenWrapApplicationBrowserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Inceptum.AppServer.Configuration\Inceptum.AppServer.Configuration.csproj">
+      <Project>{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}</Project>
+      <Name>Inceptum.AppServer.Configuration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Inceptum.AppServer.ManagementConsole\Inceptum.AppServer.Management.csproj">
+      <Project>{7BC75E31-2A09-4E4B-8D3A-17828BCC8CC7}</Project>
+      <Name>Inceptum.AppServer.Management</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Inceptum.AppServer.Sdk\Inceptum.AppServer.Sdk.csproj">
+      <Project>{CAFF34B8-90CD-46D6-BCE8-C7B275473346}</Project>
+      <Name>Inceptum.AppServer.Sdk</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Inceptum.AppServer\Inceptum.AppServer.csproj">
+      <Project>{359FCF49-1498-4FDC-A212-E69522FBCCBF}</Project>
+      <Name>Inceptum.AppServer</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\wraps\openwrap\build\OpenWrap.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

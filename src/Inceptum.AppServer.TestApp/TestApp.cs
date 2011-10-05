@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Castle.Core.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace Inceptum.AppServer.TestApp
 {
@@ -21,6 +22,7 @@ namespace Inceptum.AppServer.TestApp
     {
         private TestConf m_Config;
         private ILogger m_Logger;
+        private JObject m_JObject;
 
         public TestApp(ILogger logger,TestConf config)
         {
@@ -30,8 +32,8 @@ namespace Inceptum.AppServer.TestApp
 
         public void Start()
         {
-            m_Logger.InfoFormat("Test App Started. Value from config: '{0}'",m_Config.Value);
-            
+            m_Logger.InfoFormat("Value from config: '{0}'",m_Config.Value);
+            m_JObject = JObject.Parse("{}");
         }
     }
 }
