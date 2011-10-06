@@ -16,6 +16,7 @@ using OpenWrap.Services;
 namespace Inceptum.AppServer.Tests
 {
     [TestFixture]
+    [Ignore]
     public class OpenWrapApplicationBrowserTests
     {
         [Test]

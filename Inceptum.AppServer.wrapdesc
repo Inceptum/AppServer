@@ -6,3 +6,6 @@ depends: Castle.Windsor-NLog
 depends: Mono.Cecil
 depends: openwrap
 directory-structure: src\*{scope: Tests=tests}*\**
+build: command; path=msbuild; args=/p:Configuration=Release "/p:Platform=Any CPU" "/property:OpenWrap-EmitOutputInstructions=false"  src/Inceptum.AppServer.sln
+build: files; file=bin-net40 -> src\Inceptum.AppServer.Sdk\bin\Release\Inceptum.AppServer.Sdk.*
+
