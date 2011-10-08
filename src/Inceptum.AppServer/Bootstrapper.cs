@@ -10,6 +10,7 @@ using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.Configuration;
+using Inceptum.AppServer.Configuration.Providers;
 using Inceptum.AppServer.Management;
 using Inceptum.Core.Utils;
 using Inceptum.Messaging;
@@ -54,10 +55,15 @@ namespace Inceptum.AppServer
             container
                 .AddFacility<StartableFacility>()
                 .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig("nlog.config"))
-                .Register(
+/*                .Register(
                     Component.For<IConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>()
                         .DependsOn(
-                            new { configFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration") }))
+                            new { configFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration") }))*/
+                .Register(
+                    Component.For<IConfigurationProvider>().ImplementedBy<LegacyRemoteConfigurationProvider>()
+                        .DependsOn(
+                            new { serviceUrl = confSvcUrl, path="." }))
+
                 .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
                                                              .Params(new { environment, machineName })
                                                              .ConfigureTransports("server.transports", "{environment}", "{machineName}"))

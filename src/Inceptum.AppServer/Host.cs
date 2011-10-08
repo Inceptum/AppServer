@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Castle.Core.Logging;
+using Castle.DynamicProxy;
 using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.Configuration;
 
@@ -98,7 +99,7 @@ namespace Inceptum.AppServer
                 Stopwatch sw = Stopwatch.StartNew();
                 try
                 {
-                    app.Key.Start(m_ConfigurationProvider);
+                    app.Key.Start(getMarshalableProxy(m_ConfigurationProvider));
                     sw.Stop();
                     m_Logger.InfoFormat("Starting application '{0}' complete in {1}ms", app.Value.Name, sw.ElapsedMilliseconds);
                 }
@@ -109,6 +110,32 @@ namespace Inceptum.AppServer
                 }
             }
 
+        }
+
+        private T getMarshalableProxy<T>(T instance)
+        {
+            Type t = typeof(T);
+            if (!t.IsInterface)
+            {
+                throw new ArgumentException("Type must be an interface");
+            }
+            try
+            {
+                //T instance = container.Resolve<T>();
+                if (typeof(MarshalByRefObject).IsAssignableFrom(instance.GetType()))
+                {
+                    return instance;
+                }
+
+                var generator = new ProxyGenerator();
+                var generatorOptions = new ProxyGenerationOptions { BaseTypeForInterfaceProxy = typeof(MarshalByRefObject) };
+                return (T)generator.CreateInterfaceProxyWithTarget(t, instance, generatorOptions);
+
+            }
+            catch (Castle.MicroKernel.ComponentNotFoundException)
+            {
+                return default(T);
+            }
         }
 
         public void StopApps(params string[] apps)
