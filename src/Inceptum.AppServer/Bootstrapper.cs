@@ -20,6 +20,18 @@ using NLog.Config;
 
 namespace Inceptum.AppServer
 {
+
+    class AppServerSetup
+    {
+        public string ConfSvcUrl { get; set; }
+        public string[] AppsToStart { get; set; }
+        public string Environment { get; set; }
+        public string RemoteRepository { get; set; }
+        public bool SendHb { get; set; }
+
+        public string DebugRepo { get; set; }
+    }
+
     public class Bootstrapper
     {
         private readonly IHost m_Host;
@@ -37,14 +49,13 @@ namespace Inceptum.AppServer
             m_Host.StartApps(m_AppsToStart);
         }
 
-        public static IDisposable Start()
+        internal static IDisposable Start(AppServerSetup setup)
         {
             AppDomainRenderer.Register();
-                string environment = ConfigurationManager.AppSettings["Environment"];
-                string confSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"];
                 string machineName = Environment.MachineName;
             WindsorContainer container;
-            using(var logFactory = new LogFactory(new XmlLoggingConfiguration("nlog.config")))
+            var nlogConf = Path.Combine(Path.GetDirectoryName(typeof(Bootstrapper).Assembly.Location),"nlog.config");
+            using (var logFactory = new LogFactory(new XmlLoggingConfiguration(nlogConf)))
             {
                 var log = logFactory.GetLogger(typeof (Bootstrapper).Name);
                 log.Info("Initializing...");
@@ -54,35 +65,40 @@ namespace Inceptum.AppServer
             }
             container
                 .AddFacility<StartableFacility>()
-                .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig("nlog.config"))
-/*                .Register(
-                    Component.For<IConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>()
-                        .DependsOn(
-                            new { configFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration") }))*/
+                .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig(nlogConf))
+                //Configuration local/remote
                 .Register(
-                    Component.For<IConfigurationProvider>().ImplementedBy<LegacyRemoteConfigurationProvider>()
-                        .DependsOn(
-                            new { serviceUrl = confSvcUrl, path="." }))
-
+                    setup.ConfSvcUrl!=null
+                        ?Component.For<IConfigurationProvider>().ImplementedBy<LegacyRemoteConfigurationProvider>()
+                                                        .DependsOn(new { serviceUrl = setup.ConfSvcUrl, path="." })
+                        :Component.For<IConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>()
+                                                        .DependsOn(new { configFolder = Path.Combine(Environment.CurrentDirectory, Path.Combine("Configuration")) }))
                 .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
-                                                             .Params(new { environment, machineName })
+                                                             .Params(new {setup.Environment, machineName})
                                                              .ConfigureTransports("server.transports", "{environment}", "{machineName}"))
-
-                                                             //TODO: move to app.config
-                .AddFacility<MessagingFacility>(f => f.JailStrategy = (environment == "dev") ? JailStrategy.MachineName : JailStrategy.None)
+                //messageing
+                .AddFacility<MessagingFacility>(f => f.JailStrategy = (setup.Environment == "dev") ? JailStrategy.MachineName : JailStrategy.None)
                 .Register(
-                    Component.For<IHost>().ImplementedBy<Host>().DependsOn(new {name = environment }),
-                // Component.For<HbSender>(),
-                    Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}"),
-                    //Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(new { folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "apps") }),
-                    Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
+                    Component.For<IHost>().ImplementedBy<Host>().DependsOn(new {name = setup.Environment}),
+                    //Applications to be started
+                    setup.AppsToStart==null
+                        ?Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
+                        : Component.For<Bootstrapper>().DependsOn(new{appsToStart=setup.AppsToStart}),
+                    Component.For<ManagementConsole>().DependsOn(new { container }),
+                    //App storage openwrap/folder
+                    setup.RemoteRepository==null
+                        ? Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(new { folder = Path.Combine(Environment.CurrentDirectory, "apps") })
+                        : Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
                             new
                                 {
-                                    remoteRepository = "FakeRemoteRepo", 
-                                    localRepository = "LocalRepository"
-                                }),
-                    Component.For<ManagementConsole>().DependsOn(new { container })
+                                    remoteRepository = setup.RemoteRepository, 
+                                    localRepository = "LocalRepository",
+                                    debugRepo=setup.DebugRepo
+                                })
                 );
+            //HearBeats
+            if(setup.SendHb)
+                container.Register(Component.For<HbSender>());
             
             var logger = container.Resolve<ILoggerFactory>().Create(typeof (Bootstrapper));
             logger.Info("Starting application host");

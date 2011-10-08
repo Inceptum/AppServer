@@ -22,7 +22,7 @@ namespace Inceptum.AppServer.Tests
         [Test]
         public void GetAvailabelApps()
         {
-            var browser = new OpenWrapApplicationBrowser(@"e:\Dropbox\WORK\_GENERIC\openwrap\ibank\", @"d:\tmp\openwrap\repo\");
+            var browser = new OpenWrapApplicationBrowser(@"e:\Dropbox\WORK\_GENERIC\openwrap\ibank\", @"d:\tmp\openwrap\repo\",null);
             foreach (var app in browser.GetAvailabelApps())
             {
                 Console.WriteLine(app);
@@ -100,7 +100,7 @@ namespace Inceptum.AppServer.Tests
         [Test]
         public void Test1()
         {
-            var browser = new OpenWrapApplicationBrowser(@"d:\tmp\openwrap\indexedRepo", @"d:\tmp\openwrap\repo\");
+            var browser = new OpenWrapApplicationBrowser(@"d:\tmp\openwrap\indexedRepo", @"d:\tmp\openwrap\repo\",null);
             var loadParams = browser.GetAppLoadParams(new AppInfo("TestApp", "0.0.1.81837644"));
             foreach (var asm in loadParams.AssembliesToLoad)
             {
