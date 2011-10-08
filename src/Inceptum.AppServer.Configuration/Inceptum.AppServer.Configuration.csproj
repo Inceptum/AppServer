@@ -48,11 +48,15 @@
     <Compile Include="Model\Bundle.cs" />
     <Compile Include="Model\BundleCollectionBase.cs" />
     <Compile Include="Model\Config.cs" />
-    <Compile Include="LocalStorageConfigurationProvider.cs" />
+    <Compile Include="Providers\LocalStorageConfigurationProvider.cs" />
     <Compile Include="IConfigurationPersister.cs" />
     <Compile Include="IContentProcessor.cs" />
     <Compile Include="Persistence\FileSystemConfigurationPersister.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\LegacyRemoteConfigurationProvider.cs" />
+    <Compile Include="Providers\FileSystemConfigurationProvider.cs" />
+    <Compile Include="Providers\RemoteConfigurationProvider.cs" />
+    <Compile Include="Providers\ResourceConfigurationProviderBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Inceptum.AppServer.Sdk\Inceptum.AppServer.Sdk.csproj">
