@@ -83,9 +83,12 @@ namespace Inceptum.AppServer
                     //TODO: hack!!!
                     var browser = m_ApplicationBrowsers.First();
                     var appLoadParams = browser.GetAppLoadParams(appInfo);
-                    IApplicationHost app = CreateApplicationHost(appLoadParams);
-                    m_HostedApps.Add(app, appLoadParams);
-                    m_Logger.InfoFormat("Loaded application {0}", appInfo.Name);
+                    if (appLoadParams != null)
+                    {
+                        IApplicationHost app = CreateApplicationHost(appLoadParams);
+                        m_HostedApps.Add(app, appLoadParams);
+                        m_Logger.InfoFormat("Loaded application {0}", appInfo.Name);
+                    }
                 }
                 catch (Exception e)
                 {
