@@ -1,0 +1,3 @@
+﻿depends: Mono.Cecil
+depends: openwrap anchored
+depends: OpenRastaIb
