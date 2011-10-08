@@ -1,14 +1,19 @@
 ﻿name: Inceptum.AppServer
-depends: Inceptum.Framework
-depends: newtonsoft-json = 4.0.2
 depends: Castle.Core >= 3.0 and < 3.1
 depends: Castle.Windsor >= 3.0 and < 3.1
 depends: Castle.Core-NLog >= 3.0 and < 3.1
 depends: Castle.LoggingFacility >= 3.0 and < 3.1
+depends: newtonsoft-json = 4.0.2
+depends: Inceptum.Framework
 depends: Mono.Cecil
-depends: openwrap
-depends: OpenRastaIb = 1.0.0
+depends: openwrap anchored
+depends: OpenRastaIb
+
+#directory-structure: src\{scope: Inceptum.AppServer=server}\**
+#directory-structure: src\{scope: Inceptum.AppServer.Management=server}*\**
+#directory-structure: src\{scope: Inceptum.AppServer.Configuration=server}\**
 directory-structure: src\*{scope: Tests=tests}*\**
+#directory-structure: src\*{scope: Tests=server}*\**
 build: command; path=msbuild; args=/p:Configuration=Release "/p:Platform=Any CPU" "/property:OpenWrap-EmitOutputInstructions=false"  src/Inceptum.AppServer.sln
 build: files; file=bin-net40 -> src\Inceptum.AppServer.Sdk\bin\Release\Inceptum.AppServer.Sdk.*;file=Server -> src\Inceptum.AppServer\bin\Release\*.*;
 version: 1.0.1.84587734

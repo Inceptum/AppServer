@@ -49,7 +49,7 @@ namespace Inceptum.AppServer
                         if (i < args.Length)
                             setup.RemoteRepository = args[i];
                         break;
-                    case "-debug":
+                    case "-debug-wrap":
                         i++;
                         if (i < args.Length)
                         {
