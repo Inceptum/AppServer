@@ -180,7 +180,7 @@
       <Project>{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}</Project>
       <Name>Inceptum.AppServer.Configuration</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Inceptum.AppServer.ManagementConsole\Inceptum.AppServer.Management.csproj">
+    <ProjectReference Include="..\Inceptum.AppServer.Management\Inceptum.AppServer.Management.csproj">
       <Project>{7BC75E31-2A09-4E4B-8D3A-17828BCC8CC7}</Project>
       <Name>Inceptum.AppServer.Management</Name>
     </ProjectReference>
