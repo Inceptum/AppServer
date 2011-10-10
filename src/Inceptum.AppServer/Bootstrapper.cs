@@ -93,7 +93,7 @@ namespace Inceptum.AppServer
                                 {
                                     remoteRepository = setup.RemoteRepository, 
                                     localRepository = "LocalRepository",
-                                    debugRepo=setup.DebugRepo
+                                    debugRepo=setup.DebugRepo??""
                                 })
                 );
             //HearBeats
