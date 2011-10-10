@@ -27,5 +27,7 @@ namespace Inceptum.AppServer
         public string BaseDirectory { get; set; }
         public string ConfigFile { get; set; }
         public string Version { get; set; }
+
+        public string[] NativeDllToLoad { get; set; }
     }
 }

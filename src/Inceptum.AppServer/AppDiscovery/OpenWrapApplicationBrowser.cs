@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using Castle.Core.Logging;
 using OpenFileSystem.IO.FileSystems.Local.Win32;
+using OpenWrap;
 using OpenWrap.Commands;
 using OpenWrap.PackageManagement;
+using OpenWrap.PackageManagement.Exporters;
 using OpenWrap.PackageModel;
 using OpenWrap.Repositories;
 using OpenWrap.Repositories.FileSystem;
@@ -27,13 +30,14 @@ namespace Inceptum.AppServer.AppDiscovery
         private IPackageRepository m_DebugRepo;
         private ILogger m_Logger;
 
+ 
         public OpenWrapApplicationBrowser(string remoteRepository, string localRepository, string debugRepo, ILogger logger=null)
         {
             m_Logger = logger ?? NullLogger.Instance;
             m_ServiceRegistry = new ServiceRegistry();
             m_ServiceRegistry.Initialize();
 
-            if (debugRepo!=null && Directory.Exists(debugRepo))
+            if (!string.IsNullOrEmpty(debugRepo) && Directory.Exists(debugRepo))
                 m_DebugRepo = new FolderRepository(new Win32Directory(debugRepo));
             m_RemoteRepository = GetRepository(remoteRepository);
 
@@ -59,19 +63,22 @@ namespace Inceptum.AppServer.AppDiscovery
 
         public IEnumerable<AppInfo> GetAvailabelApps()
         {
-            var debugApps=m_DebugRepo.PackagesByName
-                .Select(x => x.OrderByDescending(y => y.Version).First())
-                .NotNull()
-                .Select(package => new AppInfo(package.Name, package.Version.ToString()));
-
             var apps = m_RemoteRepository.PackagesByName
                 .Select(x => x.OrderByDescending(y => y.Version).First())
                 .NotNull()
-                .Where(p => !m_DebugRepo.PackagesByName.Contains(p.Name))
                 .Select(package => new AppInfo(package.Name, package.Version.ToString()));
 
+            if (m_DebugRepo != null)
+            {
+                var debugApps = m_DebugRepo.PackagesByName
+                                                .Select(x => x.OrderByDescending(y => y.Version).First())
+                                                .NotNull()
+                                                .Select(package => new AppInfo(package.Name, package.Version.ToString()));
+                return apps.Where(p => !m_DebugRepo.PackagesByName.Contains(p.Name)).Merge(debugApps).ToArray();
+            }
 
-            return apps.Merge(debugApps).ToArray();
+            return apps;
+
         }
 
         public HostedAppInfo GetAppLoadParams(AppInfo appInfo)
@@ -91,8 +98,8 @@ namespace Inceptum.AppServer.AppDiscovery
                 m_Logger.WarnFormat("Failed to load package {0}: {1}", appInfo, removeFailed.ToOutput().ToString());
                 return null;
             }
-            
-            var addRes = m_PackageManager.AddSystemPackage(PackageRequest.Exact(appInfo.Name,Version.Parse(appInfo.Version)), new[] { m_DebugRepo, m_RemoteRepository }, m_ProjectRepository);
+
+            var addRes = m_PackageManager.AddSystemPackage(PackageRequest.Exact(appInfo.Name, Version.Parse(appInfo.Version)), m_DebugRepo != null ? new[] { m_DebugRepo, m_RemoteRepository } : new[] { m_RemoteRepository }, m_ProjectRepository);
             var addFailed =addRes.FirstOrDefault (r => !r.Success && r.ToOutput().Type == CommandResultType.Error);
             if (addFailed != null)
             {
@@ -100,25 +107,28 @@ namespace Inceptum.AppServer.AppDiscovery
                 return null;
             }
 
-            //addProjectPackage = m_PackageManager.AddSystemPackage(PackageRequest.Any(appInfo.Name), new[] { m_RemoteRepository }, m_ProjectRepository);
-            //var addProjectPackage = m_PackageManager.UpdateSystemPackages(new[] { m_RemoteRepository }, m_ProjectRepository,appInfo.Name);
-            //TODO: errors processing 
-            //iterrating is nessesary for add operation to complete
-/*            foreach (var res in addProjectPackage)
-            {
-                /*if (!res.Success && res.ToOutput().Type==CommandResultType.Error)
-                    return null;#1#
-            }*/
-
             m_PackageManager.UpdateSystemPackages(new[] {m_RemoteRepository}, m_ProjectRepository).Count();
 
             IEnumerable<IGrouping<string, Exports.IAssembly>> projectExports =m_PackageManager.GetProjectExports<Exports.IAssembly>(descriptor, m_ProjectRepository, m_Environment);
             var path = Path.GetFullPath(Path.Combine("apps",appInfo.Name));
             if(!Directory.Exists(path))
                 Directory.CreateDirectory(path);
-            //projectExports.Skip( 21 ).First().ToArray()[0]
+
             var assembliesToLoad = projectExports.SelectMany(e => e.ToArray().Select(f => f.File.Path.FullPath)).ToArray();
 
+            //TODO: need to replace with IExportProvider implementation
+            var nativeExports = m_PackageManager.ListProjectPackages(descriptor, m_ProjectRepository).SelectMany(p =>
+                                                                                                 {
+                                                                                                     var package=p as IPackage;
+                                                                                                     return from directory in package.Content
+                                                                                                            where directory.Key.EqualsNoCase("unmanaged")
+                                                                                                            from file in directory
+                                                                                                            //where file.File.Extension
+                                                                                                            select file.File.Path.FullPath;
+                                                                                                 }).ToArray();
+
+            //var nativeExports=m_PackageManager.GetProjectExports<Exports.IFile>(descriptor, m_ProjectRepository, ExecutionEnvironment.Any).SelectMany(e => e.ToArray().Where(f=>f.Path.ToLower()=="unmanaged").Select(f => f.File.Path.FullPath)).ToArray(); ;
+            
             var appType=(from file in assembliesToLoad
                             let assembly = CeceilExtencions.TryReadAssembly(file)
                             let type = assembly.MainModule.Types.FirstOrDefault(t => t.Interfaces.Any(i => i.FullName == typeof (IHostedApplication).FullName)) 
@@ -129,6 +139,7 @@ namespace Inceptum.AppServer.AppDiscovery
                 return null;
             return new HostedAppInfo(appInfo.Name, appInfo.Version, path, assembliesToLoad)
                        {
+                           NativeDllToLoad = nativeExports,
                            AppType = appType
                        };
         }

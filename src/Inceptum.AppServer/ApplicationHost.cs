@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Castle.DynamicProxy;
 using Castle.Facilities.Logging;
 using Castle.Facilities.TypedFactory;
@@ -16,10 +17,13 @@ using Inceptum.Core.Utils;
 
 namespace Inceptum.AppServer
 {
+
         class ApplicationHostProxy : IApplicationHost
     {
         private readonly AppDomain m_Domain;
         private readonly IApplicationHost m_ApplicationHost;
+
+     
 
         public ApplicationHostProxy(IApplicationHost applicationHost,AppDomain domain)
         {
@@ -47,6 +51,8 @@ namespace Inceptum.AppServer
     internal class ApplicationHost : MarshalByRefObject
     {
         private Dictionary<string, Assembly> m_LoadedAssemblies;
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        static extern IntPtr LoadLibrary(string lpFileName);
 
         public static IApplicationHost Create(HostedAppInfo appInfo)
         {
@@ -72,6 +78,15 @@ namespace Inceptum.AppServer
                 .ToDictionary(a => a.FullName);
             AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
             Environment.CurrentDirectory = appInfo.BaseDirectory;
+
+            foreach (var dll in appInfo.NativeDllToLoad)
+            {
+                if(LoadLibrary(dll)==IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to load unmanaged dll "+Path.GetFileName(dll)+" from package");
+                }
+
+            }
 
             var hostType = typeof(ApplicationHost<>).MakeGenericType(Type.GetType(appInfo.AppType));
             return (IApplicationHost)Activator.CreateInstance(hostType);
