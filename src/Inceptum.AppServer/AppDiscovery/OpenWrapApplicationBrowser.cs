@@ -116,9 +116,8 @@ namespace Inceptum.AppServer.AppDiscovery
             var path = Path.GetFullPath(Path.Combine("apps",appInfo.Name));
             if(!Directory.Exists(path))
                 Directory.CreateDirectory(path);
-
-            
-            var assembliesToLoad = projectExports.Select(e => e.First().File.Path.FullPath).ToArray();
+            //projectExports.Skip( 21 ).First().ToArray()[0]
+            var assembliesToLoad = projectExports.SelectMany(e => e.ToArray().Select(f => f.File.Path.FullPath)).ToArray();
 
             var appType=(from file in assembliesToLoad
                             let assembly = CeceilExtencions.TryReadAssembly(file)
