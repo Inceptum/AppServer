@@ -29,10 +29,10 @@ namespace Inceptum.AppServer
             m_Domain = domain;
         }
 
-    
-        public void Start(IConfigurationProvider configurationProvider)
+
+        public void Start(IConfigurationProvider configurationProvider, AppServerContext context)
         {
-            m_ApplicationHost.Start(configurationProvider);
+            m_ApplicationHost.Start(configurationProvider,  context);
         }
 
         public void Stop()
@@ -99,7 +99,7 @@ namespace Inceptum.AppServer
         #region IApplicationHost Members
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void Start(IConfigurationProvider configurationProvider)
+        public void Start(IConfigurationProvider configurationProvider, AppServerContext context)
         {
             if (m_Container != null)
                 throw new InvalidOperationException("Host is already started");
@@ -120,7 +120,10 @@ namespace Inceptum.AppServer
 
                 m_Container
                     .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig("nlog.config"))
-                    .Register(Component.For<IConfigurationProvider>().Instance(configurationProvider))
+                    .Register(
+                            Component.For<AppServerContext>().Instance(context),
+                            Component.For<IConfigurationProvider>().Instance(configurationProvider)
+                            )
                     .Install(FromAssembly.Containing<TApp>(new PluginInstallerFactory()))
                     .Register(Component.For<IHostedApplication>().ImplementedBy<TApp>())
                     .Resolve<IHostedApplication>().Start();

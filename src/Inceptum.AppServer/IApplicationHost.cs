@@ -5,7 +5,7 @@ namespace Inceptum.AppServer
 {
     internal interface IApplicationHost
     {
-        void Start(IConfigurationProvider configurationProvider);
+        void Start(IConfigurationProvider configurationProvider, AppServerContext context);
         void Stop();
     }
 }
