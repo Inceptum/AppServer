@@ -102,7 +102,7 @@ namespace Inceptum.AppServer
                 Stopwatch sw = Stopwatch.StartNew();
                 try
                 {
-                    app.Key.Start(getMarshalableProxy(m_ConfigurationProvider));
+                    app.Key.Start(getMarshalableProxy(m_ConfigurationProvider),new AppServerContext{Name=Name});
                     sw.Stop();
                     m_Logger.InfoFormat("Starting application '{0}' complete in {1}ms", app.Value.Name, sw.ElapsedMilliseconds);
                 }

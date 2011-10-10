@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppInfo.cs" />
+    <Compile Include="AppServerContext.cs" />
     <Compile Include="Configuration\ComponentRegistrationExtentions.cs" />
     <Compile Include="Configuration\ConfigurationFacility.cs" />
     <Compile Include="Configuration\EndpointResolver.cs" />
