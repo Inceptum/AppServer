@@ -30,15 +30,29 @@ namespace Inceptum.AppServer.Configuration
 
         public static ConfigurationFacility ConfigureTransports(this ConfigurationFacility facility, string bundleName, params string[] parameters)
         {
-            facility.AddInitStep(kernel=>
-                                     {
-                                         kernel.Register(
-                                             Component.For<ITransportResolver>().ImplementedBy<TransportResolver>().DependsOnBundle(bundleName,"", parameters),
-                                             Component.For<EndpointResolver>().DependsOnBundle(bundleName, "",parameters ??new string[0])
-                                             );
-                                         var endpointResolver = kernel.Resolve<EndpointResolver>();
-                                         kernel.Resolver.AddSubResolver(endpointResolver);
-                                     });
+            facility.AddInitStep(kernel =>
+            {
+                kernel.Register(
+                    Component.For<ITransportResolver>().ImplementedBy<TransportResolver>().DependsOnBundle(bundleName, "", parameters),
+                    Component.For<EndpointResolver>().DependsOnBundle(bundleName, "", parameters ?? new string[0])
+                    );
+                var endpointResolver = kernel.Resolve<EndpointResolver>();
+                kernel.Resolver.AddSubResolver(endpointResolver);
+            });
+            return facility;
+        }
+
+
+        public static ConfigurationFacility ConfigureConnectionStrings(this ConfigurationFacility facility, string bundleName, params string[] parameters)
+        {
+            facility.AddInitStep(kernel =>
+            {
+                kernel.Register(
+                    Component.For<ConnectionStringResolver>().DependsOnBundle(bundleName, "", parameters ?? new string[0])
+                    );
+                var connectionStringResolver = kernel.Resolve<ConnectionStringResolver>();
+                kernel.Resolver.AddSubResolver(connectionStringResolver);
+            });
             return facility;
         }
     }
