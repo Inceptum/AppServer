@@ -1,4 +1,4 @@
-﻿namespace Finam.Internet.Bank.Integration.Sdk.Windsor
+﻿namespace Inceptum.AppServer.Configuration
 {
     /// <summary>
     /// Stores connection string. Dedicated type is requerid to simplefy IoC dependency resolving.
@@ -17,7 +17,7 @@
         }
 
         /// <summary>
-        /// Performs an implicit conversion from <see cref="Finam.Internet.Bank.Integration.Sdk.Windsor.ConnectionString"/> to <see cref="System.String"/>.
+        /// Performs an implicit conversion from <see cref="ConnectionString"/> to <see cref="System.String"/>.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
         /// <returns>
@@ -30,7 +30,7 @@
 
 
         /// <summary>
-        /// Performs an implicit conversion from <see cref="System.String"/> to <see cref="Finam.Internet.Bank.Integration.Sdk.Windsor.ConnectionString"/>.
+        /// Performs an implicit conversion from <see cref="System.String"/> to <see cref="ConnectionString"/>.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
         /// <returns>

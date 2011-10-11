@@ -1,11 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Castle.Core;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Context;
 
-namespace Finam.Internet.Bank.Integration.Sdk.Windsor
+namespace Inceptum.AppServer.Configuration
 {
     internal class ConnectionStringResolver : ISubDependencyResolver
     {
