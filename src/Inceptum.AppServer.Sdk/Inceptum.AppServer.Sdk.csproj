@@ -47,6 +47,8 @@
     <Compile Include="AppServerContext.cs" />
     <Compile Include="Configuration\ComponentRegistrationExtentions.cs" />
     <Compile Include="Configuration\ConfigurationFacility.cs" />
+    <Compile Include="Configuration\ConnectionString.cs" />
+    <Compile Include="Configuration\ConnectionStringResolver.cs" />
     <Compile Include="Configuration\EndpointResolver.cs" />
     <Compile Include="Configuration\IConfigurationProvider.cs" />
     <Compile Include="Configuration\IConfigurationService.cs" />
