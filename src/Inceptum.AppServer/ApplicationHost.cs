@@ -73,9 +73,9 @@ namespace Inceptum.AppServer
 
         private IApplicationHost load(HostedAppInfo appInfo)
         {
-            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetName());
+            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetName().FullName);
             m_LoadedAssemblies = appInfo.AssembliesToLoad
-                .Where(a => !loadedAssemblies.Contains(AssemblyName.GetAssemblyName(a)))
+                .Where(a => !loadedAssemblies.Contains(AssemblyName.GetAssemblyName(a).FullName))
                 .Select(Assembly.LoadFrom)
                 .ToDictionary(a => a.FullName);
             AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
