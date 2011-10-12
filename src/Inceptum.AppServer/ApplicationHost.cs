@@ -74,7 +74,7 @@ namespace Inceptum.AppServer
         private IApplicationHost load(HostedAppInfo appInfo)
         {
             m_LoadedAssemblies = appInfo.AssembliesToLoad
-                .Select(assemblyFile => Assembly.Load(File.ReadAllBytes(assemblyFile)))
+                .Select(Assembly.LoadFrom)
                 .ToDictionary(a => a.FullName);
             AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
             Environment.CurrentDirectory = appInfo.BaseDirectory;
