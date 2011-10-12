@@ -97,7 +97,10 @@ namespace Inceptum.AppServer
         private Assembly onAssemblyResolve(object sender, ResolveEventArgs args)
         {
             Assembly assembly;
-            m_LoadedAssemblies.TryGetValue(args.Name, out assembly);
+            if (!m_LoadedAssemblies.TryGetValue(args.Name, out assembly))
+            {
+                assembly = m_LoadedAssemblies.Values.FirstOrDefault(a => a.GetName().Name == args.Name);
+            }
             return assembly;
         }
     }
