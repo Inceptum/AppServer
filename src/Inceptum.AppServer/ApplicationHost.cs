@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -61,12 +62,13 @@ namespace Inceptum.AppServer
                                                                                   ApplicationBase = AppDomain.CurrentDomain.BaseDirectory,
                                                                                   //ApplicationBase = appInfo.BaseDirectory,
                                                                                   PrivateBinPathProbe = null,
+                                                                                  DisallowApplicationBaseProbing = true,
                                                                                   //TODO: use plugin app.config
                                                                                   ConfigurationFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile
                                                                                   // appInfo.ConfigFile
                                                                               });
-            var applicationHost = (ApplicationHost) domain.CreateInstanceAndUnwrap(typeof (ApplicationHost).Assembly.FullName,typeof (ApplicationHost).FullName);
-
+  
+            var applicationHost = (ApplicationHost)domain.CreateInstanceFromAndUnwrap(typeof(ApplicationHost).Assembly.Location, typeof(ApplicationHost).FullName, false, BindingFlags.Default, null, null, null, null);
             return new ApplicationHostProxy(applicationHost.load(appInfo),domain);
         }
 
@@ -92,8 +94,6 @@ namespace Inceptum.AppServer
 
             var hostType = typeof(ApplicationHost<>).MakeGenericType(Type.GetType(appInfo.AppType));
             return (IApplicationHost)Activator.CreateInstance(hostType);
-
-            //return (IApplicationHost) Activator.CreateInstance(Type.GetType(appInfo.AppType));
         }
 
         private Assembly onAssemblyResolve(object sender, ResolveEventArgs args)
@@ -144,7 +144,7 @@ namespace Inceptum.AppServer
                             Component.For<AppServerContext>().Instance(context),
                             Component.For<IConfigurationProvider>().Instance(configurationProvider)
                             )
-                    .Install(FromAssembly.Containing<TApp>(new PluginInstallerFactory()))
+                    .Install( FromAssembly.Instance(typeof(TApp).Assembly,new PluginInstallerFactory()))
                     .Register(Component.For<IHostedApplication>().ImplementedBy<TApp>())
                     .Resolve<IHostedApplication>().Start();
             }
