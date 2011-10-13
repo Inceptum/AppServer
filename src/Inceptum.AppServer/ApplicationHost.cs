@@ -67,15 +67,21 @@ namespace Inceptum.AppServer
                                                                                   ConfigurationFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile
                                                                                   // appInfo.ConfigFile
                                                                               });
-  
+
+            //It is only to load sdk assembly from file  to AppDomain
+            //domain.CreateInstanceFrom(typeof(AppServerContext).Assembly.Location, typeof(AppServerContext).FullName, false, BindingFlags.Default, null, null, null, null);
+            var appDomainInitializer = (AppDomainInitializer)domain.CreateInstanceFromAndUnwrap(typeof(AppDomainInitializer).Assembly.Location, typeof(AppDomainInitializer).FullName, false, BindingFlags.Default, null, null, null, null);
+            appDomainInitializer.Initialize(appInfo.BaseDirectory,appInfo.AssembliesToLoad,appInfo.NativeDllToLoad);
+
             var applicationHost = (ApplicationHost)domain.CreateInstanceFromAndUnwrap(typeof(ApplicationHost).Assembly.Location, typeof(ApplicationHost).FullName, false, BindingFlags.Default, null, null, null, null);
+
             return new ApplicationHostProxy(applicationHost.load(appInfo),domain);
         }
 
 
         private IApplicationHost load(HostedAppInfo appInfo)
         {
-            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetName().FullName);
+            /*var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetName().FullName);
             m_LoadedAssemblies = appInfo.AssembliesToLoad
                 .Where(a => !loadedAssemblies.Contains(AssemblyName.GetAssemblyName(a).FullName))
                 .Select(Assembly.LoadFrom)
@@ -91,7 +97,7 @@ namespace Inceptum.AppServer
                 }
 
             }
-
+*/
             var hostType = typeof(ApplicationHost<>).MakeGenericType(Type.GetType(appInfo.AppType));
             return (IApplicationHost)Activator.CreateInstance(hostType);
         }
