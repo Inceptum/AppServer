@@ -30,7 +30,7 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
         private IPackageRepository m_RemoteRepository;
 
 
-        public OpenWrapApplicationBrowser(string remoteRepository, string localRepository, string[] debugWraps, ILogger logger = null)
+        public OpenWrapApplicationBrowser(string repository, string[] debugWraps, ILogger logger = null)
         {
             m_Logger = logger ?? NullLogger.Instance;
             m_ServiceRegistry = new ServiceRegistry();
@@ -61,7 +61,7 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
 
            
             m_Exporter = ServiceLocator.GetService<IPackageExporter>();
-            m_RemoteRepository = getRepository(remoteRepository);
+            //m_RemoteRepository = getRepository(remoteRepository);
 
             m_PackageManager = ServiceLocator.GetService<IPackageManager>();
             m_Environment = new ExecutionEnvironment
@@ -69,7 +69,7 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
                                     Platform = (IntPtr.Size == 4) ? "x86" : "x64",
                                     Profile = (Environment.Version.Major >= 4) ? "net40" : "net35"
                                 };
-            string localPath = Path.GetFullPath(localRepository);
+            string localPath = Path.GetFullPath(repository);
             if (!Directory.Exists(localPath))
                 Directory.CreateDirectory(localPath);
             m_ProjectRepository = new FolderRepository(new Win32Directory(localPath));

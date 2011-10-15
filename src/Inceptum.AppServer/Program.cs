@@ -31,7 +31,6 @@ namespace Inceptum.AppServer
                                 SendHb = false,
                                 Environment = ConfigurationManager.AppSettings["Environment"],
                                 //ConfSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"],
-                                RemoteRepository = "FakeRemoteRepo"
                             };
 
             for (int i = 0; i < args.Length; i++)
@@ -44,10 +43,10 @@ namespace Inceptum.AppServer
                             setup.AppsToStart = args[i].Split(',');
                         break;
 
-                    case "-remote":
+                    case "-repository":
                         i++;
                         if (i < args.Length)
-                            setup.RemoteRepository = args[i];
+                            setup.Repository = args[i];
                         break;
                     case "-debug-wrap":
                         i++;
