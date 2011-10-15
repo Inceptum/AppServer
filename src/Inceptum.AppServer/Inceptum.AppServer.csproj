@@ -82,9 +82,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppDiscovery\AssemblyTester.cs" />
     <Compile Include="AppDiscovery\FolderApplicationBrowser.cs" />
-    <Compile Include="AppDiscovery\OpenWrapApplicationBrowser.cs" />
+    <Compile Include="AppDiscovery\Openwrap\HostedApplicationExport.cs" />
+    <Compile Include="AppDiscovery\Openwrap\IHostedApplicationExport.cs" />
+    <Compile Include="AppDiscovery\Openwrap\NativeDllExporter.cs" />
+    <Compile Include="AppDiscovery\Openwrap\OpenWrapApplicationBrowser.cs" />
+    <Compile Include="AppDiscovery\Openwrap\HostedApplicationExporter.cs" />
     <Compile Include="ApplicationHost.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="Host.cs" />

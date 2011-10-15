@@ -20,6 +20,17 @@ namespace Inceptum.AppServer.AppDiscovery
                 return null;
             }
         }
+        public static AssemblyDefinition TryReadAssembly(Stream assemblyStream)
+        {
+            try
+            {
+                return AssemblyDefinition.ReadAssembly(assemblyStream);
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 
     public class FolderApplicationBrowser : IApplicationBrowser
@@ -45,35 +56,31 @@ namespace Inceptum.AppServer.AppDiscovery
 
         #region IApplicationBrowser Members
 
-        public HostedAppInfo GetAppLoadParams(AppInfo appInfo)
+        public IEnumerable<HostedAppInfo> GetAvailabelApps()
         {
-            var app = (from file in Directory.GetFiles(m_Folder, "*.dll")
+            var apps = (from file in Directory.GetFiles(m_Folder, "*.dll")
                        let asm = CeceilExtencions.TryReadAssembly(file)
                        where asm != null
-                       let info = ReadAppInfo(asm)
-                       where info == appInfo
-                       select new {assembly = asm, file}).FirstOrDefault();
-            if (app == null)
-                return null;
-            TypeDefinition[] appTypes = app.assembly.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof (IHostedApplication).FullName)).ToArray();
-            if (appTypes.Length == 0)
-                return null;
+                       let attribute = asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof(HostedApplicationAttribute).FullName)
+                       where attribute != null
+                       let name = attribute.ConstructorArguments.First().Value.ToString()
+                       select new { assembly = asm, file ,name});
+            foreach (var app in apps)
+            {
 
-            TypeDefinition appType = appTypes.First();
-            if (appTypes.Length > 1)
-                Logger.InfoFormat("Assembly {0} contains several types implementing IHostedApplication, using {1}", app.file, appType.Name);
+                if (app == null)
+                    continue;
+                TypeDefinition[] appTypes = app.assembly.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof (IHostedApplication).FullName)).ToArray();
+                if (appTypes.Length == 0)
+                    continue;
 
-            return new HostedAppInfo(appInfo.Name, appType.FullName + ", " + app.assembly.FullName, new[] { app.file });
-        }
+                TypeDefinition appType = appTypes.First();
+                if (appTypes.Length > 1)
+                    Logger.InfoFormat("Assembly {0} contains several types implementing IHostedApplication, using {1}", app.file, appType.Name);
 
-        public IEnumerable<AppInfo> GetAvailabelApps()
-        {
-            return (from file in Directory.GetFiles(m_Folder, "*.dll")
-                    let assembly = CeceilExtencions.TryReadAssembly(file)
-                    where assembly != null
-                    let info = ReadAppInfo(assembly)
-                    where info != null
-                    select info).ToArray();
+                yield return new HostedAppInfo(app.name,app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, m_Folder, new[] {app.file}, new string[0]);
+            }
+
         }
 
         #endregion
@@ -122,7 +129,7 @@ namespace Inceptum.AppServer.AppDiscovery
                 return null;
             
             
-            return new AppInfo(attr.ConstructorArguments.First().Value.ToString(), assembly.Name.Version.ToString());
+            return new AppInfo(attr.ConstructorArguments.First().Value.ToString(), assembly.Name.Version );
         }
     }
 }
