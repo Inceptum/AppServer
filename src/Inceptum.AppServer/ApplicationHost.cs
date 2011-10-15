@@ -71,7 +71,7 @@ namespace Inceptum.AppServer
             //It is only to load sdk assembly from file  to AppDomain
             //domain.CreateInstanceFrom(typeof(AppServerContext).Assembly.Location, typeof(AppServerContext).FullName, false, BindingFlags.Default, null, null, null, null);
             var appDomainInitializer = (AppDomainInitializer)domain.CreateInstanceFromAndUnwrap(typeof(AppDomainInitializer).Assembly.Location, typeof(AppDomainInitializer).FullName, false, BindingFlags.Default, null, null, null, null);
-            appDomainInitializer.Initialize(appInfo.BaseDirectory,appInfo.AssembliesToLoad,appInfo.NativeDllToLoad);
+            appDomainInitializer.Initialize(appInfo.BaseDirectory,appInfo.AssembliesToLoad.ToArray(),appInfo.NativeDllToLoad.ToArray());
 
             var applicationHost = (ApplicationHost)domain.CreateInstanceFromAndUnwrap(typeof(ApplicationHost).Assembly.Location, typeof(ApplicationHost).FullName, false, BindingFlags.Default, null, null, null, null);
 

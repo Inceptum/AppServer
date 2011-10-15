@@ -1,24 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using Castle.Core.Logging;
 using OpenFileSystem.IO.FileSystems.Local.Win32;
-using OpenWrap;
-using OpenWrap.Commands;
 using OpenWrap.PackageManagement;
 using OpenWrap.PackageManagement.Exporters;
+using OpenWrap.PackageManagement.Exporters.Assemblies;
+using OpenWrap.PackageManagement.Exporters.Commands;
 using OpenWrap.PackageModel;
 using OpenWrap.Repositories;
 using OpenWrap.Repositories.FileSystem;
-using OpenWrap.Repositories.Http;
 using OpenWrap.Runtime;
 using OpenWrap.Services;
-using OpenWrap.Collections;
 
-
-namespace Inceptum.AppServer.AppDiscovery
+namespace Inceptum.AppServer.AppDiscovery.Openwrap
 {
     public class OpenWrapApplicationBrowser : IApplicationBrowser
     {
@@ -29,13 +25,23 @@ namespace Inceptum.AppServer.AppDiscovery
         private IPackageRepository m_ProjectRepository;
         private IPackageRepository m_DebugRepo;
         private ILogger m_Logger;
+        private IPackageExporter m_Exporter;
 
- 
+
         public OpenWrapApplicationBrowser(string remoteRepository, string localRepository, string debugRepo, ILogger logger=null)
         {
             m_Logger = logger ?? NullLogger.Instance;
             m_ServiceRegistry = new ServiceRegistry();
+            m_ServiceRegistry.Override<IPackageExporter>(() => new DefaultPackageExporter(new List<IExportProvider>
+                                                                                              {
+                                                                                                  new DefaultAssemblyExporter(),
+                                                                                                  new CecilCommandExporter(),
+                                                                                                  new SolutionPluginExporter(),
+                                                                                                  new NativeDllExporter(),
+                                                                                                  new HostedApplicationExporter()
+                                                                                              }));
             m_ServiceRegistry.Initialize();
+            m_Exporter = ServiceLocator.GetService<IPackageExporter>();
 
             if (!string.IsNullOrEmpty(debugRepo) && Directory.Exists(debugRepo))
                 m_DebugRepo = new FolderRepository(new Win32Directory(debugRepo));
@@ -51,7 +57,6 @@ namespace Inceptum.AppServer.AppDiscovery
             if (!Directory.Exists(localPath))
                 Directory.CreateDirectory(localPath);
             m_ProjectRepository = new FolderRepository(new Win32Directory(localPath));
-
         }
 
         private static IPackageRepository GetRepository(string path)
@@ -61,27 +66,61 @@ namespace Inceptum.AppServer.AppDiscovery
                        :new FolderRepository(new Win32Directory(Path.GetFullPath(path)));
         }
 
+/*
         public IEnumerable<AppInfo> GetAvailabelApps()
         {
-            var apps = m_RemoteRepository.PackagesByName
-                .Select(x => x.OrderByDescending(y => y.Version).First())
-                .NotNull()
-                .Select(package => new AppInfo(package.Name, package.Version.ToString()));
+             var apps = m_RemoteRepository.PackagesByName
+                 .Select(x => x.OrderByDescending(y => y.Version).First())
+                 .NotNull()
+                 .Select(package => new AppInfo(package.Name, package.Version.ToString()));
 
-            if (m_DebugRepo != null)
-            {
-                var debugApps = m_DebugRepo.PackagesByName
-                                                .Select(x => x.OrderByDescending(y => y.Version).First())
-                                                .NotNull()
-                                                .Select(package => new AppInfo(package.Name, package.Version.ToString()));
-                return apps.Where(p => !m_DebugRepo.PackagesByName.Contains(p.Name)).Merge(debugApps).ToArray();
-            }
+             if (m_DebugRepo != null)
+             {
+                 var debugApps = m_DebugRepo.PackagesByName
+                                                 .Select(x => x.OrderByDescending(y => y.Version).First())
+                                                 .NotNull()
+                                                 .Select(package => new AppInfo(package.Name, package.Version.ToString()));
+                 return apps.Where(p => !m_DebugRepo.PackagesByName.Contains(p.Name)).Merge(debugApps).ToArray();
+             }
+             return apps;
+        }
+*/
 
-            return apps;
-
+        public IEnumerable<HostedAppInfo> GetAvailabelApps()
+        {            
+            return m_PackageManager.GetSystemExports<IHostedApplicationExport>(m_ProjectRepository, m_Environment).SelectMany(x => x).Select(getAppLoadParams).ToArray();
         }
 
-        public HostedAppInfo GetAppLoadParams(AppInfo appInfo)
+
+
+        private HostedAppInfo getAppLoadParams(IHostedApplicationExport appExport)
+        {
+/*            var app = m_PackageManager.GetSystemExports<IHostedApplicationInfo>(m_ProjectRepository, m_Environment).SelectMany(x=>x.Where(a=>a.Name==appInfo.Name)).FirstOrDefault();
+            if (app == null)
+                return null;*/
+            var path = Path.GetFullPath(Path.Combine("apps", appExport.Name));
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
+            IEnumerable<IPackageInfo> packages = new[] { appExport.Package }.Concat(
+                ServiceLocator.GetService<IPackageResolver>().TryResolveDependencies(appExport.Package.Descriptor, new[] { m_ProjectRepository }).SuccessfulPackages.Select(_ => _.Packages.First())
+                );
+            var assembliesTooLoad =packages.SelectMany(p=>m_Exporter.Exports<Exports.IAssembly>(p.Load(),m_Environment)).SelectMany(e => e.Select(f => f.File.Path.FullPath));
+            var nativeDllsToLoad = packages.SelectMany(p => m_Exporter.Exports<INativeDll>(p.Load(), m_Environment)).SelectMany(e => e.Select(f => f.File.Path.FullPath));
+/*
+            var assembliesTooLoad = m_PackageManager.GetProjectExports<Exports.IAssembly>(app.Package.Descriptor, m_ProjectRepository, m_Environment)
+                                                    .SelectMany(e => e.Select(f => f.File.Path.FullPath));
+            var nativeDllsToLoad = m_PackageManager.GetProjectExports<INativeDll>(app.Package.Descriptor, m_ProjectRepository, m_Environment)
+                                                    .SelectMany(e => e.Select(f => f.File.Path.FullPath));*/
+
+            return new HostedAppInfo(appExport.Name,appExport.Version,appExport.Type,path,assembliesTooLoad,nativeDllsToLoad);
+      
+        }
+
+
+
+
+   /*     public HostedAppInfo GetAppLoadParams(AppInfo appInfo)
         {
             IPackageDescriptor descriptor = new PackageDescriptor(new[]
                                                                       {
@@ -142,6 +181,6 @@ namespace Inceptum.AppServer.AppDiscovery
                            NativeDllToLoad = nativeExports,
                            AppType = appType
                        };
-        }
+        }*/
     }
 }

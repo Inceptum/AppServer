@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Inceptum.AppServer.AppDiscovery;
+using Inceptum.AppServer.AppDiscovery.Openwrap;
 using NUnit.Framework;
 using OpenFileSystem.IO.FileSystems.Local.Win32;
 using OpenWrap.PackageManagement;
@@ -97,18 +98,6 @@ namespace Inceptum.AppServer.Tests
             } while (directory != null);
         }
 */
-        [Test]
-        public void Test1()
-        {
-            var browser = new OpenWrapApplicationBrowser(@"d:\tmp\openwrap\indexedRepo", @"d:\tmp\openwrap\repo\",null);
-            var loadParams = browser.GetAppLoadParams(new AppInfo("TestApp", "0.0.1.81837644"));
-            foreach (var asm in loadParams.AssembliesToLoad)
-            {
-                Console.WriteLine(asm);
-            }
-                
-            
-        }
 
         [Test]
         public void Test()

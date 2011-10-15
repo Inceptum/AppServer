@@ -6,11 +6,10 @@ namespace Inceptum.AppServer
     public class AppInfo
     {
         public string Name { get; private set; }
+ 
+        public Version Version { get; private set; }
 
-        //TODO; change type to System.Version
-        public string Version { get; private set; }
-
-        public AppInfo(string name, string version)
+        public AppInfo(string name, Version version)
         {
             Name = name;
             Version = version;

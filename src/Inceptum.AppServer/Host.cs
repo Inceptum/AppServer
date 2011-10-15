@@ -16,10 +16,9 @@ namespace Inceptum.AppServer
         private static ILogger m_Logger = NullLogger.Instance;
         private readonly List<IApplicationBrowser> m_ApplicationBrowsers = new List<IApplicationBrowser>();
         private readonly IConfigurationProvider m_ConfigurationProvider;
-        private readonly List<AppInfo> m_DiscoveredApps = new List<AppInfo>();
+        private readonly List<HostedAppInfo> m_Applications = new List<HostedAppInfo>();
 
-        private readonly Dictionary<IApplicationHost, HostedAppInfo> m_HostedApps =
-            new Dictionary<IApplicationHost, HostedAppInfo>();
+        private readonly Dictionary<IApplicationHost, HostedAppInfo> m_HostedApps = new Dictionary<IApplicationHost, HostedAppInfo>();
 
         public Host(IApplicationBrowser applicationBrowser, ILogger logger = null, IConfigurationProvider configurationProvider = null, string name = null)
         {
@@ -53,7 +52,7 @@ namespace Inceptum.AppServer
 
         public virtual AppInfo[] DiscoveredApps
         {
-            get { return m_DiscoveredApps.ToArray(); }
+            get { return m_Applications.Select(a=>new AppInfo(a.Name,a.Version)).ToArray(); }
         }
 
 
@@ -61,40 +60,54 @@ namespace Inceptum.AppServer
         {
             m_Logger.InfoFormat("Discovering applications");
 
-            IEnumerable<AppInfo> hostedAppInfos = m_ApplicationBrowsers.SelectMany(b => b.GetAvailabelApps());
-            lock (m_DiscoveredApps)
+            IEnumerable<HostedAppInfo> hostedAppInfos = m_ApplicationBrowsers.SelectMany(b => b.GetAvailabelApps())
+                .GroupBy(x => x.Name)
+                .Select(x => x.OrderByDescending(y => y.Version).First())
+                .Where(x => x != null);
+            lock (m_Applications)
             {
-                foreach (AppInfo appInfo in hostedAppInfos.Where(a => !m_DiscoveredApps.Contains(a)))
-                {
-                    m_DiscoveredApps.Add(appInfo);
-                    m_Logger.InfoFormat("Discovered application {0}", appInfo.Name);
-                }
+                m_Applications.Clear();
+                m_Applications.AddRange(hostedAppInfos);
             }
+            m_Logger.InfoFormat("Discovered applications:{0}{1}", Environment.NewLine,
+                                string.Join(Environment.NewLine, hostedAppInfos.Select(x => x.ToString())));
+
         }
 
         public void StartApps(params string[] appsToStart)
         {
             AppDomain.CurrentDomain.UnhandledException += processUnhandledException;
-
-            foreach (AppInfo appInfo in DiscoveredApps.Where(a => appsToStart == null || appsToStart.Length == 0 || appsToStart.Contains(a.Name)))
+            IEnumerable<HostedAppInfo> apps;
+            lock (m_Applications)
             {
-                try
+                apps = m_Applications.ToArray();
+            }
+
+            m_Logger.InfoFormat("Loading applications: {0}",string.Join(", ", appsToStart));
+            foreach (var app in appsToStart)
+            {
                 {
-                    //TODO: hack!!!
-                    var browser = m_ApplicationBrowsers.First();
-                    var appLoadParams = browser.GetAppLoadParams(appInfo);
-                    if (appLoadParams != null)
-                    {
-                        IApplicationHost app = CreateApplicationHost(appLoadParams);
-                        m_HostedApps.Add(app, appLoadParams);
-                        m_Logger.InfoFormat("Loaded application {0}", appInfo.Name);
-                    }
-                }
-                catch (Exception e)
-                {
-                    m_Logger.ErrorFormat(e, "Failed to load application '{0}'", appInfo.Name);
+                        var appInfo=apps.FirstOrDefault(a=>a.Name==app);
+                        if (appInfo != null)
+                        {
+                            try
+                            {
+                                IApplicationHost appHost = CreateApplicationHost(appInfo);
+                                m_HostedApps.Add(appHost, appInfo);
+                            }
+                            catch (Exception e)
+                            {
+                                m_Logger.ErrorFormat(e, "Failed to load application '{0}'", appInfo);
+                            }
+                        }
+                        else
+                        {
+                            m_Logger.ErrorFormat("Application '{0}' not found", app);
+                        }
                 }
             }
+
+            m_Logger.InfoFormat("Starting loaded applications");
 
             foreach (var app in m_HostedApps)
             {
