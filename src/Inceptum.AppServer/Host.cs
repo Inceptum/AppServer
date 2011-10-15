@@ -122,6 +122,7 @@ namespace Inceptum.AppServer
                 catch (Exception e)
                 {
                     sw.Stop();
+                    m_HostedApps.Remove(app.Key);
                     m_Logger.ErrorFormat(e, "Failed to start application '{0}'", app.Value.Name);
                 }
             }
