@@ -30,7 +30,7 @@ namespace Inceptum.AppServer
         public string RemoteRepository { get; set; }
         public bool SendHb { get; set; }
 
-        public string DebugRepo { get; set; }
+        public string[] DebugWraps { get; set; }
     }
 
     public class Bootstrapper
@@ -94,7 +94,7 @@ namespace Inceptum.AppServer
                                 {
                                     remoteRepository = setup.RemoteRepository, 
                                     localRepository = "LocalRepository",
-                                    debugRepo=setup.DebugRepo??""
+                                    debugWraps=setup.DebugWraps??new string[0]
                                 })
                 );
             //HearBeats

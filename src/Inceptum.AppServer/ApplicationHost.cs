@@ -57,6 +57,7 @@ namespace Inceptum.AppServer
 
         public static IApplicationHost Create(HostedAppInfo appInfo)
         {
+            
             AppDomain domain = AppDomain.CreateDomain(appInfo.Name, null, new AppDomainSetup
                                                                               {
                                                                                   ApplicationBase = AppDomain.CurrentDomain.BaseDirectory,
@@ -71,7 +72,7 @@ namespace Inceptum.AppServer
             //It is only to load sdk assembly from file  to AppDomain
             //domain.CreateInstanceFrom(typeof(AppServerContext).Assembly.Location, typeof(AppServerContext).FullName, false, BindingFlags.Default, null, null, null, null);
             var appDomainInitializer = (AppDomainInitializer)domain.CreateInstanceFromAndUnwrap(typeof(AppDomainInitializer).Assembly.Location, typeof(AppDomainInitializer).FullName, false, BindingFlags.Default, null, null, null, null);
-            appDomainInitializer.Initialize(appInfo.BaseDirectory,appInfo.AssembliesToLoad.ToArray(),appInfo.NativeDllToLoad.ToArray());
+            appDomainInitializer.Initialize(appInfo.AssembliesToLoad,appInfo.NativeDllToLoad.ToArray());
 
             var applicationHost = (ApplicationHost)domain.CreateInstanceFromAndUnwrap(typeof(ApplicationHost).Assembly.Location, typeof(ApplicationHost).FullName, false, BindingFlags.Default, null, null, null, null);
 
@@ -131,7 +132,6 @@ namespace Inceptum.AppServer
                 throw new InvalidOperationException("Host is already started");
             try
             {
-                Environment.CurrentDirectory = Path.GetDirectoryName(GetType().Assembly.Location);
                 AppDomainRenderer.Register();
 
                 m_Container = new WindsorContainer();
