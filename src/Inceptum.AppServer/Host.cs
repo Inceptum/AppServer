@@ -109,7 +109,7 @@ namespace Inceptum.AppServer
 
             m_Logger.InfoFormat("Starting loaded applications");
 
-            foreach (var app in m_HostedApps)
+            foreach (var app in m_HostedApps.ToArray())
             {
                 m_Logger.InfoFormat("Starting application '{0}'", app.Value.Name);
                 Stopwatch sw = Stopwatch.StartNew();
