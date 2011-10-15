@@ -27,7 +27,7 @@ namespace Inceptum.AppServer
         public string ConfSvcUrl { get; set; }
         public string[] AppsToStart { get; set; }
         public string Environment { get; set; }
-        public string RemoteRepository { get; set; }
+        public string Repository { get; set; }
         public bool SendHb { get; set; }
 
         public string[] DebugWraps { get; set; }
@@ -86,14 +86,14 @@ namespace Inceptum.AppServer
                         ?Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
                         : Component.For<Bootstrapper>().DependsOn(new{appsToStart=setup.AppsToStart}),
                     Component.For<ManagementConsole>().DependsOn(new { container }),
-                    //App storage openwrap/folder
-                    setup.RemoteRepository==null
+/*                    //App storage openwrap/folder
+                    setup.Repository==null
                         ? Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(new { folder = Path.Combine(Environment.CurrentDirectory, "apps") })
-                        : Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
+                        : */
+                        Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
                             new
                                 {
-                                    remoteRepository = setup.RemoteRepository, 
-                                    localRepository = "LocalRepository",
+                                    repository = setup.Repository??"Repository",
                                     debugWraps=setup.DebugWraps??new string[0]
                                 })
                 );
