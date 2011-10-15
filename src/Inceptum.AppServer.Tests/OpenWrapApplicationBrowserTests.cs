@@ -20,7 +20,7 @@ namespace Inceptum.AppServer.Tests
     [Ignore]
     public class OpenWrapApplicationBrowserTests
     {
-        [Test]
+       /* [Test]
         public void GetAvailabelApps()
         {
             var browser = new OpenWrapApplicationBrowser(@"e:\Dropbox\WORK\_GENERIC\openwrap\ibank\", @"d:\tmp\openwrap\repo\",null);
@@ -28,7 +28,7 @@ namespace Inceptum.AppServer.Tests
             {
                 Console.WriteLine(app);
             }
-        }
+        }*/
 
 
       /*  [Test]
@@ -102,7 +102,7 @@ namespace Inceptum.AppServer.Tests
         [Test]
         public void Test()
         {
-            var serviceRegistry = new ServiceRegistry();
+/*            var serviceRegistry = new ServiceRegistry();
             serviceRegistry.Initialize();
             var packageManager = ServiceLocator.GetService<IPackageManager>();
 
@@ -135,7 +135,7 @@ namespace Inceptum.AppServer.Tests
             foreach (var projectExport in projectExports)
             {
                 Console.WriteLine(projectExport.Key + ":" + projectExport.First().File);
-            }
+            }*/
 /*
             packageManager.GetProjectExports<Exports.IAssembly>()
             /*            var env = new CurrentDirectoryEnvironment();

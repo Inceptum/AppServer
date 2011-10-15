@@ -10,19 +10,18 @@ namespace Inceptum.AppServer
      [Serializable]
     internal class AppDomainInitializer : MarshalByRefObject
     {
-        private Dictionary<string, Assembly> m_LoadedAssemblies;
+         private Dictionary<AssemblyName, Lazy<Assembly>> m_LoadedAssemblies;
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         static extern IntPtr LoadLibrary(string lpFileName);
 
-        public void Initialize(string currentDir,string[] assembliesToLoad, string[] nativeDllToLoad)
+        public void Initialize(Dictionary<AssemblyName,string> assembliesToLoad, string[] nativeDllToLoad)
         {
-             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().FullName);
-             m_LoadedAssemblies = assembliesToLoad
-                 .Where(a => !loadedAssemblies.Contains(AssemblyName.GetAssemblyName(a).FullName))
-                 .Select(Assembly.LoadFrom)
-                 .ToDictionary(a => a.FullName);
+            
+             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
+
+             m_LoadedAssemblies = assembliesToLoad.Where(asm => !loadedAssemblies.Any(a=>a.Name==asm.Key.Name))
+                                                  .ToDictionary(asm => asm.Key, asm => new Lazy<Assembly>(() => Assembly.LoadFrom(asm.Value)));
              AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
-             Environment.CurrentDirectory = currentDir;
 
              foreach (var dll in nativeDllToLoad)
              {
@@ -37,13 +36,16 @@ namespace Inceptum.AppServer
         private Assembly onAssemblyResolve(object sender, ResolveEventArgs args)
         {
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var assembly = loadedAssemblies.Where(a => a.GetName().Name == new AssemblyName(args.Name).Name|| a.FullName == args.Name || a.GetName().Name == args.Name).FirstOrDefault();
 
-            Assembly assembly = loadedAssemblies.Where(a => a.FullName == args.Name || a.GetName().Name == args.Name).FirstOrDefault();
+            if(assembly!=null)
+                return assembly;
+ 
+            assembly = (from asm in m_LoadedAssemblies
+                    where asm.Key.Name== new AssemblyName(args.Name).Name 
+                    orderby asm.Key.Version descending select asm.Value.Value).FirstOrDefault();
+                    
 
-            if (assembly==null && !m_LoadedAssemblies.TryGetValue(args.Name, out assembly))
-            {
-                assembly = m_LoadedAssemblies.Values.FirstOrDefault(a => a.GetName().Name == args.Name);
-            }
             return assembly;
         }
 

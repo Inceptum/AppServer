@@ -53,20 +53,20 @@ namespace Inceptum.AppServer
                         i++;
                         if (i < args.Length)
                         {
-                            var wrapdesc = args[i];
-                            if (Path.GetExtension(wrapdesc).ToLower() != ".wrapdesc")
+                            var wrap = args[i];
+                            if (Path.GetExtension(wrap).ToLower() != ".wrap")
                             {
-                                Console.WriteLine("-debug should be followed with .wrapdesc file");
+                                Console.WriteLine("-debug should be followed with .wrap file");
                                 Environment.Exit(1);
                             }
-                            if (!File.Exists(wrapdesc))
+                            if (!File.Exists(wrap))
                             {
-                                Console.WriteLine( wrapdesc + " could not be found");
+                                Console.WriteLine(wrap + " could not be found");
                                 Environment.Exit(1);
                             }
 
 
-                                var process = Process.Start(new ProcessStartInfo("o", "build-wrap -quiet -incremental -debug")
+                             /*   var process = Process.Start(new ProcessStartInfo("o", "build-wrap -quiet -incremental -debug")
                                 {
                                     WorkingDirectory = Path.GetDirectoryName(wrapdesc),
                                     CreateNoWindow = true,
@@ -80,12 +80,14 @@ namespace Inceptum.AppServer
                                 Console.WriteLine("Failed to build debuged wrap");
                             var directoryInfo = new DirectoryInfo(Path.GetDirectoryName(wrapdesc));
                             var wrap = directoryInfo.GetFiles("*.wrap").OrderByDescending(f=>f.CreationTime).First().FullName;
+                              
                             if(Directory.Exists("DebugRepo"))
                                 Directory.Delete("DebugRepo",true);
                             Directory.CreateDirectory("DebugRepo");
                             File.Copy(wrap, Path.Combine("DebugRepo",Path.GetFileName(wrap)));
                             Console.WriteLine(wrap);
-                            setup.DebugRepo = Path.GetFullPath("DebugRepo");
+                            setup.DebugWraps = Path.GetFullPath("DebugRepo");*/
+                            setup.DebugWraps = new []{Path.GetFullPath(wrap)};
                         }
                         break;
                     default:

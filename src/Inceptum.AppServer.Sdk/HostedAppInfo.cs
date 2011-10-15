@@ -1,22 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Inceptum.AppServer
 {
     [Serializable]
     public class HostedAppInfo
     {
-         
 
-        public HostedAppInfo(string name,  Version version,string appType, string[] assembliesToLoad):
+
+        public HostedAppInfo(string name, Version version, string appType, IDictionary<AssemblyName, string> assembliesToLoad) :
             this(name,version, appType, AppDomain.CurrentDomain.BaseDirectory,assembliesToLoad)
         {
         }
 
-        public HostedAppInfo(string name, Version version,string appType, string baseDirectory, IEnumerable<string> assembliesToLoad, IEnumerable<string> nativeDllToLoad = null)
+        public HostedAppInfo(string name, Version version,string appType, string baseDirectory, IDictionary<AssemblyName, string> assembliesToLoad, IEnumerable<string> nativeDllToLoad = null)
         {
-            AssembliesToLoad = assembliesToLoad.ToArray();
+            AssembliesToLoad = new Dictionary<AssemblyName, string>(assembliesToLoad);
             NativeDllToLoad = (nativeDllToLoad??new string[0]).ToArray();
             Name = name;
             AppType = appType;
@@ -24,7 +25,7 @@ namespace Inceptum.AppServer
             Version = version;
         }
 
-        public string[] AssembliesToLoad { get; private set; }
+        public Dictionary<AssemblyName, string> AssembliesToLoad { get; private set; }
 
         public string Name { get; set; }
         public string AppType { get; set; }

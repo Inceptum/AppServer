@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Castle.Core.Logging;
 using Mono.Cecil;
 
@@ -78,50 +79,13 @@ namespace Inceptum.AppServer.AppDiscovery
                 if (appTypes.Length > 1)
                     Logger.InfoFormat("Assembly {0} contains several types implementing IHostedApplication, using {1}", app.file, appType.Name);
 
-                yield return new HostedAppInfo(app.name,app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, m_Folder, new[] {app.file}, new string[0]);
+                yield return new HostedAppInfo(app.name, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, m_Folder, new Dictionary<AssemblyName, string> { { new AssemblyName(app.assembly.FullName), app.file } }, new string[0]);
             }
 
         }
 
         #endregion
 
-     /*   public IEnumerable<HostedAppInfo> GetAvailabelApps()
-        {
-            var discoveredApps = new List<HostedAppInfo>();
-            AppDomain appDomain = AppDomain.CreateDomain("AssemblyExplorer", null, new AppDomainSetup
-                                                                                       {
-                                                                                           PrivateBinPath = m_Folder,
-                                                                                           ApplicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase
-                                                                                       });
-
-            try
-            {
-                var tester = (AssemblyTester) appDomain.CreateInstanceAndUnwrap(typeof (AssemblyTester).Assembly.FullName, typeof (AssemblyTester).FullName);
-                foreach (string file in Directory.GetFiles(m_Folder, "*.dll"))
-                {
-                    try
-                    {
-                        HostedAppInfo hostedAppInfo = tester.Try(file);
-                        if (hostedAppInfo == null)
-                            continue;
-                        if (hostedAppInfo.AppType == null)
-                            m_Logger.Warn("Application {0} is marked with HostedApplicationAttribute but does not contain IHostedApplication implementation. Ignoring");
-                        else
-                            discoveredApps.Add(hostedAppInfo);
-                    }
-                    catch (Exception e)
-                    {
-                        m_Logger.WarnFormat(e, "Failed to determine whether {0} is application assembly", file);
-                    }
-                }
-            }
-            finally
-            {
-                AppDomain.Unload(appDomain);
-            }
-            return discoveredApps.ToArray();
-        }
-*/
         public static AppInfo ReadAppInfo(AssemblyDefinition assembly)
         {
             CustomAttribute attr = assembly.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "HostedApplicationAttribute");
