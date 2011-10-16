@@ -1,3 +1,4 @@
-﻿#depends: Mono.Cecil
+﻿depends: Mono.Cecil
 depends: openwrap anchored
 depends: IbRasta
+depends: protobuf-net
