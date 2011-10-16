@@ -52,18 +52,22 @@ namespace Inceptum.AppServer
                         i++;
                         if (i < args.Length)
                         {
-                            var wrap = args[i];
-                            if (Path.GetExtension(wrap).ToLower() != ".wrap")
+                            var wraps = args[i].Split(',').Select(w => w.Trim());
+                            foreach (var wrap in wraps)
                             {
-                                Console.WriteLine("-debug should be followed with .wrap file");
-                                Environment.Exit(1);
-                            }
-                            if (!File.Exists(wrap))
-                            {
-                                Console.WriteLine(wrap + " could not be found");
-                                Environment.Exit(1);
-                            }
+                                if (Path.GetExtension(wrap).ToLower() != ".wrap")
+                                {
+                                    Console.WriteLine("-debug-wrap should be followed with comma separated list pf .wrap files");
+                                    Environment.Exit(1);
+                                }
+                                if (!File.Exists(wrap))
+                                {
+                                    Console.WriteLine(wrap + " could not be found");
+                                    Environment.Exit(1);
+                                }
 
+
+                            }
 
                              /*   var process = Process.Start(new ProcessStartInfo("o", "build-wrap -quiet -incremental -debug")
                                 {
@@ -86,7 +90,7 @@ namespace Inceptum.AppServer
                             File.Copy(wrap, Path.Combine("DebugRepo",Path.GetFileName(wrap)));
                             Console.WriteLine(wrap);
                             setup.DebugWraps = Path.GetFullPath("DebugRepo");*/
-                            setup.DebugWraps = new []{Path.GetFullPath(wrap)};
+                            setup.DebugWraps =wraps.Select(Path.GetFullPath).ToArray();
                         }
                         break;
                     default:

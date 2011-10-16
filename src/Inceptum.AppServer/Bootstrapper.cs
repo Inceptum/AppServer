@@ -94,7 +94,7 @@ namespace Inceptum.AppServer
                             new
                                 {
                                     repository = setup.Repository??"Repository",
-                                    debugWraps=setup.DebugWraps??new string[0]
+                                    debugWraps = setup.DebugWraps??new string[0]
                                 })
                 );
             //HearBeats
