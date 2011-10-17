@@ -79,8 +79,10 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
 
         public IEnumerable<HostedAppInfo> GetAvailabelApps()
         {
-            var debugApps = m_PackageManager.GetSystemExports<IHostedApplicationExport>(m_DebugRepo, m_Environment)
-                                            .SelectMany(x => x).Select(getAppLoadParams).ToArray();
+
+            var debugApps = m_DebugRepo != null
+                                ? m_PackageManager.GetSystemExports<IHostedApplicationExport>(m_DebugRepo, m_Environment).SelectMany(x => x).Select(getAppLoadParams).ToArray()
+                                : new HostedAppInfo[0];
             var releaseApps = m_PackageManager.GetSystemExports<IHostedApplicationExport>(m_ProjectRepository, m_Environment)
                                             .SelectMany(x => x).Where(x => !debugApps.Any(p => p.Name == x.Name)).Select(getAppLoadParams).ToArray();
             return debugApps.Concat(releaseApps);
