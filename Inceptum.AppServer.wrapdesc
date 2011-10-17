@@ -5,9 +5,12 @@ depends: Castle.Core-NLog >= 3.0 and < 3.1
 depends: Castle.LoggingFacility >= 3.0 and < 3.1
 depends: newtonsoft-json = 4.0.2
 depends: Inceptum.Framework
-#depends: Mono.Cecil
-#depends: openwrap anchored
-#depends: OpenRastaIb
+
+
+depends: Mono.Cecil
+depends: openwrap anchored
+depends: OpenRastaIb
+depends: protobuf-net
 
 directory-structure: src\{scope: Inceptum.AppServer.Management=srv}\**
 directory-structure: src\{scope: Inceptum.AppServer=srv}\**
