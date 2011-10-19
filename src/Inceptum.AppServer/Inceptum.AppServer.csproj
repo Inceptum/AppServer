@@ -111,69 +111,6 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="FakeRemoteRepo\Castle.Core-3.0.0.2001.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\Castle.Core-NLog-3.0.0.2001.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\Castle.LoggingFacility-3.0.0.2001.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\Castle.Windsor-3.0.0.2001.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\Castle.Windsor-NLog-3.0.0.2001.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\Inceptum.AppServer-1.0.1.84587734.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\Inceptum.Framework-1.0.0.52.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\Mono.Cecil-0.9.4.1.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\newtonsoft-json-4.0.2.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\NLog-2.0.0.2000.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\NUnit-2.5.10.11092.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\openfilesystem-1.0.0.61263243.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\OpenRastaIb-1.0.0.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\openwrap-2.0.0.83561668.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\protobuf-net-2.0.0.431.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\RhinoMocks-3.6.1.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\Rx-Main-1.0.10621.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\Rx-Providers-1.0.10621.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\SharpZipLib-0.86.0.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\SonicClient-7.6.2.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="FakeRemoteRepo\tdnet-framework-2.0.0.48555719.wrap">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="nlog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
