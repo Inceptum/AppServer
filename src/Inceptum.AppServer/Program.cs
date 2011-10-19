@@ -16,8 +16,10 @@ namespace Inceptum.AppServer
 {
     internal static class Program
     {
-        
 
+        /*
+         -debug-wrap "x:\WORK\Finam\CODE\_OPENWRAP\ibank\Internet.Bank.DiasoftAdapter-1.1.0.5.wrap, x:\WORK\Finam\CODE\_OPENWRAP\ibank\Internet.Bank.CyberplatAdapter-1.1.0.1.wrap"
+         */
 
         /// <summary>
         ///   The main entry point for the application.
@@ -30,7 +32,7 @@ namespace Inceptum.AppServer
                             {
                                 SendHb = false,
                                 Environment = ConfigurationManager.AppSettings["Environment"],
-                                //ConfSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"],
+                                ConfSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"]
                             };
 
             for (int i = 0; i < args.Length; i++)
@@ -68,28 +70,6 @@ namespace Inceptum.AppServer
 
 
                             }
-
-                             /*   var process = Process.Start(new ProcessStartInfo("o", "build-wrap -quiet -incremental -debug")
-                                {
-                                    WorkingDirectory = Path.GetDirectoryName(wrapdesc),
-                                    CreateNoWindow = true,
-                                    UseShellExecute = false,
-                                    RedirectStandardError = true,
-                                    RedirectStandardOutput = true
-                                });
-                                process.WaitForExit();
-                            
-                            if(process.ExitCode!=0)
-                                Console.WriteLine("Failed to build debuged wrap");
-                            var directoryInfo = new DirectoryInfo(Path.GetDirectoryName(wrapdesc));
-                            var wrap = directoryInfo.GetFiles("*.wrap").OrderByDescending(f=>f.CreationTime).First().FullName;
-                              
-                            if(Directory.Exists("DebugRepo"))
-                                Directory.Delete("DebugRepo",true);
-                            Directory.CreateDirectory("DebugRepo");
-                            File.Copy(wrap, Path.Combine("DebugRepo",Path.GetFileName(wrap)));
-                            Console.WriteLine(wrap);
-                            setup.DebugWraps = Path.GetFullPath("DebugRepo");*/
                             setup.DebugWraps =wraps.Select(Path.GetFullPath).ToArray();
                         }
                         break;

@@ -75,7 +75,7 @@ namespace Inceptum.AppServer
                         :Component.For<IConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>()
                                                         .DependsOn(new { configFolder = Path.Combine(Environment.CurrentDirectory, Path.Combine("Configuration")) }))
                 .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
-                                                             .Params(new {setup.Environment, machineName})
+                                                             .Params(new {environment=setup.Environment, machineName})
                                                              .ConfigureTransports("server.transports", "{environment}", "{machineName}"))
                 //messageing
                 .AddFacility<MessagingFacility>(f => f.JailStrategy = (setup.Environment == "dev") ? JailStrategy.MachineName : JailStrategy.None)
@@ -85,7 +85,9 @@ namespace Inceptum.AppServer
                     setup.AppsToStart==null
                         ?Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
                         : Component.For<Bootstrapper>().DependsOn(new{appsToStart=setup.AppsToStart}),
+#if DEBUG
                     Component.For<ManagementConsole>().DependsOn(new { container }),
+#endif
 /*                    //App storage openwrap/folder
                     setup.Repository==null
                         ? Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(new { folder = Path.Combine(Environment.CurrentDirectory, "apps") })
