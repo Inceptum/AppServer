@@ -7,8 +7,7 @@ using Inceptum.AppServer.Configuration.Persistence;
 
 namespace Inceptum.AppServer.Configuration.Providers
 {
-    //TODO: better remoting implementation (MarshalByRefObject)
-    public class LocalStorageConfigurationProvider : MarshalByRefObject, IConfigurationProvider
+    public class LocalStorageConfigurationProvider :  IConfigurationProvider
     {
         private readonly IContentProcessor m_ContentProcessor;
         private readonly IConfigurationPersister m_Persister;
@@ -57,10 +56,5 @@ namespace Inceptum.AppServer.Configuration.Providers
 
         #endregion
 
-        public override object InitializeLifetimeService()
-        {
-            // prevents proxy from expiration
-            return null;
-        }
     }
 }
