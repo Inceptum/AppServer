@@ -115,7 +115,7 @@ namespace Inceptum.AppServer
                 Stopwatch sw = Stopwatch.StartNew();
                 try
                 {
-                    app.Key.Start(getMarshalableProxy(m_ConfigurationProvider),new AppServerContext{Name=Name});
+                    app.Key.Start(MatshalableProxy.Generate(m_ConfigurationProvider), new AppServerContext { Name = Name });
                     sw.Stop();
                     m_Logger.InfoFormat("Starting application '{0}' complete in {1}ms", app.Value.Name, sw.ElapsedMilliseconds);
                 }
@@ -129,31 +129,7 @@ namespace Inceptum.AppServer
 
         }
 
-        private T getMarshalableProxy<T>(T instance)
-        {
-            Type t = typeof(T);
-            if (!t.IsInterface)
-            {
-                throw new ArgumentException("Type must be an interface");
-            }
-            try
-            {
-                //T instance = container.Resolve<T>();
-                if (typeof(MarshalByRefObject).IsAssignableFrom(instance.GetType()))
-                {
-                    return instance;
-                }
-
-                var generator = new ProxyGenerator();
-                var generatorOptions = new ProxyGenerationOptions { BaseTypeForInterfaceProxy = typeof(MarshalByRefObject) };
-                return (T)generator.CreateInterfaceProxyWithTarget(t, instance, generatorOptions);
-
-            }
-            catch (Castle.MicroKernel.ComponentNotFoundException)
-            {
-                return default(T);
-            }
-        }
+      
 
         public void StopApps(params string[] apps)
         {
@@ -200,4 +176,43 @@ namespace Inceptum.AppServer
             return ApplicationHost.Create(appInfo);
         }
     }
+
+    public class MatshalableProxy:MarshalByRefObject
+        {
+        
+
+        public override object InitializeLifetimeService()
+        {
+            // prevents proxy from expiration
+            return null;
+        }
+
+
+            public static T Generate<T>(T instance)
+            {
+                Type t = typeof(T);
+                if (!t.IsInterface)
+                {
+                    throw new ArgumentException("Type must be an interface");
+                }
+                try
+                {
+                    //T instance = container.Resolve<T>();
+                    if (typeof(MarshalByRefObject).IsAssignableFrom(instance.GetType()))
+                    {
+                        return instance;
+                    }
+
+                    var generator = new ProxyGenerator();
+                    var generatorOptions = new ProxyGenerationOptions { BaseTypeForInterfaceProxy = typeof(MatshalableProxy) };
+                    return (T)generator.CreateInterfaceProxyWithTarget(t, instance, generatorOptions);
+
+                }
+                catch (Castle.MicroKernel.ComponentNotFoundException)
+                {
+                    return default(T);
+                }
+            }
+
+        }
 }
