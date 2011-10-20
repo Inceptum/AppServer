@@ -187,7 +187,7 @@ namespace Inceptum.AppServer
             return null;
         }
 
-
+        static readonly List<object> m_Proxies=new List<object>(); 
             public static T Generate<T>(T instance)
             {
                 Type t = typeof(T);
@@ -205,7 +205,9 @@ namespace Inceptum.AppServer
 
                     var generator = new ProxyGenerator();
                     var generatorOptions = new ProxyGenerationOptions { BaseTypeForInterfaceProxy = typeof(MatshalableProxy) };
-                    return (T)generator.CreateInterfaceProxyWithTarget(t, instance, generatorOptions);
+                    var proxy = (T)generator.CreateInterfaceProxyWithTarget(t, instance, generatorOptions);
+                    m_Proxies.Add(proxy);
+                    return proxy;
 
                 }
                 catch (Castle.MicroKernel.ComponentNotFoundException)
@@ -215,4 +217,5 @@ namespace Inceptum.AppServer
             }
 
         }
+
 }
