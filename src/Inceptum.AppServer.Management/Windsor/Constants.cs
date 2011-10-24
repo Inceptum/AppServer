@@ -1,4 +1,4 @@
-namespace Inceptum.AppServer.Management.Windsor
+﻿namespace Inceptum.AppServer.Management.Windsor
 {
     internal static class Constants
     {
