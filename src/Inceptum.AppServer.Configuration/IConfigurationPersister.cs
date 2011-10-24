@@ -1,4 +1,4 @@
-using Inceptum.AppServer.Configuration.Model;
+﻿using Inceptum.AppServer.Configuration.Model;
 
 namespace Inceptum.AppServer.Configuration
 {

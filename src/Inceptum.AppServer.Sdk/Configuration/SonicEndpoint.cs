@@ -1,4 +1,4 @@
-namespace Inceptum.AppServer.Configuration
+﻿namespace Inceptum.AppServer.Configuration
 {
     /// <summary>
     /// 

@@ -1,4 +1,4 @@
-using Inceptum.AppServer.Management.Resources;
+﻿using Inceptum.AppServer.Management.Resources;
 
 namespace Inceptum.AppServer.Management.Handlers
 {

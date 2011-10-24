@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using OpenWrap.PackageModel;
 
 namespace Inceptum.AppServer.AppDiscovery.Openwrap

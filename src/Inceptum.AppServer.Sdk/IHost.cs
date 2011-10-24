@@ -1,4 +1,4 @@
-namespace Inceptum.AppServer
+﻿namespace Inceptum.AppServer
 {
     public interface IHost
     {
