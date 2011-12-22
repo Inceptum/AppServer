@@ -88,11 +88,7 @@ namespace Inceptum.AppServer
                     setup.AppsToStart == null
                         ? Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
                         : Component.For<Bootstrapper>().DependsOn(new {appsToStart = setup.AppsToStart}),
-
-#if DEBUG
-                    Component.For<ManagementConsole>().DependsOn(new {container}),
-#endif
-                    
+                    Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
                     Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
                         new
                             {
