@@ -34,21 +34,17 @@ namespace Inceptum.AppServer.Management
     public class ManagementConsole : IDisposable , IStartable
     {
         private HttpListenerHostWithConfiguration m_OpenRastaHost;
-        private ILogger m_Logger;
+        private readonly ILogger m_Logger;
         private readonly IWindsorContainer m_Container;
-        private string m_Uri = "http://+:9222/";
+        private readonly string m_Uri = "http://+:9222/";
+        private readonly bool m_Enabled;
 
-        public ManagementConsole(IWindsorContainer container, ILogger logger)
+        public ManagementConsole(IWindsorContainer container, ILogger logger, int port=9222, bool enabled=true)
         {
-           
+            m_Enabled = enabled;
+
             m_Logger = logger;
-/*
-            var openRastaContainer = new WindsorContainer();
-            openRastaContainer.Register(
-                Component.For<IConfigurationSource>().ImplementedBy<Configurator>()
-                );
-            container.AddChildContainer(openRastaContainer);
-*/
+            m_Uri = string.Format("http://+:{0}/", port);
             m_Container = container;
 
         }
@@ -58,6 +54,7 @@ namespace Inceptum.AppServer.Management
 
         public void Dispose()
         {
+            if (!m_Enabled) return; 
             m_OpenRastaHost.Close();
         }
 
@@ -65,16 +62,17 @@ namespace Inceptum.AppServer.Management
 
         public void Start()
         {
+            if (!m_Enabled) return;
             m_Logger.Info("Starting management console.");
             m_Container.Register(
                 Component.For<IConfigurationSource>().ImplementedBy<Configurator>()
                 );
             Accessor.SetResolver(new WindsorDependencyResolver(m_Container));
             m_OpenRastaHost = new HttpListenerHostWithConfiguration(new Configurator());
-            
-            m_OpenRastaHost.Initialize(new[] { m_Uri }, "/", typeof(Accessor));
+
+            m_OpenRastaHost.Initialize(new[] {m_Uri}, "/", typeof (Accessor));
             m_OpenRastaHost.StartListening();
-            m_Logger.InfoFormat("Management console is started and listening on {0}.",m_Uri);
+            m_Logger.InfoFormat("Management console is started and listening on {0}.", m_Uri);
         }
 
         public void Stop()
