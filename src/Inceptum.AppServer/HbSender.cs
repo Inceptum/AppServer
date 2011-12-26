@@ -18,20 +18,22 @@ namespace Inceptum.AppServer
         private readonly string m_HbTopic;
         private PeriodicalBackgroundWorker m_PeriodicalBackgroundWorker;
         private readonly ILogger m_Logger;
-        
-        public HbSender(IHost host, IMessagingEngine engine, SonicEndpoint hbEndpoint,ILogger logger)
+        private string m_InstanceName;
+
+        public HbSender(IHost host, IMessagingEngine engine, SonicEndpoint hbEndpoint,ILogger logger, string environment)
         {
             m_Logger = logger;
             m_Engine = engine;
             m_ManagementTransport = hbEndpoint.TransportId;
             m_HbTopic = hbEndpoint.Destination;
             m_Host = host;
+            m_InstanceName = string.Format("{0}({1})", Environment.MachineName, environment);
         }
 
 
         private void sendHb()
         {
-            var hbMessage = new HostHbMessage(m_Host.HostedApps.Select(a => a.Name).ToArray()){InstanceName = Environment.MachineName,Period = HB_PERIOD};
+            var hbMessage = new HostHbMessage(m_Host.HostedApps.Select(a => a.Name).ToArray()) { InstanceName = m_InstanceName, Period = HB_PERIOD };
             try
             {
                 m_Engine.Send(hbMessage, m_HbTopic, m_ManagementTransport);

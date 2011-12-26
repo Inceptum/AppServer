@@ -100,7 +100,7 @@ namespace Inceptum.AppServer
             
             //HearBeats
             if(setup.SendHb)
-                container.Register(Component.For<HbSender>());
+                container.Register(Component.For<HbSender>().DependsOn(new{environment=setup.Environment}));
             
             var logger = container.Resolve<ILoggerFactory>().Create(typeof (Bootstrapper));
             logger.Info("Starting application host");
