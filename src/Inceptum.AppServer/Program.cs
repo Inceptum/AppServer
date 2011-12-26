@@ -30,7 +30,7 @@ namespace Inceptum.AppServer
              
             var setup = new AppServerSetup
                             {
-                                SendHb = false,
+                                SendHb = true,
                                 Environment = ConfigurationManager.AppSettings["Environment"],
                                 ConfSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"]
                             };
