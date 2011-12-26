@@ -18,5 +18,6 @@ directory-structure: src\*{scope: Tests=tests}*\**
 #directory-structure: src\*{scope: Tests=srv}*\**
 build: command; path=msbuild; args=/p:Configuration=Release "/p:Platform=Any CPU" "/property:OpenWrap-EmitOutputInstructions=false" src/Inceptum.AppServer.sln  
 build: files; file=bin-net40 -> src\Inceptum.AppServer.Sdk\bin\Release\Inceptum.AppServer.Sdk.*;file=Server -> src\Inceptum.AppServer\bin\Release\*.*;
+build: files; file=bin-net40 -> src\Inceptum.AppServer.Configuration\bin\Release\Inceptum.AppServer.Configuration.*;file=Server -> src\Inceptum.AppServer\bin\Release\*.*;
 version: 1.0.1.84587734
 

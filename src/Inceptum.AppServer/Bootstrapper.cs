@@ -53,6 +53,7 @@ namespace Inceptum.AppServer
 
         internal static IDisposable Start(AppServerSetup setup)
         {
+            
             AppDomainRenderer.Register();
                 string machineName = Environment.MachineName;
             WindsorContainer container;
