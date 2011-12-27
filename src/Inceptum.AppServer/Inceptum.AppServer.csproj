@@ -91,7 +91,6 @@
     <Compile Include="ApplicationHost.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="Host.cs" />
-    <Compile Include="HostHbMessage.cs" />
     <Compile Include="HbSender.cs" />
     <Compile Include="IApplicationActivator.cs" />
     <Compile Include="IApplicationBrowser.cs" />
