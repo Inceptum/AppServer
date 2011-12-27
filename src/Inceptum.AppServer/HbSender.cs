@@ -3,6 +3,7 @@ using System.Linq;
 using Castle.Core;
 using Castle.Core.Logging;
 using Inceptum.AppServer.Configuration;
+using Inceptum.AppServer.Monitoring;
 using Inceptum.Core.Messaging;
 using Inceptum.Core.Utils;
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using ProtoBuf;
 
-namespace Inceptum.AppServer
+namespace Inceptum.AppServer.Monitoring
 {
     /// <summary>
     /// Host HeartBeat message. Extends HbMessage with running services list

@@ -46,6 +46,9 @@
     <Compile Include="AppDomainInitializer.cs" />
     <Compile Include="AppInfo.cs" />
     <Compile Include="AppServerContext.cs" />
+    <Compile Include="Monitoring\HostHbMessage.cs" />
+    <Compile Include="Monitoring\InstanceInfo.cs" />
+    <Compile Include="Monitoring\ServiceMonitor.cs" />
     <Compile Include="Configuration\ComponentRegistrationExtentions.cs" />
     <Compile Include="Configuration\ConfigurationFacility.cs" />
     <Compile Include="Configuration\ConnectionString.cs" />
