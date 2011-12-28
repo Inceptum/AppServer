@@ -1,23 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Castle.Core;
 using Inceptum.AppServer.Configuration;
 using Inceptum.Core.Messaging;
 
 namespace Inceptum.AppServer.Monitoring
 {
-    public class ServicesMonitor : IDisposable
+    public class ServicesMonitor : IDisposable, IStartable
     {
-        private readonly IDisposable m_HandlerRegistration;
+        private IDisposable m_HandlerRegistration;
         private readonly Dictionary<string, InstanceInfo> m_Instances = new Dictionary<string, InstanceInfo>();
         private readonly IMessagingEngine m_MessagingEngine;
+        private SonicEndpoint m_HbEndpoint;
+        private volatile bool m_IsStarted;
 
         public ServicesMonitor(IMessagingEngine messagingEngine,SonicEndpoint hbEndpoint)
         {
+            m_HbEndpoint = hbEndpoint;
             if (messagingEngine == null) throw new ArgumentNullException("messagingEngine");
             m_MessagingEngine = messagingEngine;
-
-            m_HandlerRegistration = m_MessagingEngine.Subscribe<HostHbMessage>(hbEndpoint.Destination, hbEndpoint.TransportId, processHb);
         }
 
         public Dictionary<string, InstanceInfo> Instances
@@ -35,7 +38,7 @@ namespace Inceptum.AppServer.Monitoring
 
         public void Dispose()
         {
-            m_HandlerRegistration.Dispose();
+            Stop();
         }
 
         #endregion
@@ -56,6 +59,24 @@ namespace Inceptum.AppServer.Monitoring
             {
                 instance.LastMessage = message;
             }
+        }
+
+        public void Start()
+        {
+            Thread.MemoryBarrier();
+            m_HandlerRegistration = m_MessagingEngine.Subscribe<HostHbMessage>(m_HbEndpoint.Destination, m_HbEndpoint.TransportId, processHb);
+            m_IsStarted = true;
+            Thread.MemoryBarrier();
+        }
+
+        public void Stop()
+        {
+            Thread.MemoryBarrier();
+            if (!m_IsStarted) return;
+            
+            m_IsStarted = false;
+            Thread.MemoryBarrier();
+            m_HandlerRegistration.Dispose();
         }
     }
 }
