@@ -34,7 +34,12 @@ namespace Inceptum.AppServer
 
         private void sendHb()
         {
-            var hbMessage = new HostHbMessage(m_Host.HostedApps.Select(a => a.Name).ToArray()) { InstanceName = m_InstanceName, Period = HB_PERIOD };
+            var hbMessage = new HostHbMessage
+                                {
+                                    Services = m_Host.HostedApps.Select(a => a.Name).ToArray(),
+                                    InstanceName = m_InstanceName,
+                                    Period = HB_PERIOD
+                                };
             try
             {
                 m_Engine.Send(hbMessage, m_HbTopic, m_ManagementTransport);

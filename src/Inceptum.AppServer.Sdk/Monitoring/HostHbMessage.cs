@@ -14,15 +14,13 @@ namespace Inceptum.AppServer.Monitoring
         /// Gets the services.
         /// </summary>
         [ProtoMember(1)]
-        public string[] Services { get; private set; }
+        public string[] Services { get;  set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HostHbMessage"/> class.
         /// </summary>
-        /// <param name="services">The services.</param>
-        public HostHbMessage(string[] services)
+        public HostHbMessage()
         {
-            Services = services;
             MachineName = Environment.MachineName;
             SendDate = DateTime.Now;
         }
