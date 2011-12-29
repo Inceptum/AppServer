@@ -65,6 +65,7 @@ namespace Inceptum.AppServer.Monitoring
                 {
                     instance = new InstanceInfo(message);
                     m_Instances.Add(message.InstanceName, instance);
+                    m_InstancesSubject.OnNext(instance);
                 }
             }
 
