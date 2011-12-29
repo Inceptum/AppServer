@@ -42,7 +42,7 @@ namespace Inceptum.AppServer.Monitoring
     public class ServicesMonitor : IStartable, IFeedProvider<InstanceInfo,EmptyContext>
     {
         public const string HB_CHANNEL = "HeartBeats";
-        private const string KNOWN_APPSEREVER_INSTANCES_CHANNEL="KnownAppServerInstances";
+        public const string KNOWN_APPSEREVER_INSTANCES_CHANNEL="KnownAppServerInstances";
 
         readonly Subject<InstanceInfo> m_InstancesSubject=new Subject<InstanceInfo>();
         private readonly Dictionary<string, InstanceInfo> m_Instances = new Dictionary<string, InstanceInfo>();
