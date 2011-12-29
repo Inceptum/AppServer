@@ -1,47 +1,60 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading;
 using Castle.Core;
 using Inceptum.AppServer.Configuration;
 using Inceptum.Core.Messaging;
+using Inceptum.DataBus;
+using Inceptum.DataBus.Messaging;
 
 namespace Inceptum.AppServer.Monitoring
 {
-    public class ServicesMonitor : IDisposable, IStartable
+    /// <summary>
+    /// 
+    /// </summary>
+    [Channel(ServicesMonitor.HB_CHANNEL)]
+    public class HbFeedProvider:MessagingFeedProviderBase<HostHbMessage,EmptyContext>
     {
-        private IDisposable m_HandlerRegistration;
-        private readonly Dictionary<string, InstanceInfo> m_Instances = new Dictionary<string, InstanceInfo>();
-        private readonly IMessagingEngine m_MessagingEngine;
         private SonicEndpoint m_HbEndpoint;
-        private volatile bool m_IsStarted;
 
-        public ServicesMonitor(IMessagingEngine messagingEngine,SonicEndpoint hbEndpoint)
+        public HbFeedProvider(IMessagingEngine messagingEngine, SonicEndpoint hbEndpoint)
+            : base(messagingEngine)
         {
             m_HbEndpoint = hbEndpoint;
-            if (messagingEngine == null) throw new ArgumentNullException("messagingEngine");
-            m_MessagingEngine = messagingEngine;
         }
 
-        public Dictionary<string, InstanceInfo> Instances
+        protected override string GetSubscriptionSource(EmptyContext context)
         {
-            get
-            {
-                lock (m_Instances)
-                {
-                    return m_Instances.ToDictionary(p => p.Key, p => p.Value);
-                }
-            }
+            return m_HbEndpoint.Destination;
         }
 
-        #region IDisposable Members
-
-        public void Dispose()
+        protected override string GetSubscriptionTransportId(EmptyContext context)
         {
-            Stop();
+            return m_HbEndpoint.TransportId;
+        }
+    }
+
+
+    [Channel(KNOWN_APPSEREVER_INSTANCES_CHANNEL)]
+    public class ServicesMonitor : IStartable, IFeedProvider<InstanceInfo,EmptyContext>
+    {
+        public const string HB_CHANNEL = "HeartBeats";
+        private const string KNOWN_APPSEREVER_INSTANCES_CHANNEL="KnownAppServerInstances";
+
+        readonly Subject<InstanceInfo> m_InstancesSubject=new Subject<InstanceInfo>();
+        private readonly Dictionary<string, InstanceInfo> m_Instances = new Dictionary<string, InstanceInfo>();
+
+        [ImportChannel(HB_CHANNEL)]
+        public IChannel<HostHbMessage> HbChannel { get; set; }
+
+        public void Start()
+        {
+            HbChannel.Feed().Subscribe(processHb);
         }
 
-        #endregion
 
         private void processHb(HostHbMessage message)
         {
@@ -61,22 +74,40 @@ namespace Inceptum.AppServer.Monitoring
             }
         }
 
-        public void Start()
+
+        public Dictionary<string, InstanceInfo> Instances
         {
-            Thread.MemoryBarrier();
-            m_HandlerRegistration = m_MessagingEngine.Subscribe<HostHbMessage>(m_HbEndpoint.Destination, m_HbEndpoint.TransportId, processHb);
-            m_IsStarted = true;
-            Thread.MemoryBarrier();
+            get
+            {
+                lock (m_Instances)
+                {
+                    return m_Instances.ToDictionary(p => p.Key, p => p.Value);
+                }
+            }
         }
 
         public void Stop()
         {
-            Thread.MemoryBarrier();
-            if (!m_IsStarted) return;
-            
-            m_IsStarted = false;
-            Thread.MemoryBarrier();
-            m_HandlerRegistration.Dispose();
+        }
+
+        public bool CanProvideFor(EmptyContext context)
+        {
+            return true;
+        }
+
+        public IObservable<InstanceInfo> CreateFeed(EmptyContext context)
+        {
+            return m_InstancesSubject;
+        }
+
+        public IEnumerable<InstanceInfo> OnFeedLost(EmptyContext context)
+        {
+            return Enumerable.Empty<InstanceInfo>();
+        }
+
+        public IFeedResubscriptionPolicy GetResubscriptionPolicy(EmptyContext context)
+        {
+            return null;
         }
     }
 }
