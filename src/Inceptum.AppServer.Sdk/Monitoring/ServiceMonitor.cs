@@ -56,6 +56,11 @@ namespace Inceptum.AppServer.Monitoring
         }
 
 
+        public bool HasAtLeastOneInstanceOfService(string serviceName)
+        {
+            return Instances.Where(i => i.Value.Alive && i.Value.Servcies != null && i.Value.Servcies.Contains(serviceName)).Any();
+        }
+
         private void processHb(HostHbMessage message)
         {
             InstanceInfo instance;
