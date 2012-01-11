@@ -27,7 +27,7 @@ namespace Inceptum.AppServer.Monitoring
 
         public string[] Servcies
         {
-            get { return LastMessage.Services; }
+            get { return LastMessage.Services??new string[0]; }
         }
 
         public bool Alive
