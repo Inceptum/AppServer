@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="OpenWrapApplicationBrowserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServicesMonitorTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Inceptum.AppServer.Configuration\Inceptum.AppServer.Configuration.csproj">

@@ -52,7 +52,12 @@ namespace Inceptum.AppServer.Monitoring
 
         public void Start()
         {
-            HbChannel.Feed().Subscribe(processHb);
+            var feed = HbChannel.Feed();
+            var gotFirstMessage=new ManualResetEvent(false);
+            var firstMessageSubscription = feed.Take(1).Subscribe(message => gotFirstMessage.Set());
+            feed.Subscribe(processHb);
+            gotFirstMessage.WaitOne(15000);
+            firstMessageSubscription.Dispose();
         }
 
 
