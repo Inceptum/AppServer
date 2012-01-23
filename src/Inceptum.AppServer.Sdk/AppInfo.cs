@@ -5,21 +5,22 @@ namespace Inceptum.AppServer
     [Serializable]
     public class AppInfo
     {
-        public string Name { get; private set; }
- 
-        public Version Version { get; private set; }
-
         public AppInfo(string name, Version version)
         {
             Name = name;
             Version = version;
         }
-        public static bool operator==(AppInfo info1,AppInfo info2)
-    {
-        if (null == (object)info1)
-            return null == (object) info2;
+
+        public string Name { get; private set; }
+
+        public Version Version { get; private set; }
+
+        public static bool operator ==(AppInfo info1, AppInfo info2)
+        {
+            if (null == (object) info1)
+                return null == (object) info2;
             return info1.Equals(info2);
-    }
+        }
 
         public static bool operator !=(AppInfo info1, AppInfo info2)
         {
@@ -37,15 +38,15 @@ namespace Inceptum.AppServer
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != typeof(AppInfo)) return false;
-            return Equals((AppInfo)obj);
+            if (obj.GetType() != typeof (AppInfo)) return false;
+            return Equals((AppInfo) obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Version != null ? Version.GetHashCode() : 0);
+                return ((Name != null ? Name.GetHashCode() : 0)*397) ^ (Version != null ? Version.GetHashCode() : 0);
             }
         }
 
@@ -54,5 +55,4 @@ namespace Inceptum.AppServer
             return string.Format("{0} v{1}", Name, Version);
         }
     }
-
 }

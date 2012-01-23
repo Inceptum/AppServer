@@ -12,17 +12,20 @@ namespace Inceptum.AppServer
 
     internal class HbSender : IDisposable, IStartable
     {
-        private const int HB_PERIOD = 10000;
+        private const int DEFAULT_HB_INTERVAL = 3000;
         private readonly IHost m_Host;
         private readonly IMessagingEngine m_Engine;
         private readonly string m_ManagementTransport;
         private readonly string m_HbTopic;
         private PeriodicalBackgroundWorker m_PeriodicalBackgroundWorker;
         private readonly ILogger m_Logger;
-        private string m_InstanceName;
+        private readonly string m_InstanceName;
+        private readonly int m_HbInterval;
+        private IDisposable m_AppsChangeSubscription;
 
-        public HbSender(IHost host, IMessagingEngine engine, SonicEndpoint hbEndpoint,ILogger logger, string environment)
+        public HbSender(IHost host, IMessagingEngine engine, SonicEndpoint hbEndpoint, ILogger logger, string environment, int hbInterval)
         {
+            m_HbInterval = hbInterval==0?DEFAULT_HB_INTERVAL:hbInterval;
             m_Logger = logger;
             m_Engine = engine;
             m_ManagementTransport = hbEndpoint.TransportId;
@@ -32,17 +35,22 @@ namespace Inceptum.AppServer
         }
 
 
-        private void sendHb()
+        private void sendHb(bool empty =false)
         {
             var hbMessage = new HostHbMessage
                                 {
-                                    Services = m_Host.HostedApps.Select(a => a.Name).ToArray(),
+                                    Services = empty 
+                                            ? new string[0]
+                                            : m_Host.HostedApps.Where(a => a.Item2 == HostedAppStatus.Started).Select(a => a.Item1.Name).ToArray(),
+
                                     InstanceName = m_InstanceName,
-                                    Period = HB_PERIOD
+                                    Period = m_HbInterval
                                 };
             try
             {
                 m_Engine.Send(hbMessage, m_HbTopic, m_ManagementTransport);
+                m_Logger.DebugFormat("HeartBeat was sent");
+
             }catch(Exception e)
             {
                 m_Logger.WarnFormat(e,"Failed to send hb");
@@ -52,17 +60,26 @@ namespace Inceptum.AppServer
 
         public void Start()
         {
-            m_PeriodicalBackgroundWorker = new PeriodicalBackgroundWorker("Server HB sender", HB_PERIOD, sendHb);
+            m_PeriodicalBackgroundWorker = new PeriodicalBackgroundWorker("Server HB sender", m_HbInterval, ()=>sendHb());
+            m_AppsChangeSubscription = m_Host.AppsStateChanged.Subscribe(tuples =>
+                                                                             {
+                                                                                 m_Logger.DebugFormat("Sending HB as apps status changed");
+                                                                                 sendHb();
+                                                                             });
         }
 
         public void Stop()
         {
-           
+           m_AppsChangeSubscription.Dispose();
+            m_AppsChangeSubscription = null;
+            sendHb(true);
+
         }
 
         public void Dispose()
         {
             m_PeriodicalBackgroundWorker.Dispose();
         }
+ 
     }
 }

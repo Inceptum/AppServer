@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Castle.DynamicProxy;
 using Castle.Facilities.Logging;
-using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Castle.Windsor.Installer;
@@ -18,15 +12,13 @@ using Inceptum.Core.Utils;
 
 namespace Inceptum.AppServer
 {
-
-        class ApplicationHostProxy : IApplicationHost
+    internal class ApplicationHostProxy : IApplicationHost
     {
-        private readonly AppDomain m_Domain;
         private readonly IApplicationHost m_ApplicationHost;
+        private readonly AppDomain m_Domain;
 
-     
 
-        public ApplicationHostProxy(IApplicationHost applicationHost,AppDomain domain)
+        public ApplicationHostProxy(IApplicationHost applicationHost, AppDomain domain)
         {
             if (applicationHost == null) throw new ArgumentNullException("applicationHost");
             if (domain == null) throw new ArgumentNullException("domain");
@@ -34,10 +26,16 @@ namespace Inceptum.AppServer
             m_Domain = domain;
         }
 
+        #region IApplicationHost Members
+
+        public HostedAppStatus Status
+        {
+            get { return m_ApplicationHost.Status; }
+        }
 
         public void Start(IConfigurationProvider configurationProvider, AppServerContext context)
         {
-            m_ApplicationHost.Start(configurationProvider,  context);
+            m_ApplicationHost.Start(configurationProvider, context);
         }
 
         public void Stop()
@@ -45,19 +43,16 @@ namespace Inceptum.AppServer
             m_ApplicationHost.Stop();
             AppDomain.Unload(m_Domain);
         }
+
+        #endregion
     }
 
 
     [Serializable]
     internal class ApplicationHost : MarshalByRefObject
     {
-        private Dictionary<string, Assembly> m_LoadedAssemblies;
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        static extern IntPtr LoadLibrary(string lpFileName);
-
         public static IApplicationHost Create(HostedAppInfo appInfo)
         {
-            
             AppDomain domain = AppDomain.CreateDomain(appInfo.Name, null, new AppDomainSetup
                                                                               {
                                                                                   ApplicationBase = AppDomain.CurrentDomain.BaseDirectory,
@@ -68,49 +63,22 @@ namespace Inceptum.AppServer
                                                                                   ConfigurationFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile
                                                                                   // appInfo.ConfigFile
                                                                               });
+            var appDomainInitializer =
+                (AppDomainInitializer)
+                domain.CreateInstanceFromAndUnwrap(typeof (AppDomainInitializer).Assembly.Location, typeof (AppDomainInitializer).FullName, false, BindingFlags.Default, null, null, null, null);
+            appDomainInitializer.Initialize(appInfo.AssembliesToLoad, appInfo.NativeDllToLoad.ToArray());
 
-            //It is only to load sdk assembly from file  to AppDomain
-            //domain.CreateInstanceFrom(typeof(AppServerContext).Assembly.Location, typeof(AppServerContext).FullName, false, BindingFlags.Default, null, null, null, null);
-            var appDomainInitializer = (AppDomainInitializer)domain.CreateInstanceFromAndUnwrap(typeof(AppDomainInitializer).Assembly.Location, typeof(AppDomainInitializer).FullName, false, BindingFlags.Default, null, null, null, null);
-            appDomainInitializer.Initialize(appInfo.AssembliesToLoad,appInfo.NativeDllToLoad.ToArray());
+            var applicationHost =
+                (ApplicationHost) domain.CreateInstanceFromAndUnwrap(typeof (ApplicationHost).Assembly.Location, typeof (ApplicationHost).FullName, false, BindingFlags.Default, null, null, null, null);
 
-            var applicationHost = (ApplicationHost)domain.CreateInstanceFromAndUnwrap(typeof(ApplicationHost).Assembly.Location, typeof(ApplicationHost).FullName, false, BindingFlags.Default, null, null, null, null);
-
-            return new ApplicationHostProxy(applicationHost.load(appInfo),domain);
+            return new ApplicationHostProxy(applicationHost.load(appInfo), domain);
         }
 
 
         private IApplicationHost load(HostedAppInfo appInfo)
         {
-            /*var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetName().FullName);
-            m_LoadedAssemblies = appInfo.AssembliesToLoad
-                .Where(a => !loadedAssemblies.Contains(AssemblyName.GetAssemblyName(a).FullName))
-                .Select(Assembly.LoadFrom)
-                .ToDictionary(a => a.FullName);
-            AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
-            Environment.CurrentDirectory = appInfo.BaseDirectory;
-
-            foreach (var dll in appInfo.NativeDllToLoad)
-            {
-                if(LoadLibrary(dll)==IntPtr.Zero)
-                {
-                    throw new InvalidOperationException("Failed to load unmanaged dll "+Path.GetFileName(dll)+" from package");
-                }
-
-            }
-*/
-            var hostType = typeof(ApplicationHost<>).MakeGenericType(Type.GetType(appInfo.AppType));
-            return (IApplicationHost)Activator.CreateInstance(hostType);
-        }
-
-        private Assembly onAssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            Assembly assembly;
-            if (!m_LoadedAssemblies.TryGetValue(args.Name, out assembly))
-            {
-                assembly = m_LoadedAssemblies.Values.FirstOrDefault(a => a.GetName().Name == args.Name);
-            }
-            return assembly;
+            Type hostType = typeof (ApplicationHost<>).MakeGenericType(Type.GetType(appInfo.AppType));
+            return (IApplicationHost) Activator.CreateInstance(hostType);
         }
     }
 
@@ -123,11 +91,19 @@ namespace Inceptum.AppServer
             get { return m_Container; }
         }
 
+        public ApplicationHost()
+        {
+            Status=HostedAppStatus.NotStarted;
+        }
+
         #region IApplicationHost Members
+
+        public HostedAppStatus Status { get; private set; }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void Start(IConfigurationProvider configurationProvider, AppServerContext context)
         {
+            Status = HostedAppStatus.Starting;
             if (m_Container != null)
                 throw new InvalidOperationException("Host is already started");
             try
@@ -147,15 +123,18 @@ namespace Inceptum.AppServer
                 m_Container
                     .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig("nlog.config"))
                     .Register(
-                            Component.For<AppServerContext>().Instance(context),
-                            Component.For<IConfigurationProvider>().Instance(configurationProvider)
-                            )
-                    .Install( FromAssembly.Instance(typeof(TApp).Assembly,new PluginInstallerFactory()))
+                        Component.For<AppServerContext>().Instance(context),
+                        Component.For<IConfigurationProvider>().Instance(configurationProvider)
+                    )
+                    .Install(FromAssembly.Instance(typeof (TApp).Assembly, new PluginInstallerFactory()))
                     .Register(Component.For<IHostedApplication>().ImplementedBy<TApp>())
                     .Resolve<IHostedApplication>().Start();
+                Status = HostedAppStatus.Started;
             }
             catch (Exception e)
             {
+                Status = HostedAppStatus.NotStarted;
+
                 try
                 {
                     if (m_Container != null)
@@ -177,10 +156,12 @@ namespace Inceptum.AppServer
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void Stop()
         {
+            Status = HostedAppStatus.Stopping;
             if (m_Container == null)
                 throw new InvalidOperationException("Host is not started");
             m_Container.Dispose();
             m_Container = null;
+            Status = HostedAppStatus.NotStarted;
         }
 
         #endregion
@@ -197,7 +178,5 @@ namespace Inceptum.AppServer
             // prevents proxy from expiration
             return null;
         }
-
-      
     }
 }

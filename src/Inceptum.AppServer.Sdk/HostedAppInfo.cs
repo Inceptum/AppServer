@@ -5,6 +5,8 @@ using System.Reflection;
 
 namespace Inceptum.AppServer
 {
+   
+
     [Serializable]
     public class HostedAppInfo
     {

@@ -30,7 +30,7 @@ namespace Inceptum.AppServer
         public string Environment { get; set; }
         public string Repository { get; set; }
         public bool SendHb { get; set; }
-
+        public int HbInterval { get; set; }
         public string[] DebugWraps { get; set; }
     }
 
@@ -100,7 +100,7 @@ namespace Inceptum.AppServer
             
             //HearBeats
             if(setup.SendHb)
-                container.Register(Component.For<HbSender>().DependsOn(new{environment=setup.Environment}));
+                container.Register(Component.For<HbSender>().DependsOn(new{environment=setup.Environment, hbInterval=setup.HbInterval}));
             
             var logger = container.Resolve<ILoggerFactory>().Create(typeof (Bootstrapper));
             logger.Info("Starting application host");
