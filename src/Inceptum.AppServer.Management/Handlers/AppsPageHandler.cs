@@ -15,7 +15,7 @@ namespace Inceptum.AppServer.Management.Handlers
 
         public void Post(string app)
         {
-            if (m_Host.HostedApps.Any(a => a.Name == app))
+            if (m_Host.HostedApps.Any(a => a.Item1.Name == app))
                 m_Host.StopApps(app);
             else
                 m_Host.StartApps(app);
@@ -34,13 +34,14 @@ namespace Inceptum.AppServer.Management.Handlers
                                                    Name = m_Host.Name,
                                                    MachineName = m_Host.MachineName,
                                                    Apps = 
-                                                        m_Host.DiscoveredApps.Select(a => new Application{Name=a.Name,IsStarted = m_Host.HostedApps.Any(app=>app.Name==a.Name&& app.Version==a.Version)}).
-                                                        Concat(new []
-                                                                   {
-                                                                       new Application{Name="Fake inactive application",IsStarted = false},
-                                                                       new Application{Name="Fake active application",IsStarted = true}
-                                                                   }).
-                                                        ToArray()
+                                                        m_Host.DiscoveredApps
+                                                                .Select(
+                                                                        a => new Application
+                                                                                 {
+                                                                                     Name=a.Name,
+                                                                                     IsStarted = m_Host.HostedApps.Any(app=>app.Item1.Name==a.Name&& app.Item1.Version==a.Version)
+                                                                                 })
+                                                                .ToArray()
                                                }
                                        }
                        };

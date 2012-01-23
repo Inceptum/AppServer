@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive.Subjects;
 using Castle.Core.Logging;
 using Castle.DynamicProxy;
 using Inceptum.AppServer.AppDiscovery;
@@ -11,7 +12,7 @@ using Inceptum.AppServer.Configuration;
 
 namespace Inceptum.AppServer
 {
-    public class Host : IDisposable, IHost
+    internal class Host : IDisposable, IHost
     {
         private static ILogger m_Logger = NullLogger.Instance;
         private readonly List<IApplicationBrowser> m_ApplicationBrowsers = new List<IApplicationBrowser>();
@@ -20,13 +21,16 @@ namespace Inceptum.AppServer
 
         private readonly Dictionary<IApplicationHost, HostedAppInfo> m_HostedApps = new Dictionary<IApplicationHost, HostedAppInfo>();
 
-        public Host(IApplicationBrowser applicationBrowser, ILogger logger = null, IConfigurationProvider configurationProvider = null, string name = null)
+        public Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged { get; private set; }
+
+        public Host( IApplicationBrowser applicationBrowser, ILogger logger = null, IConfigurationProvider configurationProvider = null, string name = null)
         {
             if (applicationBrowser == null) throw new ArgumentNullException("applicationBrowser");
             Name = name ?? MachineName;
             m_ConfigurationProvider = configurationProvider;
             m_Logger = logger ?? NullLogger.Instance;
             m_ApplicationBrowsers.Add(applicationBrowser);
+            AppsStateChanged=new Subject<Tuple<HostedAppInfo, HostedAppStatus>[]>();
         }
 
         #region IDisposable Members
@@ -125,6 +129,7 @@ namespace Inceptum.AppServer
                     m_HostedApps.Remove(app.Key);
                     m_Logger.ErrorFormat(e, "Failed to start application '{0}'", app.Value.Name);
                 }
+                AppsStateChanged.OnNext(HostedApps);
             }
 
         }
@@ -153,12 +158,16 @@ namespace Inceptum.AppServer
                     sw.Stop();
                     m_Logger.ErrorFormat(e, "Application {0} failed to stop", app.Value.Name);
                 }
+                AppsStateChanged.OnNext(HostedApps);
             }
         }
 
-        public HostedAppInfo[] HostedApps
+        public Tuple<HostedAppInfo,HostedAppStatus>[] HostedApps
         {
-            get { return m_HostedApps.Values.ToArray(); }
+            get
+            {
+                return m_HostedApps.Select(p => Tuple.Create(p.Value, p.Key.Status)).ToArray();
+            }
         }
 
         #endregion
