@@ -6,19 +6,19 @@ namespace Inceptum.AppServer.Management
 {
     public class HttpListenerHostWithConfiguration : HttpListenerHost
     {
-        private readonly IConfigurationSource _configuration;
+        private readonly IConfigurationSource m_Configuration;
 
         public HttpListenerHostWithConfiguration(IConfigurationSource configuration)
         {
-            _configuration = configuration;
+            m_Configuration = configuration;
         }
 
         public override bool ConfigureRootDependencies(IDependencyResolver resolver)
         {
             bool result = base.ConfigureRootDependencies(resolver);
-            if (result && _configuration != null)
+            if (result && m_Configuration != null)
 
-                resolver.AddDependencyInstance<IConfigurationSource>(_configuration);
+                resolver.AddDependencyInstance<IConfigurationSource>(m_Configuration);
             return result;
         }
     }

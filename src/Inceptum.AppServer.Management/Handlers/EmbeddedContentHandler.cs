@@ -7,7 +7,7 @@ namespace Inceptum.AppServer.Management.Handlers
 {
     public class EmbeddedContentHandler
     {
-        private ICommunicationContext m_Context;
+        private readonly ICommunicationContext m_Context;
 
         public EmbeddedContentHandler(ICommunicationContext context)
         {
@@ -25,11 +25,11 @@ namespace Inceptum.AppServer.Management.Handlers
                                ResponseResource = responseResource
                            };
             }
-            catch (FileNotFoundException e)
+            catch (FileNotFoundException)
             {
                 return new OperationResult.NotFound();
             }
-            catch(Exception e)
+            catch(Exception)
             {
                 return new OperationResult.BadRequest();
             }

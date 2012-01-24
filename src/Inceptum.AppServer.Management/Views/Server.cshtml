@@ -1,10 +1,10 @@
-﻿@resource Inceptum.AppServer.Management.Resources.ConfPage
+﻿@resource Inceptum.AppServer.Management.Resources.ServerPage
 
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Конфигурация</title>
+    <title>Сервер</title>
         <link href="/css/reset.css" rel="stylesheet" type="text/css">
         <link rel="stylesheet" type="text/css" href="/css/site.css">
     <script src="/js/jquery-1.6.2.min.js" type="text/javascript"></script>
@@ -18,13 +18,21 @@
         <div id="navbar-container">
             <div class="logo"><img src="/images/logo.png" alt="logo"/></div>
             <ul id="navbar">
-                <li ><a href="/server">Сервер</a></li>            
+                <li class="selected"><a href="/server">Сервер</a></li>     
                 <li ><a href="/apps">Приложения</a></li>
-                <li class="selected"><a href="/conf">Конфигурация</a></li>            </ul>
+                <li><a href="/conf">Конфигурация</a></li>            </ul>
         </div>
         <div id="main">
             <div id="main-content">
-            <h1>Конфигурация</h1> 
+            <h1>Сервер</h1> 
+                <div>
+                    Имя сервера<br>
+                    <input id="instanceName" name="instanceName" type="text" value="" class="text">
+                </div>
+                <div>
+                    Адрес сервиса конфигурации<br>
+                    <input id="ConfServiceUrl" name="ConfServiceUrl" type="text" value="" class="text">
+                </div>
             </div>
         </div>
     </div>
