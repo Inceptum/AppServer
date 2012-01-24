@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
-using Castle.DynamicProxy;
 using Inceptum.AppServer.Configuration;
 
 namespace Inceptum.AppServer
@@ -16,10 +15,7 @@ namespace Inceptum.AppServer
         private readonly List<IApplicationBrowser> m_ApplicationBrowsers = new List<IApplicationBrowser>();
         private readonly IConfigurationProvider m_ConfigurationProvider;
         private readonly List<HostedAppInfo> m_Applications = new List<HostedAppInfo>();
-
-        private readonly List<IApplicationHost> m_HostedApps = new  List<IApplicationHost>();
-
-        public Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged { get; private set; }
+        private readonly List<IApplicationHost> m_ApplicationHosts = new  List<IApplicationHost>();
 
         public Host( IApplicationBrowser applicationBrowser, ILogger logger = null, IConfigurationProvider configurationProvider = null, string name = null)
         {
@@ -31,17 +27,7 @@ namespace Inceptum.AppServer
             AppsStateChanged=new Subject<Tuple<HostedAppInfo, HostedAppStatus>[]>();
         }
 
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            m_Logger.Info("Stopping service host.");
-            StopApps(((IEnumerable<IApplicationHost>)m_HostedApps).Reverse().Select(host => host.AppInfo.Name).ToArray());
-            AppDomain.CurrentDomain.UnhandledException -= processUnhandledException;
-            m_Logger.Info("Service host is stopped.");
-        }
-
-        #endregion
+        public Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged { get; private set; }
 
         #region IHost Members
 
@@ -94,8 +80,11 @@ namespace Inceptum.AppServer
                         {
                             try
                             {
-                                IApplicationHost appHost = CreateApplicationHost(appInfo);
-                                m_HostedApps.Add(appHost);
+                                var appHost = CreateApplicationHost(appInfo);
+                                lock (m_ApplicationHosts)
+                                {
+                                    m_ApplicationHosts.Add(appHost);
+                                }
                             }
                             catch (Exception e)
                             {
@@ -111,9 +100,14 @@ namespace Inceptum.AppServer
 
             m_Logger.InfoFormat("Starting loaded applications");
 
-         
-            
-            Task.WaitAll(m_HostedApps
+
+            IApplicationHost[] hosts;
+            lock (m_ApplicationHosts)
+            {
+                hosts = m_ApplicationHosts.ToArray();
+            }
+
+            Task.WaitAll(hosts
                             .Select(appHost => Task.Factory.StartNew(
                                                                         () => startHost(appHost))
                                                                     )
@@ -126,14 +120,17 @@ namespace Inceptum.AppServer
             var sw = Stopwatch.StartNew();
             try
             {
-                appHost.Start(MatshalableProxy.Generate(m_ConfigurationProvider), new AppServerContext {Name = Name});
+                appHost.Start(MarshalableProxy.Generate(m_ConfigurationProvider), new AppServerContext {Name = Name});
                 sw.Stop();
                 m_Logger.InfoFormat("Starting application '{0}' complete in {1}ms", appHost.AppInfo, sw.ElapsedMilliseconds);
             }
             catch (Exception e)
             {
                 sw.Stop();
-                m_HostedApps.Remove(appHost);
+                lock (m_ApplicationHosts)
+                {
+                    m_ApplicationHosts.Remove(appHost);
+                }
                 m_Logger.ErrorFormat(e, "Failed to start application '{0}'", appHost.AppInfo);
             }
             AppsStateChanged.OnNext(HostedApps);
@@ -142,8 +139,11 @@ namespace Inceptum.AppServer
 
         public void StopApps(params string[] apps)
         {
-            var appsToStop = apps.Where(a => m_HostedApps.Any(h => h.AppInfo.Name == a)).Select(app => m_HostedApps.FirstOrDefault(a => a.AppInfo.Name == app));
-
+            IEnumerable<IApplicationHost> appsToStop;
+            lock (m_ApplicationHosts)
+            {
+                appsToStop = apps.Where(a => m_ApplicationHosts.Any(h => h.AppInfo.Name == a)).Select(app => m_ApplicationHosts.FirstOrDefault(a => a.AppInfo.Name == app)).ToArray();
+            }
 
             Task.WaitAll(appsToStop
                             .Select(appHost => Task.Factory.StartNew(
@@ -160,8 +160,11 @@ namespace Inceptum.AppServer
             try
             {
                 appHost.Stop();
-                //TODO: Thread saftyness
-                m_HostedApps.Remove(appHost);
+                
+                lock (m_ApplicationHosts)
+                {
+                    m_ApplicationHosts.Remove(appHost);
+                }
                 sw.Stop();
                 m_Logger.InfoFormat("Stopping application '{0}' complete in {1}ms", hostedAppInfo.Name, sw.ElapsedMilliseconds);
             }
@@ -177,7 +180,10 @@ namespace Inceptum.AppServer
         {
             get
             {
-                return m_HostedApps.Select(appHost => Tuple.Create(appHost.AppInfo, appHost.Status)).ToArray();
+                lock (m_ApplicationHosts)
+                {
+                    return m_ApplicationHosts.Select(appHost => Tuple.Create(appHost.AppInfo, appHost.Status)).ToArray();
+                }
             }
         }
 
@@ -195,45 +201,22 @@ namespace Inceptum.AppServer
         {
             return ApplicationHost.Create(appInfo);
         }
-    }
 
-    public class MatshalableProxy:MarshalByRefObject
+        #region IDisposable Members
+
+        public void Dispose()
         {
-        
-
-        public override object InitializeLifetimeService()
-        {
-            // prevents proxy from expiration
-            return null;
-        }
-
-            public static T Generate<T>(T instance)
+            m_Logger.Info("Stopping service host.");
+            string[] apps;
+            lock (m_ApplicationHosts)
             {
-                Type t = typeof(T);
-                if (!t.IsInterface)
-                {
-                    throw new ArgumentException("Type must be an interface");
-                }
-                try
-                {
-                    //T instance = container.Resolve<T>();
-                    if (typeof(MarshalByRefObject).IsAssignableFrom(instance.GetType()))
-                    {
-                        return instance;
-                    }
-
-                    var generator = new ProxyGenerator();
-                    var generatorOptions = new ProxyGenerationOptions { BaseTypeForInterfaceProxy = typeof(MatshalableProxy) };
-                    var proxy = (T)generator.CreateInterfaceProxyWithTarget(t, instance, generatorOptions);
-                    return proxy;
-
-                }
-                catch (Castle.MicroKernel.ComponentNotFoundException)
-                {
-                    return default(T);
-                }
+                apps = ((IEnumerable<IApplicationHost>)m_ApplicationHosts).Reverse().Select(host => host.AppInfo.Name).ToArray();
             }
-
+            StopApps(apps);
+            AppDomain.CurrentDomain.UnhandledException -= processUnhandledException;
+            m_Logger.Info("Service host is stopped.");
         }
 
+        #endregion
+    }
 }

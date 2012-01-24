@@ -95,6 +95,7 @@
     <Compile Include="IApplicationActivator.cs" />
     <Compile Include="IApplicationBrowser.cs" />
     <Compile Include="IApplicationHost.cs" />
+    <Compile Include="MarshalableProxy.cs" />
     <Compile Include="PluginInstaller.cs" />
     <Compile Include="PluginInstallerFactory.cs" />
     <Compile Include="Program.cs" />
