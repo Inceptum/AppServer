@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Castle.DynamicProxy;
-using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.Configuration;
 
 namespace Inceptum.AppServer
@@ -19,7 +17,7 @@ namespace Inceptum.AppServer
         private readonly IConfigurationProvider m_ConfigurationProvider;
         private readonly List<HostedAppInfo> m_Applications = new List<HostedAppInfo>();
 
-        private readonly Dictionary<IApplicationHost, HostedAppInfo> m_HostedApps = new Dictionary<IApplicationHost, HostedAppInfo>();
+        private readonly List<IApplicationHost> m_HostedApps = new  List<IApplicationHost>();
 
         public Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged { get; private set; }
 
@@ -38,7 +36,7 @@ namespace Inceptum.AppServer
         public void Dispose()
         {
             m_Logger.Info("Stopping service host.");
-            StopApps(m_HostedApps.Reverse().Select(a=>a.Value.Name).ToArray());
+            StopApps(((IEnumerable<IApplicationHost>)m_HostedApps).Reverse().Select(host => host.AppInfo.Name).ToArray());
             AppDomain.CurrentDomain.UnhandledException -= processUnhandledException;
             m_Logger.Info("Service host is stopped.");
         }
@@ -74,7 +72,7 @@ namespace Inceptum.AppServer
                 m_Applications.AddRange(hostedAppInfos);
             }
             m_Logger.InfoFormat("Discovered applications:{0}{1}", Environment.NewLine,
-                                string.Join(Environment.NewLine, hostedAppInfos.Select(x => x.ToString())));
+                                string.Join(Environment.NewLine, m_Applications.Select(x => x.ToString())));
 
         }
 
@@ -97,7 +95,7 @@ namespace Inceptum.AppServer
                             try
                             {
                                 IApplicationHost appHost = CreateApplicationHost(appInfo);
-                                m_HostedApps.Add(appHost, appInfo);
+                                m_HostedApps.Add(appHost);
                             }
                             catch (Exception e)
                             {
@@ -113,60 +111,73 @@ namespace Inceptum.AppServer
 
             m_Logger.InfoFormat("Starting loaded applications");
 
-            foreach (var app in m_HostedApps.ToArray())
-            {
-                m_Logger.InfoFormat("Starting application '{0}'", app.Value.Name);
-                Stopwatch sw = Stopwatch.StartNew();
-                try
-                {
-                    app.Key.Start(MatshalableProxy.Generate(m_ConfigurationProvider), new AppServerContext { Name = Name });
-                    sw.Stop();
-                    m_Logger.InfoFormat("Starting application '{0}' complete in {1}ms", app.Value.Name, sw.ElapsedMilliseconds);
-                }
-                catch (Exception e)
-                {
-                    sw.Stop();
-                    m_HostedApps.Remove(app.Key);
-                    m_Logger.ErrorFormat(e, "Failed to start application '{0}'", app.Value.Name);
-                }
-                AppsStateChanged.OnNext(HostedApps);
-            }
-
+         
+            
+            Task.WaitAll(m_HostedApps
+                            .Select(appHost => Task.Factory.StartNew(
+                                                                        () => startHost(appHost))
+                                                                    )
+                            .ToArray());
         }
 
-      
+        private void startHost(IApplicationHost appHost)
+        {
+            m_Logger.InfoFormat("Starting application '{0}'", appHost.AppInfo);
+            var sw = Stopwatch.StartNew();
+            try
+            {
+                appHost.Start(MatshalableProxy.Generate(m_ConfigurationProvider), new AppServerContext {Name = Name});
+                sw.Stop();
+                m_Logger.InfoFormat("Starting application '{0}' complete in {1}ms", appHost.AppInfo, sw.ElapsedMilliseconds);
+            }
+            catch (Exception e)
+            {
+                sw.Stop();
+                m_HostedApps.Remove(appHost);
+                m_Logger.ErrorFormat(e, "Failed to start application '{0}'", appHost.AppInfo);
+            }
+            AppsStateChanged.OnNext(HostedApps);
+        }
+
 
         public void StopApps(params string[] apps)
         {
-            var appsToStop = apps.Where(a => m_HostedApps.Any(h => h.Value.Name == a)).Select(app => m_HostedApps.FirstOrDefault(a => a.Value.Name == app));
+            var appsToStop = apps.Where(a => m_HostedApps.Any(h => h.AppInfo.Name == a)).Select(app => m_HostedApps.FirstOrDefault(a => a.AppInfo.Name == app));
 
-            foreach (var app in appsToStop)
+
+            Task.WaitAll(appsToStop
+                            .Select(appHost => Task.Factory.StartNew(
+                                                                        () => stopHost(appHost))
+                                                                    )
+                            .ToArray());
+        }
+
+        private void stopHost(IApplicationHost appHost)
+        {
+            var hostedAppInfo = appHost.AppInfo;
+            m_Logger.InfoFormat("Stopping application {0}", hostedAppInfo.Name);
+            Stopwatch sw = Stopwatch.StartNew();
+            try
             {
-                m_Logger.InfoFormat("Stopping application {0}", app.Value.Name);
-                Stopwatch sw = Stopwatch.StartNew();
-                try
-                {
-                    app.Key.Stop();
-                    //TODO: Thread saftyness
-                    m_HostedApps.Remove(app.Key);
-                    sw.Stop();
-                    m_Logger.InfoFormat("Stopping application '{0}' complete in {1}ms", app.Value.Name, sw.ElapsedMilliseconds);
-
-                }
-                catch (Exception e)
-                {
-                    sw.Stop();
-                    m_Logger.ErrorFormat(e, "Application {0} failed to stop", app.Value.Name);
-                }
-                AppsStateChanged.OnNext(HostedApps);
+                appHost.Stop();
+                //TODO: Thread saftyness
+                m_HostedApps.Remove(appHost);
+                sw.Stop();
+                m_Logger.InfoFormat("Stopping application '{0}' complete in {1}ms", hostedAppInfo.Name, sw.ElapsedMilliseconds);
             }
+            catch (Exception e)
+            {
+                sw.Stop();
+                m_Logger.ErrorFormat(e, "Application {0} failed to stop", hostedAppInfo.Name);
+            }
+            AppsStateChanged.OnNext(HostedApps);
         }
 
         public Tuple<HostedAppInfo,HostedAppStatus>[] HostedApps
         {
             get
             {
-                return m_HostedApps.Select(p => Tuple.Create(p.Value, p.Key.Status)).ToArray();
+                return m_HostedApps.Select(appHost => Tuple.Create(appHost.AppInfo, appHost.Status)).ToArray();
             }
         }
 

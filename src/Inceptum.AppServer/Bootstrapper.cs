@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Reactive.Disposables;
 using System.Threading;
@@ -104,8 +105,9 @@ namespace Inceptum.AppServer
             
             var logger = container.Resolve<ILoggerFactory>().Create(typeof (Bootstrapper));
             logger.Info("Starting application host");
+            var sw = Stopwatch.StartNew();
             container.Resolve<Bootstrapper>().start();
-            logger.Info("Initialization complete");
+            logger.InfoFormat("Initialization complete in {0}ms",sw.ElapsedMilliseconds);
             return container;
         
         }

@@ -33,6 +33,11 @@ namespace Inceptum.AppServer
             get { return m_ApplicationHost.Status; }
         }
 
+        public HostedAppInfo AppInfo
+        {
+            get { return m_ApplicationHost.AppInfo; }
+        }
+
         public void Start(IConfigurationProvider configurationProvider, AppServerContext context)
         {
             m_ApplicationHost.Start(configurationProvider, context);
@@ -78,21 +83,29 @@ namespace Inceptum.AppServer
         private IApplicationHost load(HostedAppInfo appInfo)
         {
             Type hostType = typeof (ApplicationHost<>).MakeGenericType(Type.GetType(appInfo.AppType));
-            return (IApplicationHost) Activator.CreateInstance(hostType);
+            return (IApplicationHost)Activator.CreateInstance(hostType, appInfo );
         }
     }
 
     internal class ApplicationHost<TApp> : MarshalByRefObject, IApplicationHost where TApp : IHostedApplication
     {
         private WindsorContainer m_Container;
+        private readonly HostedAppInfo m_AppInfo;
+
+        public HostedAppInfo AppInfo
+        {
+            get { return m_AppInfo; }
+        }
 
         internal WindsorContainer Container
         {
             get { return m_Container; }
         }
 
-        public ApplicationHost()
+
+        public ApplicationHost(HostedAppInfo appInfo )
         {
+            m_AppInfo = appInfo;
             Status=HostedAppStatus.NotStarted;
         }
 

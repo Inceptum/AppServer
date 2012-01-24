@@ -43,6 +43,7 @@
     <Compile Include="Configurator.cs" />
     <Compile Include="Handlers\AppsPageHandler.cs" />
     <Compile Include="Handlers\ConfPageHandler.cs" />
+    <Compile Include="Handlers\ServerPageHandler.cs" />
     <Compile Include="Handlers\EmbeddedContentHandler.cs" />
     <Compile Include="HttpListenerHostWithConfiguration.cs" />
     <Compile Include="ManagementConsole.cs" />
@@ -50,6 +51,7 @@
     <Compile Include="Resources\AppsPage.cs" />
     <Compile Include="Resources\ConfPage.cs" />
     <Compile Include="Resources\ContentFile.cs" />
+    <Compile Include="Resources\ServerPage.cs" />
     <Compile Include="Resources\RootPage.cs" />
     <Compile Include="Windsor\Constants.cs" />
     <Compile Include="Windsor\ContextStoreLifetime.cs" />
@@ -82,6 +84,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Content\images\pending.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\Server.cshtml" />
   </ItemGroup>
   <Import Project="..\..\wraps\openwrap\build\OpenWrap.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

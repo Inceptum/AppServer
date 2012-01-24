@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Inceptum.AppServer.Management.Handlers;
 using Inceptum.AppServer.Management.Resources;
-using Inceptum.AppServer.Management.Resources;
 using OpenRasta.Codecs;
 using OpenRasta.Codecs.Razor;
 using OpenRasta.Configuration;
@@ -26,6 +25,14 @@ namespace Inceptum.AppServer.Management
                     .AtUri("{folder}/{key}")
                     .HandledBy<EmbeddedContentHandler>()
                     .TranscodedBy<ApplicationOctetStreamCodec>();
+
+                ResourceSpace.Has.ResourcesOfType<ServerPage>()
+                    .AtUri("/server")
+                    .HandledBy<ServerPageHandler>()
+                    .TranscodedBy<RazorCodec>(new
+                                                  {
+                                                      index = "Server.cshtml"
+                                                  });
 
                 ResourceSpace.Has.ResourcesOfType<ConfPage>()
                     .AtUri("/conf")
