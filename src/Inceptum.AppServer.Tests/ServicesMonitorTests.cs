@@ -44,8 +44,7 @@ namespace Inceptum.AppServer.Tests
             Thread.Sleep(200);
             Assert.That(started.WaitOne(0), Is.False,"ServicesMonitor started before first hb recieved and before timeout");
             hb.OnNext(new HostHbMessage(){InstanceName = "test",Period = 100,Services = new string[0]});
-            Thread.Sleep(100);
-            Assert.That(started.WaitOne(0), Is.True, "ServicesMonitor has not started after first hb");
+            Assert.That(started.WaitOne(500), Is.True, "ServicesMonitor has not started after first hb");
             
             
 
