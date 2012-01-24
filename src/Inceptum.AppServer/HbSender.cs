@@ -49,7 +49,9 @@ namespace Inceptum.AppServer
             try
             {
                 m_Engine.Send(hbMessage, m_HbTopic, m_ManagementTransport);
+#if DEBUG
                 m_Logger.DebugFormat("HeartBeat was sent");
+#endif
 
             }catch(Exception e)
             {
