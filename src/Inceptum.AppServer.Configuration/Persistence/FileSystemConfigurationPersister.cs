@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using Inceptum.AppServer.Configuration.Model;
+using Newtonsoft.Json;
 
 namespace Inceptum.AppServer.Configuration.Persistence
 {
@@ -62,7 +63,22 @@ namespace Inceptum.AppServer.Configuration.Persistence
                 }
                 else
                 {
-                    var bundle = collection.CreateBundle(name, File.ReadAllText(file.path));
+                    
+                    Bundle bundle;
+                    try
+                    {
+                        bundle = collection.CreateBundle(name, File.ReadAllText(file.path));
+                    }
+/*                    catch (JsonReaderException e)
+                    {
+                        throw new ConfigurationErrorsException(string.Format("Failed to parse bundle {0}.\r\n File path {1}.\r\n Error: {2}", file.name, file.path, e.Message));
+                    }*/
+                    catch (Exception e)
+                    {
+
+                        throw new ConfigurationErrorsException(string.Format("Failed to parse bundle {0}.\r\n File path {1}", file.name, file.path), e);
+                    }
+                    
                     if (!enumerator.MoveNext())
                         return false;
                     if (!createBundles(bundle, enumerator))
