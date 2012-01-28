@@ -19,7 +19,7 @@ namespace Inceptum.AppServer.Management
                 ResourceSpace.Uses.ViewsEmbeddedInTheAssembly(Assembly.GetExecutingAssembly(), "Inceptum.AppServer.Management.Views");
                 //ICodec
 
-
+                ResourceSpace.Uses.UriDecorator<SplitParamsUriDecorator>();
                 ResourceSpace.Has
                     .ResourcesOfType<IFile>()
                     .AtUri("{folder}/{key}")
@@ -51,12 +51,13 @@ namespace Inceptum.AppServer.Management
                                                   {
                                                       index = "Apps.cshtml"
                                                   });
-/*
 
-                ResourceSpace.Has.ResourcesOfType<AppsPage>()
-                    .AtUri("/apps/switch")
-                    .HandledBy<AppsPageHandler>();                
-*/
+                ResourceSpace.Has.ResourcesOfType<string>()
+                    .AtUri("/configuration/{configuration}/{bundle}/{overrides}")
+                    .And.AtUri("/configuration/{configuration}/{bundle}")
+                    .HandledBy<BundleHandler>()
+                    .TranscodedBy<JsonDataContractCodec>();
+
             }
         }
 

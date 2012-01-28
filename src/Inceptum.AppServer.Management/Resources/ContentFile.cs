@@ -13,6 +13,8 @@ namespace Inceptum.AppServer.Management.Resources
         {
             m_Key = key;
             m_Stream = GetType().Assembly.GetManifestResourceStream(m_Key);
+            if(m_Stream==null)
+                throw new FileNotFoundException(string.Format("Resource with key {0} not found",key));
         }
 
 

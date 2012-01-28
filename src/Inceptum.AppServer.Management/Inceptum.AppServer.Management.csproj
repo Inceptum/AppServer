@@ -32,6 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -42,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Configurator.cs" />
     <Compile Include="Handlers\AppsPageHandler.cs" />
+    <Compile Include="Handlers\BundleHandler.cs" />
     <Compile Include="Handlers\ConfPageHandler.cs" />
     <Compile Include="Handlers\ServerPageHandler.cs" />
     <Compile Include="Handlers\EmbeddedContentHandler.cs" />
@@ -53,6 +55,7 @@
     <Compile Include="Resources\ContentFile.cs" />
     <Compile Include="Resources\ServerPage.cs" />
     <Compile Include="Resources\RootPage.cs" />
+    <Compile Include="SplitParamsUriDecorator.cs" />
     <Compile Include="Windsor\Constants.cs" />
     <Compile Include="Windsor\ContextStoreLifetime.cs" />
     <Compile Include="Windsor\Convert.cs" />
