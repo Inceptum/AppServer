@@ -40,7 +40,7 @@ namespace Inceptum.AppServer.Configuration.Providers
             }
             catch (Exception e)
             {
-                throw new ConfigurationErrorsException(string.Format("Failed to load configuration '{0}': {1}", configuration, e.Message));
+                throw new ConfigurationErrorsException(string.Format("Failed to load configuration '{0}'", configuration),e);
             }
             while (bundle == null && paramLen != 0)
             {

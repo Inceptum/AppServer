@@ -9,6 +9,7 @@ using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
 using Castle.MicroKernel.Registration;
+using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.AppDiscovery.Openwrap;
@@ -35,6 +36,8 @@ namespace Inceptum.AppServer
         public string[] DebugWraps { get; set; }
     }
 
+    
+
     public class Bootstrapper
     {
         private readonly IHost m_Host;
@@ -57,53 +60,76 @@ namespace Inceptum.AppServer
             
             AppDomainRenderer.Register();
                 string machineName = Environment.MachineName;
-            WindsorContainer container;
+            IWindsorContainer container;
+                    
+            ILogger logger;
             var nlogConf = Path.Combine(Path.GetDirectoryName(typeof(Bootstrapper).Assembly.Location),"nlog.config");
             using (var logFactory = new LogFactory(new XmlLoggingConfiguration(nlogConf)))
             {
                 var log = logFactory.GetLogger(typeof (Bootstrapper).Name);
                 log.Info("Initializing...");
                 log.Info("Creating container");
-                container = new WindsorContainer();
+                try
+                {
+                    container = new WindsorContainer()
+                        .AddFacility<StartableFacility>()
+                        .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig(nlogConf));
+                    logger = container.Resolve<ILoggerFactory>().Create(typeof (Bootstrapper));
+                }catch(Exception e)
+                {
+                    log.FatalException("Failed to start\r\n",e);
+                    throw;
+                }
                 log.Info("Registering components");
+                
             }
 
-            container
-                .AddFacility<StartableFacility>()
-                .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig(nlogConf))
+            try
+            {
+                container.Register(
+                    Component.For<IConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>().Named("localStorageConfigurationProvider")
+                                  .DependsOn(new { configFolder = Path.Combine(Environment.CurrentDirectory, Path.Combine("Configuration")) }));
+
+                if (setup.ConfSvcUrl != null)
+                    container.Register(Component.For<IConfigurationProvider>().ImplementedBy<LegacyRemoteConfigurationProvider>()
+                                      .DependsOn(new { serviceUrl = setup.ConfSvcUrl, path = "." })
+                        .IsDefault());
+
                 //Configuration local/remote
-                .Register(
-                    setup.ConfSvcUrl != null
-                        ? Component.For<IConfigurationProvider>().ImplementedBy<LegacyRemoteConfigurationProvider>()
-                              .DependsOn(new {serviceUrl = setup.ConfSvcUrl, path = "."})
-                        : Component.For<IConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>()
-                              .DependsOn(new {configFolder = Path.Combine(Environment.CurrentDirectory, Path.Combine("Configuration"))}))
-                .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
-                                                             .Params(new {environment = setup.Environment, machineName})
-                                                             .ConfigureTransports(new Dictionary<string, JailStrategy> {{"Environment", JailStrategy.Custom(() => setup.Environment)}},
-                                                                                  "server.transports", "{environment}", "{machineName}"))
-                //messaging
-                .AddFacility<MessagingFacility>(f => { })
-                .Register(
-                    Component.For<IHost>().ImplementedBy<Host>().DependsOn(new {name = setup.Environment}),
+                container
+                    .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
+                                                                 .Params(new { environment = setup.Environment, machineName })
+                                                                 .ConfigureTransports(new Dictionary<string, JailStrategy> { { "Environment", JailStrategy.Custom(() => setup.Environment) } },
+                                                                                      "server.transports", "{environment}", "{machineName}"))
+                    //messaging
+                    .AddFacility<MessagingFacility>(f => { })
+                    .Register(
+                        Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
                     //Applications to be started
-                    setup.AppsToStart == null
-                        ? Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
-                        : Component.For<Bootstrapper>().DependsOn(new {appsToStart = setup.AppsToStart}),
-                    Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
-                    Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
-                        new
+                        setup.AppsToStart == null
+                            ? Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
+                            : Component.For<Bootstrapper>().DependsOn(new { appsToStart = setup.AppsToStart }),
+                        Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
+                        Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
+                            new
                             {
                                 repository = setup.Repository ?? "Repository",
                                 debugWraps = setup.DebugWraps ?? new string[0]
                             })
-                );
+                    );
+
+                //HearBeats
+                if (setup.SendHb)
+                    container.Register(Component.For<HbSender>().DependsOn(new { environment = setup.Environment, hbInterval = setup.HbInterval }));
+
+            }
+            catch (Exception e)
+            {
+                logger.FatalFormat(e, "Failed to start");
+                throw;
+            }
             
-            //HearBeats
-            if(setup.SendHb)
-                container.Register(Component.For<HbSender>().DependsOn(new{environment=setup.Environment, hbInterval=setup.HbInterval}));
-            
-            var logger = container.Resolve<ILoggerFactory>().Create(typeof (Bootstrapper));
+             
             logger.Info("Starting application host");
             var sw = Stopwatch.StartNew();
             container.Resolve<Bootstrapper>().start();
