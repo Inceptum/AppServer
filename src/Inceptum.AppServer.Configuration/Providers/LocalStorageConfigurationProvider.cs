@@ -7,7 +7,7 @@ using Inceptum.AppServer.Configuration.Persistence;
 
 namespace Inceptum.AppServer.Configuration.Providers
 {
-    public class LocalStorageConfigurationProvider :  IConfigurationProvider
+    public class LocalStorageConfigurationProvider : IConfigurationProvider
     {
         private readonly IContentProcessor m_ContentProcessor;
         private readonly IConfigurationPersister m_Persister;
@@ -28,8 +28,8 @@ namespace Inceptum.AppServer.Configuration.Providers
 
         public string GetBundle(string configuration, string bundleName, params string[] extraParams)
         {
-            var param = new[] {bundleName}.Concat(extraParams);
-            int paramLen = param.Count();
+            var param = new[] {bundleName}.Concat(extraParams).ToArray();
+            var paramLen = param.Length;
 
             Bundle bundle = null;
 
@@ -44,7 +44,7 @@ namespace Inceptum.AppServer.Configuration.Providers
             }
             while (bundle == null && paramLen != 0)
             {
-                string name = string.Join(".", param.Take(paramLen));
+                var name = string.Join(".", param.Take(paramLen));
                 bundle = config[name];
                 paramLen--;
             }
