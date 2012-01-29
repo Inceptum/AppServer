@@ -17,9 +17,11 @@ namespace Inceptum.AppServer.Management
             using (OpenRastaConfiguration.Manual)
             {
                 ResourceSpace.Uses.ViewsEmbeddedInTheAssembly(Assembly.GetExecutingAssembly(), "Inceptum.AppServer.Management.Views");
-                //ICodec
-
                 ResourceSpace.Uses.UriDecorator<SplitParamsUriDecorator>();
+
+                ResourceSpace.Has.ResourcesOfType<string>().WithoutUri.TranscodedBy<UtfTextPlainCodec>();
+
+
                 ResourceSpace.Has
                     .ResourcesOfType<IFile>()
                     .AtUri("{folder}/{key}")
@@ -55,8 +57,7 @@ namespace Inceptum.AppServer.Management
                 ResourceSpace.Has.ResourcesOfType<string>()
                     .AtUri("/configuration/{configuration}/{bundle}/{overrides}")
                     .And.AtUri("/configuration/{configuration}/{bundle}")
-                    .HandledBy<BundleHandler>()
-                    .TranscodedBy<JsonDataContractCodec>();
+                    .HandledBy<BundleHandler>();
 
             }
         }
