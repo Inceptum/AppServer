@@ -25,6 +25,7 @@ namespace Inceptum.AppServer.Management
                 ResourceSpace.Has
                     .ResourcesOfType<IFile>()
                     .AtUri("{folder}/{key}")
+                    .And.AtUri("Content/{path}")
                     .HandledBy<EmbeddedContentHandler>()
                     .TranscodedBy<ApplicationOctetStreamCodec>();
 
@@ -57,7 +58,11 @@ namespace Inceptum.AppServer.Management
                 ResourceSpace.Has.ResourcesOfType<string>()
                     .AtUri("/configuration/{configuration}/{bundle}/{overrides}")
                     .And.AtUri("/configuration/{configuration}/{bundle}")
-                    .HandledBy<BundleHandler>();
+                    .HandledBy<BundleHandler>()
+                    .TranscodedBy<RazorCodec>(new
+                    {
+                        index = "Bundle.cshtml"
+                    });
 
             }
         }

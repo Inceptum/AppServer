@@ -92,6 +92,25 @@
   <ItemGroup>
     <EmbeddedResource Include="Views\Server.cshtml" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Content\CodeMirror\lib\codemirror.css" />
+    <EmbeddedResource Include="Content\CodeMirror\lib\codemirror.js" />
+    <EmbeddedResource Include="Content\CodeMirror\lib\util\dialog.css" />
+    <EmbeddedResource Include="Content\CodeMirror\lib\util\dialog.js" />
+    <EmbeddedResource Include="Content\CodeMirror\lib\util\foldcode.js" />
+    <EmbeddedResource Include="Content\CodeMirror\lib\util\formatting.js" />
+    <EmbeddedResource Include="Content\CodeMirror\lib\util\javascript-hint.js" />
+    <EmbeddedResource Include="Content\CodeMirror\lib\util\overlay.js" />
+    <EmbeddedResource Include="Content\CodeMirror\lib\util\runmode.js" />
+    <EmbeddedResource Include="Content\CodeMirror\lib\util\search.js" />
+    <EmbeddedResource Include="Content\CodeMirror\lib\util\searchcursor.js" />
+    <EmbeddedResource Include="Content\CodeMirror\lib\util\simple-hint.css" />
+    <EmbeddedResource Include="Content\CodeMirror\lib\util\simple-hint.js" />
+    <EmbeddedResource Include="Content\CodeMirror\mode\javascript\javascript.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\Bundle.cshtml" />
+  </ItemGroup>
   <Import Project="..\..\wraps\openwrap\build\OpenWrap.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
