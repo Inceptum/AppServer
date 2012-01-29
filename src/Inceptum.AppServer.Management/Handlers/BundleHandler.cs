@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using Inceptum.AppServer.Configuration;
 using OpenRasta.Web;
 
@@ -18,7 +19,8 @@ namespace Inceptum.AppServer.Management.Handlers
         {
             try
             {
-                return new OperationResult.OK {ResponseResource = m_Provider.GetBundle(configuration, bundle, overrides == null ? new string[0] : overrides.Split(new[] {':'}))};
+                var bundleContent = m_Provider.GetBundle(configuration, bundle, overrides == null ? new string[0] : overrides.Split(new[] {':'}));
+                return new OperationResult.OK {ResponseResource =bundleContent};
             }
             catch (BundleNotFoundException e)
             {

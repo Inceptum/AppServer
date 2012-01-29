@@ -56,6 +56,7 @@
     <Compile Include="Resources\ServerPage.cs" />
     <Compile Include="Resources\RootPage.cs" />
     <Compile Include="SplitParamsUriDecorator.cs" />
+    <Compile Include="UtfTextPlainCodec.cs" />
     <Compile Include="Windsor\Constants.cs" />
     <Compile Include="Windsor\ContextStoreLifetime.cs" />
     <Compile Include="Windsor\Convert.cs" />
