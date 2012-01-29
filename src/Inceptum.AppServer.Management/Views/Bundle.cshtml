@@ -1,4 +1,4 @@
-﻿@resource Inceptum.AppServer.Management.Resources.ConfPage
+﻿@resource System.String
 
 
 <!DOCTYPE html>
@@ -9,6 +9,12 @@
         <link rel="stylesheet" type="text/css" href="/Content/css/site.css">
         <script src="/Content/js/jquery-1.6.2.min.js" type="text/javascript"> </script>
         <script src="/Content/js/jquery-ui-1.8.14.min.js" type="text/javascript"> </script>
+
+     <link rel="stylesheet" href="/Content/CodeMirror/lib/codemirror.css">
+    <script src="/Content/CodeMirror/lib/codemirror.js"></script>
+    <script src="/Content/CodeMirror/mode/javascript/javascript.js"></script>
+  @*  <link rel="stylesheet" href="../../doc/docs.css">*@
+    <style type="text/css">.CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black;}</style>
   
 </head>
 
@@ -25,9 +31,21 @@
         <div id="main">
             <div id="main-content">
             <h1>Конфигурация</h1> 
+            <textarea id="code">@Resource
+            </textarea>
             </div>
         </div>
     </div>
+
+<script>
+    $(document).ready(function () {
+        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            lineNumbers: true,
+            matchBrackets: true,
+            mode: { name: "javascript", json: true }
+        });
+    });
+    </script>
 </body>
 </html>
 
