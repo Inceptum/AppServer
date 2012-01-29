@@ -61,16 +61,11 @@ namespace Inceptum.AppServer.Management.Windsor
 
         protected override object ResolveCore(Type serviceType)
         {
-            // IHandler[] handlers = _windsorContainer.Kernel.GetHandlers(serviceType);
-
-            // IHandler firstAvailHandler = AvailableHandlers(handlers).First();
-            // return _windsorContainer.Resolve(firstAvailHandler.ComponentModel.Name);
             return _windsorContainer.Resolve(serviceType);
         }
 
         protected override IEnumerable<TService> ResolveAllCore<TService>()
         {
-            // return _windsorContainer.ResolveAll<TService>();
             var handlers = _windsorContainer.Kernel.GetAssignableHandlers(typeof (TService));
             var resolved = new List<TService>();
             foreach (var handler in AvailableHandlers(handlers))
@@ -92,8 +87,6 @@ namespace Inceptum.AppServer.Management.Windsor
             {
                 _windsorContainer.Register(
                     Component.For(dependent).Named(componentName).ImplementedBy(concrete).LifeStyle.Is(ConvertLifestyles.ToLifestyleType(lifetime)));
-     /*           _windsorContainer.AddComponentLifeStyle(componentName, dependent, concrete, 
-                                                        ConvertLifestyles.ToLifestyleType(lifetime));*/
             }
             else
             {
@@ -132,22 +125,11 @@ namespace Inceptum.AppServer.Management.Windsor
                                                          .Activator<ContextStoreInstanceActivator>()
                                                          .ExtendedProperties(new Property(Constants.REG_IS_INSTANCE_KEY,true))
                                                          .Named(key));
-                    /*var component = new ComponentModel(new ComponentName(key,false), serviceType , instance.GetType());
-                    var customLifestyle = typeof (ContextStoreLifetime);
-                    component.LifestyleType = LifestyleType.Custom;
-                    component.CustomLifestyle = customLifestyle;
-                    component.CustomComponentActivator = typeof (ContextStoreInstanceActivator);
-                    component.ExtendedProperties[Constants.REG_IS_INSTANCE_KEY] = true;
-                    component.Name = component.Name;
- 
-                    _windsorContainer.Kernel.AddCustomComponent(component);
-                    store[component.Name] = instance;*/
                 }
             }
             else if (lifetime == DependencyLifetime.Singleton)
             {
                 _windsorContainer.Register(Component.For(serviceType).Named(key).Instance(instance));
-                //_windsorContainer.Kernel.AddComponentInstance(key, serviceType, instance);
             }
         }
 
