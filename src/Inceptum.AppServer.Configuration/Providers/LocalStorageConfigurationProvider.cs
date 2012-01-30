@@ -50,7 +50,7 @@ namespace Inceptum.AppServer.Configuration.Providers
             }
 
             if (bundle == null)
-                throw new BundleNotFoundException("Bundle not found");
+                throw new BundleNotFoundException(String.Format("Bundle not found, configuration '{0}', bundle '{1}', params '{2}'", configuration, bundleName, String.Join(",", extraParams ?? new string[0])));
             return bundle.Content;
         }
 

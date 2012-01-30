@@ -7,10 +7,8 @@ namespace Inceptum.AppServer.Management
 {
     public class SplitParamsUriDecorator : IUriDecorator
     {
-        private static readonly Regex segmentRegex = new Regex("!(?<method>[a-zA-Z]+)", RegexOptions.Compiled);
+        //private static readonly Regex segmentRegex = new Regex("!(?<method>[a-zA-Z]+)", RegexOptions.Compiled);
         private readonly ICommunicationContext _context;
-        private string newVerb;
-
 
         public SplitParamsUriDecorator(ICommunicationContext context)
         {
