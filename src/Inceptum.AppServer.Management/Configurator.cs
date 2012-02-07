@@ -1,6 +1,10 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using System.Text;
 using Inceptum.AppServer.Management.Handlers;
 using Inceptum.AppServer.Management.Resources;
+using Newtonsoft.Json.Bson;
+using Newtonsoft.Json.Linq;
 using OpenRasta.Codecs;
 using OpenRasta.Codecs.Razor;
 using OpenRasta.Configuration;
@@ -24,8 +28,7 @@ namespace Inceptum.AppServer.Management
 
                 ResourceSpace.Has
                     .ResourcesOfType<IFile>()
-                    .AtUri("{folder}/{key}")
-                    .And.AtUri("Content/{path}")
+                    .AtUri("Content/{path}")
                     .HandledBy<EmbeddedContentHandler>()
                     .TranscodedBy<ApplicationOctetStreamCodec>();
 
@@ -63,6 +66,27 @@ namespace Inceptum.AppServer.Management
                     {
                         index = "Bundle.cshtml"
                     });
+
+                ResourceSpace.Has.ResourcesOfType<object>()
+                    .AtUri("/configurations/")
+                    .And.AtUri("/configurations/{configuration}")
+                    .And.AtUri("/configurations/{configuration}/{bundle}")
+                    .And.AtUri("/configurations/{configuration}/{bundle}/{overrides}")
+                    .HandledBy<BundleHandler>()
+                    /*.TranscodedBy<RazorCodec>(new
+                    {
+                        index = "Configurations.cshtml"
+                    }).And*/.TranscodedBy<NewtonsoftJsonCodec>();            
+/*
+                
+                ResourceSpace.Has.ResourcesOfType<IEnumerable<string>>()
+                    .AtUri("/configuration/{configuration}")
+                    .HandledBy<BundleHandler>()
+                    .TranscodedBy<RazorCodec>(new
+                    {
+                        index = "Configuration.cshtml"
+                    });
+*/
 
             }
         }

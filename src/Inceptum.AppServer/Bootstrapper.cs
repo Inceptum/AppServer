@@ -16,6 +16,7 @@ using Inceptum.AppServer.AppDiscovery.Openwrap;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Providers;
 using Inceptum.AppServer.Management;
+using Inceptum.AppServer.Windsor;
 using Inceptum.Core.Utils;
 using Inceptum.Messaging;
 using Inceptum.Messaging.Castle;
@@ -74,6 +75,9 @@ namespace Inceptum.AppServer
                     container = new WindsorContainer()
                         .AddFacility<StartableFacility>()
                         .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig(nlogConf));
+                    
+                    container.Kernel.Resolver.AddSubResolver(new ConventionBasedResolver(container.Kernel));
+                    
                     logger = container.Resolve<ILoggerFactory>().Create(typeof (Bootstrapper));
                 }catch(Exception e)
                 {
@@ -87,7 +91,7 @@ namespace Inceptum.AppServer
             try
             {
                 container.Register(
-                    Component.For<IConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>().Named("localStorageConfigurationProvider")
+                    Component.For<IConfigurationProvider, IManageableConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>().Named("localStorageConfigurationProvider")
                                   .DependsOn(new { configFolder = Path.Combine(Environment.CurrentDirectory, Path.Combine("Configuration")) }));
 
                 if (setup.ConfSvcUrl != null)
@@ -109,6 +113,7 @@ namespace Inceptum.AppServer
                         setup.AppsToStart == null
                             ? Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
                             : Component.For<Bootstrapper>().DependsOn(new { appsToStart = setup.AppsToStart }),
+                        Component.For<IServerCore>().ImplementedBy<ServerCore>(),
                         Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
                         Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
                             new

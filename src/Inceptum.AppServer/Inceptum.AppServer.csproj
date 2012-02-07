@@ -100,12 +100,14 @@
     <Compile Include="PluginInstallerFactory.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerCore.cs" />
     <Compile Include="ServiceHostSvc.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ServiceHostSvc.designer.cs">
       <DependentUpon>ServiceHostSvc.cs</DependentUpon>
     </Compile>
+    <Compile Include="Windsor\ConventionBasedResolver.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">

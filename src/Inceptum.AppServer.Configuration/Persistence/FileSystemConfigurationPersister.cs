@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
@@ -42,6 +43,11 @@ namespace Inceptum.AppServer.Configuration.Persistence
             if (enumerator.MoveNext()) 
                 createBundles(conf, enumerator,true);
             return conf;
+        }
+
+        public IEnumerable<string> GetAvailableConfigurations()
+        {
+            return Directory.GetDirectories(ConfigFolder).Select(Path.GetFileName).ToArray();
         }
 
         private static bool createBundles(BundleCollectionBase collection,IEnumerator enumerator,bool isRootLevel=false)

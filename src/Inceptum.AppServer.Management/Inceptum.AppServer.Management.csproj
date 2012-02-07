@@ -49,6 +49,7 @@
     <Compile Include="Handlers\EmbeddedContentHandler.cs" />
     <Compile Include="HttpListenerHostWithConfiguration.cs" />
     <Compile Include="ManagementConsole.cs" />
+    <Compile Include="NewtonsoftJsonCodec.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\AppsPage.cs" />
     <Compile Include="Resources\ConfPage.cs" />
@@ -76,6 +77,10 @@
     <EmbeddedResource Include="Views\Conf.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Inceptum.AppServer.Configuration\Inceptum.AppServer.Configuration.csproj">
+      <Project>{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}</Project>
+      <Name>Inceptum.AppServer.Configuration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Inceptum.AppServer.Sdk\Inceptum.AppServer.Sdk.csproj">
       <Project>{CAFF34B8-90CD-46D6-BCE8-C7B275473346}</Project>
       <Name>Inceptum.AppServer.Sdk</Name>
@@ -110,6 +115,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\Bundle.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\Configurations.cshtml" />
   </ItemGroup>
   <Import Project="..\..\wraps\openwrap\build\OpenWrap.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
