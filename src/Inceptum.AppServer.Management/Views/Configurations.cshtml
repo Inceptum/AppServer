@@ -1,0 +1,48 @@
+﻿@resource System.Collections.Generic.IEnumerable<System.String></System.String>
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Конфигурация</title>
+       <link href="/Content/css/reset.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" type="text/css" href="/Content/css/site.css">
+        <script src="/Content/js/jquery-1.6.2.min.js" type="text/javascript"> </script>
+        <script src="/Content/js/jquery-ui-1.8.14.min.js" type="text/javascript"> </script>
+
+     <link rel="stylesheet" href="/Content/CodeMirror/lib/codemirror.css">
+    <script src="/Content/CodeMirror/lib/codemirror.js"></script>
+    <script src="/Content/CodeMirror/mode/javascript/javascript.js"></script>
+   
+</head>
+
+<body>
+
+    <div id="page">
+        <div id="navbar-container">
+            <div class="logo"><img src="/Content/images/logo.png" alt="logo"/></div>
+            <ul id="navbar">
+                <li ><a href="/server">Сервер</a></li>            
+                <li ><a href="/apps">Приложения</a></li>
+                <li class="selected"><a href="/conf">Конфигурация</a></li>            </ul>
+        </div>
+        <div id="main">
+            <div id="main-content">
+            <h1>Конфигурация</h1> 
+            <ul >
+            @foreach(var configuration in Resource)
+            {
+                <li><a href="/configuration/@configuration/">@configuration</a></li>
+            }
+            </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
