@@ -36,6 +36,15 @@ namespace Inceptum.AppServer.Configuration.Model
             }
         }
 
+
+        public string ShortName
+        {
+            get
+            {
+                return base.Name;
+            }
+        }
+
         public string Content
         {
             get

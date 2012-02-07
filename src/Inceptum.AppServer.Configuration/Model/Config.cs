@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Inceptum.AppServer.Configuration.Model
 {
@@ -11,6 +12,14 @@ namespace Inceptum.AppServer.Configuration.Model
     public class Config  : BundleCollectionBase, IBundleObserver
     {
         private readonly SortedDictionary<string,Bundle> m_Map=new SortedDictionary<string, Bundle>(StringComparer.InvariantCultureIgnoreCase); 
+
+        public IEnumerable<Bundle> Bundles
+        {
+            get
+            {
+                return m_Map.Values.ToArray();
+            }
+        } 
 
         public Config(IContentProcessor contentProcessor, string name) : base(contentProcessor, name)
         {
