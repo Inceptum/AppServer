@@ -3,7 +3,7 @@ depends: Castle.Core >= 3.0 and < 3.1
 depends: Castle.Windsor >= 3.0 and < 3.1
 depends: Castle.Core-NLog >= 3.0 and < 3.1
 depends: Castle.LoggingFacility >= 3.0 and < 3.1
-depends: newtonsoft-json = 4.0.2
+depends: newtonsoft-json >= 4.0 and < 4.1
 depends: Inceptum.Framework  >=1.0.1
 
 depends: Mono.Cecil
