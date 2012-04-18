@@ -49,6 +49,7 @@
     <Compile Include="Configuration\BundleNotFoundException.cs" />
     <Compile Include="HostedAppStatus.cs" />
     <Compile Include="IServerCore.cs" />
+    <Compile Include="Monitoring\HbFeedProvider.cs" />
     <Compile Include="Monitoring\HostHbMessage.cs" />
     <Compile Include="Monitoring\InstanceInfo.cs" />
     <Compile Include="Monitoring\ServiceMonitor.cs" />
@@ -59,7 +60,6 @@
     <Compile Include="Configuration\EndpointResolver.cs" />
     <Compile Include="Configuration\IConfigurationProvider.cs" />
     <Compile Include="Configuration\IConfigurationService.cs" />
-    <Compile Include="Configuration\SonicEndpoint.cs" />
     <Compile Include="Configuration\ValidationHelper.cs" />
     <Compile Include="HostedAppInfo.cs" />
     <Compile Include="HostedApplicationAttribute.cs" />
