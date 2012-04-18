@@ -9,27 +9,24 @@ using Inceptum.Core.Utils;
 
 namespace Inceptum.AppServer
 {
-
     internal class HbSender : IDisposable, IStartable
     {
         private const int DEFAULT_HB_INTERVAL = 3000;
         private readonly IHost m_Host;
         private readonly IMessagingEngine m_Engine;
-        private readonly string m_ManagementTransport;
-        private readonly string m_HbTopic;
+    	private readonly Endpoint m_HbEndpoint;
         private PeriodicalBackgroundWorker m_PeriodicalBackgroundWorker;
         private readonly ILogger m_Logger;
         private readonly string m_InstanceName;
         private readonly int m_HbInterval;
         private IDisposable m_AppsChangeSubscription;
 
-        public HbSender(IHost host, IMessagingEngine engine, SonicEndpoint hbEndpoint, ILogger logger, string environment, int hbInterval)
+        public HbSender(IHost host, IMessagingEngine engine, Endpoint hbEndpoint, ILogger logger, string environment, int hbInterval)
         {
             m_HbInterval = hbInterval==0?DEFAULT_HB_INTERVAL:hbInterval;
             m_Logger = logger;
             m_Engine = engine;
-            m_ManagementTransport = hbEndpoint.TransportId;
-            m_HbTopic = hbEndpoint.Destination;
+        	m_HbEndpoint = hbEndpoint;
             m_Host = host;
             m_InstanceName = string.Format("{0}({1})", Environment.MachineName, environment);
         }
@@ -48,7 +45,7 @@ namespace Inceptum.AppServer
                                 };
             try
             {
-                m_Engine.Send(hbMessage, m_HbTopic, m_ManagementTransport);
+				m_Engine.Send(hbMessage, m_HbEndpoint);
 #if DEBUG
                 m_Logger.DebugFormat("HeartBeat was sent");
 #endif

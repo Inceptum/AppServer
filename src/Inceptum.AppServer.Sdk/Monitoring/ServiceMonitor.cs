@@ -6,40 +6,12 @@ using System.Reactive.Subjects;
 using System.Threading;
 using Castle.Core;
 using Inceptum.AppServer.Configuration;
-using Inceptum.Core.Messaging;
 using Inceptum.DataBus;
-using Inceptum.DataBus.Messaging;
 
 namespace Inceptum.AppServer.Monitoring
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    [Channel(ServicesMonitor.HB_CHANNEL)]
-    public class HbFeedProvider:MessagingFeedProviderBase<HostHbMessage,EmptyContext>
-    {
-        private SonicEndpoint m_HbEndpoint;
-
-        public HbFeedProvider(IMessagingEngine messagingEngine, SonicEndpoint hbEndpoint)
-            : base(messagingEngine)
-        {
-            m_HbEndpoint = hbEndpoint;
-        }
-
-        protected override string GetSubscriptionSource(EmptyContext context)
-        {
-            return m_HbEndpoint.Destination;
-        }
-
-        protected override string GetSubscriptionTransportId(EmptyContext context)
-        {
-            return m_HbEndpoint.TransportId;
-        }
-    }
-
-
-    [Channel(KNOWN_APPSEREVER_INSTANCES_CHANNEL)]
-    public class ServicesMonitor : IStartable, IFeedProvider<InstanceInfo,EmptyContext>
+	[Channel(KNOWN_APPSEREVER_INSTANCES_CHANNEL)]
+    public class ServicesMonitor : IStartable, IFeedProvider<InstanceInfo, EmptyContext>
     {
         public const string HB_CHANNEL = "HeartBeats";
         public const string KNOWN_APPSEREVER_INSTANCES_CHANNEL="KnownAppServerInstances";
