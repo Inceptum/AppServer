@@ -8,7 +8,7 @@ namespace Inceptum.AppServer.Management.Handlers
     public class EmbeddedContentHandler
     {
         private readonly ICommunicationContext m_Context;
-
+        private const string FOLDER = @"x:\WORK\Finam\CODE\ConfigurationUI";
         public EmbeddedContentHandler(ICommunicationContext context)
         {
             m_Context = context;
@@ -19,8 +19,26 @@ namespace Inceptum.AppServer.Management.Handlers
         {
             try
             {
-                var responseResource = new ContentFile("Inceptum.AppServer.Management.Content." + path);
-                m_Context.Response.Headers["Cache-Control"] = "public, must-revalidate, max-age=2592000";
+                var fileName = path.Replace("---", "/");
+                var file = Path.Combine(FOLDER, fileName);
+                ContentFile responseResource;
+
+                bool debug=false;
+#if DEBUG
+                //debug = true;
+#endif
+
+                if (debug && File.Exists(file))
+                    responseResource = new ContentFile(FOLDER, fileName);
+                else
+                    responseResource = new ContentFile("Inceptum.AppServer.Management.UI." + path);
+
+                m_Context.Response.Headers["Cache-Control"] = debug ? "no-cache" : "public, must-revalidate, max-age=2592000";
+
+
+
+
+
                 return new OperationResult.OK
                            {
                                ResponseResource = responseResource

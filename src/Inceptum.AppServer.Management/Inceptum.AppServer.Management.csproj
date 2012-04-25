@@ -119,6 +119,87 @@
   <ItemGroup>
     <EmbeddedResource Include="Views\Configurations.cshtml" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\css\images\ajax-loader.gif" />
+    <EmbeddedResource Include="UI\css\images\file.gif" />
+    <EmbeddedResource Include="UI\css\images\folder-closed.gif" />
+    <EmbeddedResource Include="UI\css\images\folder.gif" />
+    <EmbeddedResource Include="UI\css\images\minus.gif" />
+    <EmbeddedResource Include="UI\css\images\plus.gif" />
+    <EmbeddedResource Include="UI\css\images\treeview-black-line.gif" />
+    <EmbeddedResource Include="UI\css\images\treeview-black.gif" />
+    <EmbeddedResource Include="UI\css\images\treeview-default-line.gif" />
+    <EmbeddedResource Include="UI\css\images\treeview-default.gif" />
+    <EmbeddedResource Include="UI\css\images\treeview-famfamfam-line.gif" />
+    <EmbeddedResource Include="UI\css\images\treeview-famfamfam.gif" />
+    <EmbeddedResource Include="UI\css\images\treeview-gray-line.gif" />
+    <EmbeddedResource Include="UI\css\images\treeview-gray.gif" />
+    <EmbeddedResource Include="UI\css\images\treeview-red-line.gif" />
+    <EmbeddedResource Include="UI\css\images\treeview-red.gif" />
+    <EmbeddedResource Include="UI\css\jquery.treeview.css" />
+    <EmbeddedResource Include="UI\css\reset.css" />
+    <EmbeddedResource Include="UI\css\skin.css" />
+    <EmbeddedResource Include="UI\css\style.css" />
+    <EmbeddedResource Include="UI\favicon.ico" />
+    <EmbeddedResource Include="UI\index.html" />
+    <EmbeddedResource Include="UI\js\app.js" />
+    <EmbeddedResource Include="UI\js\collections\bundles.js" />
+    <EmbeddedResource Include="UI\js\collections\configurations.js" />
+    <EmbeddedResource Include="UI\js\libs\backbone\backbone-full.js" />
+    <EmbeddedResource Include="UI\js\libs\backbone\backbone-min.js" />
+    <EmbeddedResource Include="UI\js\libs\backbone\backbone.js" />
+    <EmbeddedResource Include="UI\js\libs\backbone\loader.js" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jquery-min.js" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jquery-serialize.js" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jquery.js" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\jquery.jstree.js" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\apple\bg.jpg" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\apple\d.png" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\apple\dot_for_ie.gif" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\apple\style.css" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\apple\throbber.gif" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\classic\d.gif" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\classic\d.png" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\classic\dot_for_ie.gif" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\classic\style.css" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\classic\throbber.gif" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\default-rtl\d.gif" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\default-rtl\d.png" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\default-rtl\dots.gif" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\default-rtl\style.css" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\default-rtl\throbber.gif" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\default\d.gif" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\default\d.png" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\default\style.css" />
+    <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\default\throbber.gif" />
+    <EmbeddedResource Include="UI\js\libs\require\require.js" />
+    <EmbeddedResource Include="UI\js\libs\underscore\underscore-min.js" />
+    <EmbeddedResource Include="UI\js\libs\underscore\underscore.js" />
+    <EmbeddedResource Include="UI\js\main.js" />
+    <EmbeddedResource Include="UI\js\models\bundle.js" />
+    <EmbeddedResource Include="UI\js\models\configuration.js" />
+    <EmbeddedResource Include="UI\js\models\message.js" />
+    <EmbeddedResource Include="UI\js\order.js" />
+    <EmbeddedResource Include="UI\js\router.js" />
+    <EmbeddedResource Include="UI\js\text.js" />
+    <EmbeddedResource Include="UI\js\views\bundles\bundle.js" />
+    <EmbeddedResource Include="UI\js\views\configurations\configuration.js" />
+    <EmbeddedResource Include="UI\js\views\configurations\list.js" />
+    <EmbeddedResource Include="UI\js\views\home\main.js" />
+    <EmbeddedResource Include="UI\js\views\home\menu.js" />
+    <EmbeddedResource Include="UI\js\views\home\message.js" />
+    <EmbeddedResource Include="UI\templates\bundles\bundle.html" />
+    <EmbeddedResource Include="UI\templates\configurations\bundleMenuItem.html" />
+    <EmbeddedResource Include="UI\templates\configurations\configuration.html" />
+    <EmbeddedResource Include="UI\templates\configurations\list.html" />
+    <EmbeddedResource Include="UI\templates\home\main.html" />
+    <EmbeddedResource Include="UI\templates\home\menu.html" />
+    <EmbeddedResource Include="UI\templates\home\message.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="UI\js\libs\backbone\backbone-min.js.old" />
+    <None Include="UI\js\libs\underscore\underscore-min.js.old" />
+  </ItemGroup>
   <Import Project="..\..\wraps\openwrap\build\OpenWrap.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

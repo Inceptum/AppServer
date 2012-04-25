@@ -19,7 +19,7 @@ namespace Inceptum.AppServer.Management.Handlers
         {
             try
             {
-                return new OperationResult.OK { ResponseResource =  m_Provider.GetAvailableConfigurations().ToArray() };
+                return new OperationResult.OK { ResponseResource =  m_Provider.GetConfigurations().ToArray() };
             }
             catch (Exception e)
             {
@@ -27,16 +27,30 @@ namespace Inceptum.AppServer.Management.Handlers
             }
         }
 
-        public OperationResult Get(string configuration)
+         [HttpOperation(ForUriName = "Bundles")]
+        public OperationResult GetBundles(string configuration)
         {
             try
             {
-                var bundles = m_Provider.GetBundles(configuration).ToArray();
-                return new OperationResult.OK { ResponseResource = new {name=configuration,bundles} };
+                return new OperationResult.OK {ResponseResource = m_Provider.GetBundles(configuration)};
             }
             catch (Exception e)
             {
-                return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.ToString(), Title = "Error" };
+                return new OperationResult.InternalServerError {Description = e.Message, ResponseResource = e.ToString(), Title = "Error"};
+            }
+        }
+
+
+         [HttpOperation(ForUriName = "Configuration")]
+        public OperationResult GetConfiguration(string configuration)
+        {
+            try
+            {
+                return new OperationResult.OK {ResponseResource = m_Provider.GetConfiguration(configuration)};
+            }
+            catch (Exception e)
+            {
+                return new OperationResult.InternalServerError {Description = e.Message, ResponseResource = e.ToString(), Title = "Error"};
             }
         }
 
@@ -53,7 +67,60 @@ namespace Inceptum.AppServer.Management.Handlers
             }            
             catch (Exception e)
             {
-                return new OperationResult.InternalServerError{Description = e.Message,ResponseResource = e.ToString(),Title = "Error"};
+                return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
+            }
+            
+        }
+        public OperationResult Put(string configuration, string bundle, BundleInfo data)
+        {
+            try
+            {
+                m_Provider.CreateOrUpdateBundle(configuration, bundle, data.Content);
+                return new OperationResult.OK { };
+            }
+            catch (BundleNotFoundException e)
+            {
+                return new OperationResult.NotFound{Description = e.Message,ResponseResource = e.Message,Title = "Error"};
+            }            
+            catch (Exception e)
+            {
+                return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
+            }
+            
+        } 
+        
+        public OperationResult Post(string configuration, string bundle, BundleInfo data)
+        {
+            try
+            {
+                m_Provider.CreateOrUpdateBundle(configuration, bundle, data.Content);
+                return new OperationResult.OK { };
+            }
+            catch (BundleNotFoundException e)
+            {
+                return new OperationResult.NotFound{Description = e.Message,ResponseResource = e.Message,Title = "Error"};
+            }            
+            catch (Exception e)
+            {
+                return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
+            }
+            
+        }   
+        
+        public OperationResult Delete(string configuration, string bundle)
+        {
+            try
+            {
+                m_Provider.DeleteBundle(configuration,bundle);
+                return new OperationResult.OK { };
+            }
+            catch (BundleNotFoundException e)
+            {
+                return new OperationResult.NotFound{Description = e.Message,ResponseResource = e.Message,Title = "Error"};
+            }            
+            catch (Exception e)
+            {
+                return new OperationResult.InternalServerError{Description = e.Message,ResponseResource = e.Message,Title = "Error"};
             }
             
         }

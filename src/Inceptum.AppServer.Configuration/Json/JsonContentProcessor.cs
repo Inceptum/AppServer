@@ -19,6 +19,11 @@ namespace Inceptum.AppServer.Configuration.Json
             }
         }
 
+        public bool IsEmptyContent(string content)
+        {
+            return string.IsNullOrEmpty(content) || content == "{}";
+        }
+
         public string Merge(string parentContent, string childContent)
         {
             var result = JObject.Parse(parentContent);
@@ -55,5 +60,6 @@ namespace Inceptum.AppServer.Configuration.Json
         {
             return "{}";
         }
+
     }
 }

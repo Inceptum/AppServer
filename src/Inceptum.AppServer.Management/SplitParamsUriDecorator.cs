@@ -29,11 +29,20 @@ namespace Inceptum.AppServer.Management
                 return true;
             }
             
-            if (segments.Length > 2 && segments[1].ToLower() == "content/")
+            if (segments.Length > 2 && segments[1].ToLower() == "content/"|| segments[1].ToLower() == "ui/")
             {
                 processedUri = new UriBuilder(uri)
                                    {
                                        Path = string.Join("", segments, 0, 2)+(string.Join("", segments, 2, segments.Length - 2)).Replace("/",".")
+                                   }.Uri;
+                return true;
+            }
+         
+            if (segments.Length > 2 && (segments[1].ToLower() == "files/" ))
+            {
+                processedUri = new UriBuilder(uri)
+                                   {
+                                       Path = string.Join("", segments, 0, 2)+(string.Join("", segments, 2, segments.Length - 2)).Replace("/","---")
                                    }.Uri;
                 return true;
             }

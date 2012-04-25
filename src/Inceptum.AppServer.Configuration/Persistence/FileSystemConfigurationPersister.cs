@@ -33,7 +33,6 @@ namespace Inceptum.AppServer.Configuration.Persistence
             var confDir = Path.Combine(ConfigFolder,name);
             if(!Directory.Exists(confDir))
             {
-//                throw new ConfigurationErrorsException("Configuration not found");
                 Directory.CreateDirectory(confDir);
             }
 
@@ -48,6 +47,29 @@ namespace Inceptum.AppServer.Configuration.Persistence
         public IEnumerable<string> GetAvailableConfigurations()
         {
             return Directory.GetDirectories(ConfigFolder).Select(Path.GetFileName).ToArray();
+        }
+
+        public void Save(Config config)
+        {
+            var confDir = Path.Combine(ConfigFolder, config.Name);
+            if (!Directory.Exists(confDir))
+            {
+                Directory.CreateDirectory(confDir);
+            }
+
+            foreach (var bundle in config.Bundles)
+            {
+                var bundleFile = Path.Combine(confDir, bundle.Name);
+                if (!bundle.IsEmpty)
+                {
+                    File.WriteAllText(bundleFile, bundle.PureContent);
+                }
+                else if (File.Exists(bundleFile))
+                {
+                    File.Delete(bundleFile);
+                }
+
+            }
         }
 
         private static bool createBundles(BundleCollectionBase collection,IEnumerator enumerator,bool isRootLevel=false)
@@ -75,10 +97,6 @@ namespace Inceptum.AppServer.Configuration.Persistence
                     {
                         bundle = collection.CreateBundle(name, File.ReadAllText(file.path));
                     }
-/*                    catch (JsonReaderException e)
-                    {
-                        throw new ConfigurationErrorsException(string.Format("Failed to parse bundle {0}.\r\n File path {1}.\r\n Error: {2}", file.name, file.path, e.Message));
-                    }*/
                     catch (Exception e)
                     {
 

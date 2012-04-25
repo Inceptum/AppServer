@@ -5,6 +5,7 @@ using System.Linq;
 using Inceptum.AppServer.Configuration.Json;
 using Inceptum.AppServer.Configuration.Model;
 using Inceptum.AppServer.Configuration.Persistence;
+using OpenRasta.Web;
 
 namespace Inceptum.AppServer.Configuration.Providers
 {
@@ -48,7 +49,7 @@ namespace Inceptum.AppServer.Configuration.Providers
             return bundle.Content;
         }
 
-        public IEnumerable<object> GetAvailableConfigurations()
+        public IEnumerable<object> GetConfigurations()
         {
             return m_Persister
                 .GetAvailableConfigurations()
@@ -57,24 +58,84 @@ namespace Inceptum.AppServer.Configuration.Providers
                                  {
                                      id = c.Name,
                                      name = c.Name,
-                                     bundlesmap = c.Select(serializeBundle),
-                                     bundles = c.Bundles.Select(
-                                         bundle => new
-                                                       {
-                                                           id = bundle.Name,
-                                                           name = bundle.ShortName,
-                                                           configuration = c.Name,
-                                                           content=bundle.Content,
-                                                           purecontent=bundle.PureContent
-                                                       }).ToArray()
+                                    // bundlesmap = c.Select(serializeBundle)
                                  });
         }
 
-        public IEnumerable<object> GetBundles(string configuration)
+       
+        public object GetConfiguration(string configuration)
         {
-            Config bundles = getConfiguration(configuration);
-            return bundles.Select(serializeBundle).ToArray();
+            var c = getConfiguration(configuration);
+            return new
+                       {
+                           id = c.Name,
+                           name = c.Name,
+                           bundlesmap = c.Select(serializeBundle),
+                       };
         }
+
+       
+        public IEnumerable<BundleInfo> GetBundles(string configuration)
+        {
+           Config c = getConfiguration(configuration);
+            return c.Bundles.Select(
+                bundle => new BundleInfo
+                              {
+                                  id = bundle.Name,
+                                  Name = bundle.ShortName,
+                                  Content = bundle.Content,
+                                  Configuration = c.Name
+                              }
+                ).ToArray();
+        }
+
+/*
+        public void UpdateBundle(string configuration, string name, string content)
+        {
+            var config = getConfiguration(configuration);
+            var bundle = config.Bundles.FirstOrDefault(b=>b.Name.ToLower()==name.ToLower());
+            if (bundle != null)
+                bundle.Content = content;
+            m_Persister.Save(config);
+        }
+    
+*/
+        public void CreateOrUpdateBundle(string configuration, string name, string content)
+        {
+            var config = getConfiguration(configuration);
+            var parts = name.Split(new[] {'.'});
+
+            BundleCollectionBase parentBundle = null;
+            int i;
+            for (i = parts.Length; i >0 && parentBundle ==null; i--)
+            {
+                var parent = string.Join(".", Enumerable.Range(0, i).Select(n => parts[n]));
+                parentBundle = config.Bundles.FirstOrDefault(b => b.Name.ToLower() == parent.ToLower());
+            }
+
+            if (parentBundle == null)
+                parentBundle = config;
+
+            for(int j=i+1;j<parts.Length;j++)
+            {
+                parentBundle=parentBundle.CreateBundle(parts[j]);
+            }
+
+            (parentBundle as Bundle).Content = content;
+            m_Persister.Save(config);
+        }
+
+        public void DeleteBundle(string configuration, string name)
+        {
+            var config = getConfiguration(configuration);
+            var bundle = config.Bundles.FirstOrDefault(b => b.Name.ToLower() == name.ToLower());
+            if (bundle != null)
+                bundle.Clear();
+            m_Persister.Save(config);
+        }
+
+
+        
 
         #endregion
 
@@ -95,8 +156,6 @@ namespace Inceptum.AppServer.Configuration.Providers
         private static object serializeBundle(Bundle bundle)
         {
             return new { id = bundle.Name, name= bundle.ShortName , children = bundle.Select(serializeBundle).ToArray() };
-            //return new {name = bundle.Name, content = bundle.PureContent, subbundles = bundle.Select(serializeBundle).ToArray()};
-         //   return new {name = bundle.Name, content = bundle.PureContent, subbundles = bundle.Select(serializeBundle).ToArray()};
         }
     }
 }
