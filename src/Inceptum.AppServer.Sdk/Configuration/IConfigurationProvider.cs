@@ -9,7 +9,20 @@ namespace Inceptum.AppServer.Configuration
 
     public interface IManageableConfigurationProvider : IConfigurationProvider
     {
-        IEnumerable<object> GetAvailableConfigurations();
-        IEnumerable<object> GetBundles(string configuration);
+        IEnumerable<object> GetConfigurations();
+        //void UpdateBundle(string configuration, string name, string content);
+        //IEnumerable<object> GetBundles(string configuration);
+        object GetConfiguration(string configuration);
+        IEnumerable<BundleInfo> GetBundles(string configuration);
+        void DeleteBundle(string configuration, string bundle);
+        void CreateOrUpdateBundle(string configuration, string name, string content);
+    }
+
+    public class BundleInfo
+    {
+        public string id { get; set; } 
+        public string Name { get; set; } 
+        public string Configuration { get; set; } 
+        public string Content { get; set; } 
     }
 }

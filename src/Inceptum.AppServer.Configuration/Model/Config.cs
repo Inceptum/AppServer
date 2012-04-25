@@ -51,5 +51,6 @@ namespace Inceptum.AppServer.Configuration.Model
         {
             m_Map.Add(child.Name,child);
         }
+
     }
 }

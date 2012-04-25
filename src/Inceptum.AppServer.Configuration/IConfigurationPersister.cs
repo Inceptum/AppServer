@@ -7,5 +7,6 @@ namespace Inceptum.AppServer.Configuration
     {
         Config Load(string name, IContentProcessor contentProcessor);
         IEnumerable<string> GetAvailableConfigurations();
+        void Save(Config config);
     }
 }

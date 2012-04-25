@@ -61,11 +61,25 @@ namespace Inceptum.AppServer.Configuration.Model
             }
         }
 
+        public bool IsEmpty
+        {
+            get { return ContentProcessor.IsEmptyContent(PureContent); }
+        }
+
         protected override Bundle CreateSubBundle(string name)
         {
             var bundle = new Bundle(ContentProcessor, m_Observer, this, name);
             m_Observer.OnChildCreated(this,bundle);
             return bundle;
+        }
+
+        public void Clear()
+        {
+            foreach (var child in this)
+            {
+                child.Clear();
+            }
+            Content = ContentProcessor.GetEmptyContent();
         }
     }
 }

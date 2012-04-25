@@ -17,6 +17,14 @@ namespace Inceptum.AppServer.Management.Resources
                 throw new FileNotFoundException(string.Format("Resource with key {0} not found",key));
         }
 
+        public ContentFile(string folder,string path)
+        {
+            m_Key = path;
+            m_Stream = new MemoryStream(File.ReadAllBytes(Path.Combine(folder,path)));
+            if(m_Stream==null)
+                throw new FileNotFoundException(string.Format("Resource with key {0} not found",path));
+        }
+
 
         public Stream OpenStream()
         {
