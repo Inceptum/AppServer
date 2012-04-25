@@ -1,0 +1,18 @@
+<h1><%=bundle.get("id")%></h1>
+<textarea  id="bundleContent" class="bundle"
+           style="overflow:auto;background:#fff; width:100%;height:300px; border:1px #444 solid; "><%=bundle.get("Content")%></textarea>
+<div style="margin:5px;">
+
+<button type="button" class="button save">Save</button>
+<% if(!bundle.IsNewBundle) { %>
+<button type="button" class="button delete">Delete</button>
+    <%}%>
+</div>
+
+
+
+<div style="margin:5px;">
+    Create Subbundle</br>
+    Name: <input id="subBundleName" />
+</div>
+<button type="button" class="button new">Create</button>
