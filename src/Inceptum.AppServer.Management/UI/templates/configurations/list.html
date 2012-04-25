@@ -1,0 +1,6 @@
+<div class="col_33">
+    <% _.each(configurations, function(configuration){ %>
+    <p class=""> <a href="#/configurations/<%= configuration.get("name") %>"><%= configuration.get("name") %></a></p>
+    <% }); %>
+    <button type="button" class="button" id="update">Update</button>
+</div>
