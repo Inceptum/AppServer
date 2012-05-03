@@ -1,5 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using Castle.Core;
+using Castle.MicroKernel;
+using Castle.MicroKernel.ModelBuilder;
+using Castle.MicroKernel.ModelBuilder.Descriptors;
 using Castle.MicroKernel.Registration;
+using Inceptum.Core.Messaging;
 using Inceptum.Messaging;
 
 namespace Inceptum.AppServer.Configuration
@@ -10,12 +16,39 @@ namespace Inceptum.AppServer.Configuration
         {
             return r.DependsOnBundle(bundleName, "");
         }
+
         public static ComponentRegistration<T> DependsOnBundle<T>(this ComponentRegistration<T> r, string bundleName, string jsonPath, params string[] parameters) where T : class
         {
-            return r.ExtendedProperties(new { dependsOnBundle = bundleName, jsonPath, bundleParameters=parameters });
+        	return r.ExtendedProperties(new {dependsOnBundle = bundleName, jsonPath, bundleParameters = parameters});
         }
 
-        public static ComponentRegistration<T> FromConfiguration<T>(this ComponentRegistration<T> r, string bundleName, string jsonPath, params string[] parameters) where T : class
+		public static ComponentRegistration<T> WithEndpoints<T>(this ComponentRegistration<T> r, object endpoints)
+			 where T : class
+		{
+			var dictionary = new ReflectionBasedDictionaryAdapter(endpoints);
+
+			var explicitEndpoints = new Dictionary<string, Endpoint>();
+			var endpointNames = new Dictionary<string, string>();
+			foreach (var key in dictionary.Keys)
+			{
+				var dependencyName = key.ToString();
+				if (dictionary[key] is Endpoint)
+				{
+					var endpoint = (Endpoint)dictionary[key];
+					explicitEndpoints[dependencyName] = endpoint;
+				}
+				if (dictionary[key] is string)
+				{
+					var endpointName = (string) dictionary[key];
+					endpointNames[dependencyName] = endpointName;
+				}
+			}
+
+			return r.AddDescriptor(new CustomDependencyDescriptor(explicitEndpoints)).ExtendedProperties(new { endpointNames });
+			
+		}
+
+    	public static ComponentRegistration<T> FromConfiguration<T>(this ComponentRegistration<T> r, string bundleName, string jsonPath, params string[] parameters) where T : class
         {
             return FromConfiguration<T, T>(r, bundleName, jsonPath, parameters);
         }
