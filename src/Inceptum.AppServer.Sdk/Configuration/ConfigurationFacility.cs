@@ -64,45 +64,44 @@ namespace Inceptum.AppServer.Configuration
 
         private void onComponentModelCreated(ComponentModel model)
         {
-            var dependsOnBundle = (string)model.ExtendedProperties["dependsOnBundle"];
-            if (dependsOnBundle == null)
-                return;
+        	var dependsOnBundle = (string) model.ExtendedProperties["dependsOnBundle"];
+        	if (dependsOnBundle == null)
+        		return;
 
 
-            var configuration =getConfigurationName((string)model.ExtendedProperties["configuration"]);
-            var jsonPath = (string)model.ExtendedProperties["jsonPath"];
-            var parameters = (string[])model.ExtendedProperties["bundleParameters"];
-            var values = DeserializeFromBundle<Dictionary<string, object>>(configuration,dependsOnBundle, jsonPath, parameters);
-
-
-            foreach (var value in values)
-            {
-                var val = value.Value;
-                if (val is long)
-                {
-                    var l = (long)val;
-                    if (int.MinValue < l && l < int.MaxValue)
-                        val = (int)l;
-                }
-                //TODO: needs to be tested
-                if (val is JObject || val is JArray)
-                {
-                    var dependency =
-                        //Main dependedncy
-                        model.Dependencies.FirstOrDefault(d => d.DependencyKey.ToLower() == value.Key.ToLower())
-                        //Ctor dependency
-                        ?? model.Constructors.SelectMany(c => c.Dependencies.Where(d => d.DependencyKey.ToLower() == value.Key.ToLower())).FirstOrDefault();
-                    if (dependency != null)
-                    {
-                        val = JsonConvert.DeserializeObject(val.ToString(), dependency.TargetItemType);
-                    }
-                }
-                model.CustomDependencies[value.Key] = val;
-            }
-            return;
+        	var configuration = getConfigurationName((string) model.ExtendedProperties["configuration"]);
+        	var jsonPath = (string) model.ExtendedProperties["jsonPath"];
+        	var parameters = (string[]) model.ExtendedProperties["bundleParameters"];
+        	var values = DeserializeFromBundle<Dictionary<string, object>>(configuration, dependsOnBundle, jsonPath, parameters);
+			
+        	foreach (var value in values)
+        	{
+        		var val = value.Value;
+        		if (val is long)
+        		{
+        			var l = (long) val;
+        			if (int.MinValue < l && l < int.MaxValue)
+        				val = (int) l;
+        		}
+        		//TODO: needs to be tested
+        		if (val is JObject || val is JArray)
+        		{
+        			var dependency =
+        				//Main dependedncy
+        				model.Dependencies.FirstOrDefault(d => d.DependencyKey.ToLower() == value.Key.ToLower())
+        				//Ctor dependency
+        				?? model.Constructors.SelectMany(c => c.Dependencies.Where(d => d.DependencyKey.ToLower() == value.Key.ToLower())).FirstOrDefault();
+        			if (dependency != null)
+        			{
+        				val = JsonConvert.DeserializeObject(val.ToString(), dependency.TargetItemType);
+        			}
+        		}
+        		model.CustomDependencies[value.Key] = val;
+        	}
+        	return;
         }
 
-        internal IConfigurationProvider Provider
+    	internal IConfigurationProvider Provider
         {
             get { return m_Provider; }
             set { m_Provider = value; }
