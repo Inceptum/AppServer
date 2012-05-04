@@ -34,7 +34,7 @@ define([
                     return r;
                 },
         url:function () {
-            return "http://localhost:9223/configurations/" + this.get("id");
+            return "/configurations/" + this.get("id");
         },
         initialize:function (options) {
             this.bundles = new bundlesCollection([],{url:"http://localhost:9223/configurations/" + options.id+"/bundles"});

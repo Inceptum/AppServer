@@ -17,8 +17,8 @@ define([
             }
         },
         url:function () {
-            console.log("http://localhost:9223/configurations/" + this.get("Configuration")+"/"+this.get("id"));
-                    return "http://localhost:9223/configurations/" + this.get("Configuration")+"/"+this.get("id");
+            console.log("/configurations/" + this.get("Configuration")+"/"+this.get("id"));
+                    return "/configurations/" + this.get("Configuration")+"/"+this.get("id");
                 }
 
     });
