@@ -6,7 +6,7 @@ define([
 ], function ($, _, Backbone, configurationsModel) {
     var configurationsCollection = Backbone.Collection.extend({
         model:configurationsModel,
-        url:'http://localhost:9223/configurations',
+        url:'/configurations',
         initialize:function () {
         }/*,
         parse: function(r){
