@@ -160,3 +160,25 @@ a.button { color:auto; }
   .header, .footer, .form {display:none;}
   .col_33, .col_66, .col_50  { width:98%; float:none; } 
 }
+
+/* Fix to stick the footer to the bottom of the page*/
+html, body {
+    margin:0;
+    padding:0;
+    height:100%;
+}
+
+.container {
+    min-height:100%;
+    position:relative;
+}
+
+.info {
+    padding-bottom:4em;
+}
+
+.footer {
+    position:absolute; bottom: 0;
+    padding: 0.5em; margin: 0;
+    height: 3em;
+}
