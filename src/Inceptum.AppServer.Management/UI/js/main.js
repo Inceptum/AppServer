@@ -6,6 +6,7 @@ require.config({
         jQuery: 'libs/jquery/jquery',
         Underscore: 'libs/underscore/underscore',
         Backbone: 'libs/backbone/backbone',
+        CodeMirror : 'libs/codemirror/codemirror',
         templates: '../templates'
     }
 });

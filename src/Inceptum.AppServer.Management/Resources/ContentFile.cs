@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using OpenRasta.IO;
 using OpenRasta.Web;
 
@@ -12,9 +14,11 @@ namespace Inceptum.AppServer.Management.Resources
         public ContentFile(string key)
         {
             m_Key = key;
-            m_Stream = GetType().Assembly.GetManifestResourceStream(m_Key);
-            if(m_Stream==null)
-                throw new FileNotFoundException(string.Format("Resource with key {0} not found",key));
+            m_Stream = getResourceStream(key);
+            if (m_Stream == null)
+            {
+                throw new FileNotFoundException(string.Format("Resource with key {0} not found",key));                
+            }
         }
 
         public ContentFile(string folder,string path)
@@ -62,5 +66,17 @@ namespace Inceptum.AppServer.Management.Resources
                 return m_Stream.Length;
             }
         }
+
+        private Stream getResourceStream(string name)
+        {
+            var assembly = GetType().Assembly;
+            var stream = assembly.GetManifestResourceStream(name);
+            if (stream != null) return stream;
+            
+            //Try get resource ignoring case
+            name = assembly.GetManifestResourceNames().SingleOrDefault(x => x.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+            return name == null ? null : assembly.GetManifestResourceStream(name);
+        }
     }
 }
+

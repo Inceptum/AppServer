@@ -23,8 +23,6 @@ define([
             '*actions':'defaultAction'
         },
 
-
-
         showConfigurations:function () {
             $(".logo").html("");
             this.selectedConfiguration  = null;

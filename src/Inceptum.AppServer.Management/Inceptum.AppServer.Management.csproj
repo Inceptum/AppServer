@@ -173,7 +173,6 @@
     <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\default\style.css" />
     <EmbeddedResource Include="UI\js\libs\jquery\jsTree\themes\default\throbber.gif" />
     <EmbeddedResource Include="UI\js\libs\require\require.js" />
-    <EmbeddedResource Include="UI\js\libs\underscore\underscore-min.js" />
     <EmbeddedResource Include="UI\js\libs\underscore\underscore.js" />
     <EmbeddedResource Include="UI\js\main.js" />
     <EmbeddedResource Include="UI\js\models\bundle.js" />
@@ -197,8 +196,15 @@
     <EmbeddedResource Include="UI\templates\home\message.html" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="UI\js\libs\backbone\backbone-min.js.old" />
-    <None Include="UI\js\libs\underscore\underscore-min.js.old" />
+    <EmbeddedResource Include="UI\js\libs\underscore\underscore-min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\css\codemirror.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\js\libs\codemirror\codemirror.js" />
+    <EmbeddedResource Include="UI\js\libs\codemirror\codemirror.lib.js" />
+    <EmbeddedResource Include="UI\js\libs\codemirror\mode\javascript.js" />
   </ItemGroup>
   <Import Project="..\..\wraps\openwrap\build\OpenWrap.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
