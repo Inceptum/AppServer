@@ -18,7 +18,7 @@ namespace Inceptum.AppServer.Monitoring
 			m_HbEndpoint = hbEndpoint;
 		}
 
-		protected override Endpoint GetSubscriptionEndpoint(EmptyContext context)
+		protected override Endpoint GetEndpoint(EmptyContext context)
 		{
 			return m_HbEndpoint;
 		}
