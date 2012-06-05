@@ -2,8 +2,9 @@ define([
     'jQuery',
     'Underscore',
     'Backbone',
+    'CodeMirror',
     'text!templates/bundles/bundle.html'
-], function ($, _, Backbone, bundleTemplate) {
+], function ($, _, Backbone, CodeMirror, bundleTemplate) {
     var bundleView = Backbone.View.extend({
         tagName:"div",
         initialize:function () {
@@ -29,7 +30,8 @@ define([
         },
         saveBundle:function () {
             this.model.set({
-                Content:$('#bundleContent').val()
+                //Content:$('#bundleContent').val()
+                Content: this.editor.getValue()
             });
 
             var self = this;
@@ -72,7 +74,28 @@ define([
             };
             var compiledTemplate = _.template(bundleTemplate, data);
             $(this.el).html(compiledTemplate);
+            this.setupEditor();
             return this;
+        },
+        setupEditor: function () {
+            var editor = CodeMirror.fromTextArea($(this.el).find("#bundleContent").get(0), {
+                mode: "javascript",
+                json: true,
+                smartIndent: false,
+                fixedGutter: true,
+                lineNumbers: true,
+                matchBrackets: true,
+                onCursorActivity: function() {
+                    editor.setLineClass(hlLine, null);
+                    hlLine = editor.setLineClass(editor.getCursor().line, "active-line");
+                }
+            });
+            var hlLine = editor.setLineClass(0, "active-line");
+
+            //editor.refresh();
+            window.setTimeout(function() { editor.refresh(); }, 50);
+
+            this.editor = editor;
         }
     });
     return bundleView;
