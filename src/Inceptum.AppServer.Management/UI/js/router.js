@@ -38,19 +38,19 @@ define([
                 return;
             }
             var self = this,
-                fullBundleName = configurations.get(this.selectedConfiguration);
+                config = configurations.get(this.selectedConfiguration);
 
-            if (!fullBundleName) {
+            if (!config) {
                 this.showMessage("message", "Configuration " + configuration + " not found!");
                 this.navigate('configurations', {trigger:true});
                 return;
             }
 
-            $(".logo").html(fullBundleName.get("name"));
-            console.log(fullBundleName.get("bundlesmap"));
-            fullBundleName.fetch({success:function () {
-                console.log(fullBundleName.get("bundlesmap"));
-                self.showView("#page", new configurationView({model:fullBundleName }));
+            $(".logo").html(config.get("name"));
+            console.log(config.get("bundlesmap"));
+            config.fetch({success:function () {
+                console.log(config.get("bundlesmap"));
+                self.showView("#page", new configurationView({model:config }));
 
                 if (self.selectedBundle) {
                     self.showBundle(configuration, self.selectedBundle);
