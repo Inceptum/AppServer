@@ -6,98 +6,108 @@ define([
     'text!templates/bundles/bundle.html'
 ], function ($, _, Backbone, CodeMirror, bundleTemplate) {
     var bundleView = Backbone.View.extend({
-        tagName:"div",
+
+        template:_.template(bundleTemplate),
+
         initialize:function () {
-            _.bindAll(this, "render");
-            this.model.bind('change', this.render, this);
-            this.router = this.options.router;
             this.configuration = this.options.configuration;
         },
+
         events:{
             "click .save":"saveBundle",
             "click .delete":"deleteBundle",
-            "click .new":"newBundle"
+            "click .cancel":"cancel"
         },
 
-        newBundle:function () {
-            var subBundleName = $("#subBundleName").val();
-            if(!subBundleName || subBundleName.trim()===""){
-                alert("wrong name: '"+subBundleName+"'");
-                return;
-            }
-
-            this.router.createBundle(this.model.get('id')+'.'+subBundleName);
-        },
         saveBundle:function () {
             this.model.set({
-                //Content:$('#bundleContent').val()
-                Content: this.editor.getValue()
+                Content:this.editor.getValue()
             });
 
             var self = this;
             if (this.model.isNew()) {
-                this.configuration.bundles.create(this.model);
+                this.configuration.bundles.create(this.model, {
+                    success:function () {
+                        self.configuration.fetch({success:function () {
+                            Router.showBundle(self.configuration.id, self.model.id);
+                        }});
+                        Router.showMessage("success", "Bundle '" + self.model.id + "' created");
+                    },
+                    error:function (originalModel, resp) {
+                        Router.showMessage("warning", "Failed to create bundle '" + self.model.id + "': " + resp.responseText);
+                    }
+                });
             } else {
                 this.model.save({}, {
                     success:function () {
+                        Router.showMessage("success", "Bundle '" + self.model.id + "' saved");
                         self.configuration.fetch({success:function () {
-                            self.router.showBundle(self.configuration, self.model.get("id"));
+                            Router.showBundle(self.configuration.id, self.model.id);
                         }});
-                        self.router.showMessage("success", "Bundle '" + self.model.get("id") + "' saved");
-
                     },
                     error:function (originalModel, resp) {
-                        self.router.showMessage("warning", "Failed to save bundle '" + self.model.get("id") + "': " + resp.responseText);
-
+                        Router.showMessage("warning", "Failed to save bundle '" + self.model.id + "': " + resp.responseText);
                     }
                 });
             }
             return false;
         },
+
+        cancel:function () {
+            Router.closeBundleView();
+            Router.showConfiguration();
+        },
+
         deleteBundle:function () {
             var self = this;
-            this.model.destroy({
-                success:function () {
-                    self.router.showMessage("success", "Bundle '" + self.model.get("id") + "' deleted");
-                    self.router.showConfiguration();
-                },
-                error:function (originalModel, resp) {
-                    self.router.showMessage("warning", "Failed to delete bundle '" + self.model.get("id") + "': " + resp.responseText);
-                }
-            });
+            if (window.confirm("Do you REALLY want to DELETE " + this.model.id + "?")) {
+                this.model.destroy({
+                    success:function () {
+                        Router.showMessage("success", "Bundle '" + self.model.id + "' deleted");
+                        Router.showConfiguration();
+                    },
+                    error:function (originalModel, resp) {
+                        Router.showMessage("warning", "Failed to delete bundle '" + self.model.id + "': " + resp.responseText);
+                    }
+                });
+            }
             return false;
         },
+
         render:function () {
             var data = {
                 bundle:this.model,
                 _:_
             };
-            var compiledTemplate = _.template(bundleTemplate, data);
-            $(this.el).html(compiledTemplate);
+            this.$el.html(this.template(data));
             this.setupEditor();
             return this;
         },
-        setupEditor: function () {
-            var editor = CodeMirror.fromTextArea($(this.el).find("#bundleContent").get(0), {
-                mode: "javascript",
-                json: true,
-                smartIndent: false,
-                fixedGutter: true,
-                lineNumbers: true,
-                matchBrackets: true,
-                onCursorActivity: function() {
+
+        setupEditor:function () {
+            var editor = CodeMirror.fromTextArea(this.$el.find("#bundleContent").get(0), {
+                mode:"javascript",
+                json:true,
+                smartIndent:false,
+                fixedGutter:true,
+                lineNumbers:true,
+                matchBrackets:true,
+                onCursorActivity:function () {
                     editor.setLineClass(hlLine, null);
                     hlLine = editor.setLineClass(editor.getCursor().line, "active-line");
                 }
             });
+
             var hlLine = editor.setLineClass(0, "active-line");
 
-            //editor.refresh();
-            window.setTimeout(function() { editor.refresh(); }, 50);
+            window.setTimeout(function () {
+                editor.refresh();
+            }, 10);
 
             this.editor = editor;
         }
     });
+
     return bundleView;
 });
 

@@ -6,16 +6,23 @@ define([
 ], function ($, _, Backbone, messageTemplate) {
 
     var messageView = Backbone.View.extend({
+
+        template:_.template(messageTemplate),
+
+        events:{
+            "click .close":"close"
+        },
+
         render:function () {
 
             var data = {
                 message:this.model,
                 _:_
             };
-            var compiledTemplate = _.template(messageTemplate, data);
-            $(this.el).html(compiledTemplate);
+            this.$el.html(this.template(data)).addClass('popup');
             return this;
         }
     });
+
     return messageView;
 });

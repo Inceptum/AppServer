@@ -11,7 +11,7 @@ define([
     'views/bundles/bundle',
     'models/bundle',
     'models/message'
-], function ($, _, Backbone, mainHomeView, menuView,messageView, configurationListView, configurationView, bundleView, bundleModel, messageModel) {
+], function ($, _, Backbone, mainHomeView, menuView, messageView, configurationListView, configurationView, bundleView, bundleModel, messageModel) {
     var AppRouter = Backbone.Router.extend({
 
         routes:{
@@ -24,80 +24,103 @@ define([
         },
 
         showConfigurations:function () {
-            $(".logo").html("");
-            this.selectedConfiguration  = null;
-            this.selectedBundle= null;
-            this.showView("#page", new configurationListView({collection:configurations}));
+            $(".logo").html("Inceptum AppServer");
+            this.reset();
+            this.showView("#page", new configurationListView({collection:configurations }));
         },
-        showConfiguration:function (configuration) {
-            if(configuration)
-                this.selectedConfiguration  = configuration;
-            else{
-                this.selectedBundle=null;
-                this.navigate('configurations/' + this.selectedConfiguration, {trigger:true});
-            }
-            var conf = configurations.get(this.selectedConfiguration);
-            var self=this;
-            $(".logo").html(conf.get("name"));
-            console.log(conf.get("bundlesmap"));
-            conf.fetch({success:function(){
-                console.log(conf.get("bundlesmap"));
-                self.showView("#page", new configurationView({model:conf }));
 
-                if(self.selectedBundle){
-                    self.showBundle(configuration,self.selectedBundle);
+        showConfiguration:function (configuration) {
+            if (configuration)
+                this.selectedConfiguration = configuration;
+            else {
+                this.selectedBundle = null;
+                this.navigate('configurations/' + this.selectedConfiguration, {trigger:true});
+                return;
+            }
+            var self = this,
+                fullBundleName = configurations.get(this.selectedConfiguration);
+
+            if (!fullBundleName) {
+                this.showMessage("message", "Configuration " + configuration + " not found!");
+                this.navigate('configurations', {trigger:true});
+                return;
+            }
+
+            $(".logo").html(fullBundleName.get("name"));
+            console.log(fullBundleName.get("bundlesmap"));
+            fullBundleName.fetch({success:function () {
+                console.log(fullBundleName.get("bundlesmap"));
+                self.showView("#page", new configurationView({model:fullBundleName }));
+
+                if (self.selectedBundle) {
+                    self.showBundle(configuration, self.selectedBundle);
                 }
             }})
         },
-        createBundle:function(name){
-            this.navigate('configurations/' + this.selectedConfiguration+'/'+name, {trigger:true});
-        },
-        showMessage:function(severity,text){
-            var message=new messageModel({severity:severity,text:text});
-            $("#message").html(new messageView({model:message}).render().el);
-        },
+
         showBundle:function (configuration, bundle) {
+            this.closeBundleView();
 
-            this.selectedBundle=bundle;
+            this.selectedBundle = bundle;
 
-            if(this.selectedConfiguration===configuration){
-                var currentConfiguration = configurations.get(this.selectedConfiguration);
-                var currentBundle =currentConfiguration.bundles.get(this.selectedBundle);
-                if(!currentBundle){
-                    var content="{}";
-                    var p=bundle.indexOf(".");
-                    var parents=[];
-                    while (p!=-1){
-                        parents.push(bundle.substr(0,p));
-                        p=bundle.indexOf(".",p+1);
+            if (this.selectedConfiguration === configuration) {
+                var currentConfiguration = configurations.get(this.selectedConfiguration),
+                    currentBundle = currentConfiguration.bundles.get(this.selectedBundle);
+                if (!currentBundle) {
+                    var content = "{\r\n}",
+                        parents = [],
+                        p = bundle.indexOf(".");
+                    while (p != -1) {
+                        parents.push(bundle.substr(0, p));
+                        p = bundle.indexOf(".", p + 1);
                     }
 
                     var b;
-                    for(i=parents.length-1;i>=0;i-- && !b){
-                        b=currentConfiguration.bundles.get(parents[i]);
+                    for (i = parents.length - 1; i >= 0; i-- && !b) {
+                        b = currentConfiguration.bundles.get(parents[i]);
                     }
 
-                    if(b)
-                        content= b.get("Content");
+                    if (b)
+                        content = b.get("Content");
 
-                    currentBundle=new bundleModel({id:this.selectedBundle,Configuration:this.selectedConfiguration, Content:content});
-                    currentBundle.IsNewBundle=true;
+                    currentBundle = new bundleModel({id:this.selectedBundle, Configuration:this.selectedConfiguration, Content:content});
+                    currentBundle.IsNewBundle = true;
                 }
-               $(".bundle").html(new bundleView({model:currentBundle, configuration:currentConfiguration, router:this}).render().el);
+                this.bundleView = new bundleView({model:currentBundle, configuration:currentConfiguration});
+                $(".bundle").html(this.bundleView.render().el);
             }
-            else{
+            else {
                 this.showConfiguration(configuration);
             }
         },
 
-
         defaultAction:function (actions) {
-            this.selectedConfiguration  = null;
-            this.selectedBundle  = null;
+            this.reset();
             // We have no matching route, lets display the home page
             this.showView("#page", mainHomeView);
         },
 
+        reset:function () {
+            this.selectedConfiguration = null;
+            this.selectedBundle = null;
+        },
+
+        closeBundleView:function () {
+            if (this.bundleView) {
+                this.bundleView.close();
+                this.bundleView = null;
+            }
+        },
+
+        createBundle:function (name) {
+            var fullName = this.selectedBundle ? this.selectedBundle + "." + name : name;
+            this.navigate('configurations/' + this.selectedConfiguration + '/' + fullName, {trigger:true});
+        },
+
+        showMessage:function (severity, text) {
+            var message = new messageModel({severity:severity, text:text});
+            $("#message").html(new messageView({model:message}).render().el);
+        },
 
         showView:function (selector, view) {
             if (this.currentView)
@@ -108,17 +131,19 @@ define([
             $(".menu_main").html(menuView.render().el);
             return view;
         },
+
         initialize:function () {
-            console.log("router initalized")
+            console.log("Router initalized");
             _.bindAll(this, "defaultAction", "showBundle", "showConfiguration", "showConfigurations");
         }
     });
 
     var initialize = function (options) {
         configurations = options.configurations;
-        var app_router = new AppRouter;
+        window.Router = new AppRouter; //Global
         Backbone.history.start();
     };
+
     return {
         initialize:initialize
     };
