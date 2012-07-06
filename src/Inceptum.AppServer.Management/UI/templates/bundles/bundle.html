@@ -1,17 +1,10 @@
-<h1><%=bundle.get("id")%></h1>
-<textarea id="bundleContent" rows="20" cols="80" style="min-height: 450px;min-width: 400px;"><%=bundle.get("Content")%></textarea>
-<div style="margin:5px;">
-
+<h2><%=bundle.get("id")%></h2>
 <button type="button" class="button save">Save</button>
-<% if(!bundle.IsNewBundle) { %>
-<button type="button" class="button delete">Delete</button>
-    <%}%>
-</div>
-
-
-
-<div style="margin:5px;">
-    Create Subbundle</br>
-    Name: <input id="subBundleName" />
-</div>
-<button type="button" class="button new">Create</button>
+<% if(bundle.IsNewBundle) { %>
+    <button type="button" class="button cancel">Cancel</button>
+<%} else {%>
+    <button type="button" class="button cancel">Close</button>
+    &nbsp;&nbsp;&nbsp;<button type="button" class="button delete">Delete</button>
+<%}%>
+<div style="margin-top: 1em;"></div>
+<textarea id="bundleContent" rows="20" cols="80" style="min-height: 450px;min-width: 400px;padding-top: 1em;"><%=bundle.get("Content")%></textarea>

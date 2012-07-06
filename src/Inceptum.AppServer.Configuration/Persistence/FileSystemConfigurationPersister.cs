@@ -72,6 +72,41 @@ namespace Inceptum.AppServer.Configuration.Persistence
             }
         }
 
+        public string Create(string name)
+        {
+            if (!ValidationHelper.IsValidBundleName(name))
+            {
+                throw new ArgumentException(ValidationHelper.INVALID_NAME_MESSAGE, "name");
+            }
+            
+            name = name.ToLower();
+            var confDir = Path.Combine(ConfigFolder,name);
+                        
+            if (Directory.Exists(confDir))
+            {
+                throw new ArgumentException("Configuration named " + name + " already exists");
+            }
+
+            Directory.CreateDirectory(confDir);
+
+            return name;
+        }
+
+        public bool Delete(string name)
+        {
+            if (!ValidationHelper.IsValidBundleName(name))
+            {
+                throw new ArgumentException(ValidationHelper.INVALID_NAME_MESSAGE, "name");
+            }
+            name = name.ToLower();
+            var confDir = Path.Combine(ConfigFolder, name);
+
+            if (!Directory.Exists(confDir)) return false;
+
+            Directory.Delete(confDir, true);
+            return true;
+        }
+
         private static bool createBundles(BundleCollectionBase collection,IEnumerator enumerator,bool isRootLevel=false)
         {
             while (true)

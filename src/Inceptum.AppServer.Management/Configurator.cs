@@ -71,7 +71,7 @@ namespace Inceptum.AppServer.Management
                     });*/
 
                 ResourceSpace.Has.ResourcesOfType<object>()
-                    .AtUri("/configurations/")
+                    .AtUri("/configurations/").Named("Configurations")
                     .And.AtUri("/configurations/{configuration}").Named("Configuration")
                     .And.AtUri("/configurations/{configuration}/bundles").Named("Bundles")
                     .And.AtUri("/configurations/{configuration}/{bundle}")

@@ -3,11 +3,7 @@ define([
     'Backbone'
 ], function (_, Backbone) {
 
-    var messageModel = Backbone.Model.extend({
-        initialize:function () {
-        }
-    });
+    var messageModel = Backbone.Model.extend({});
 
     return messageModel;
-
 });

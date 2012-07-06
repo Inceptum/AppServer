@@ -206,6 +206,9 @@
     <EmbeddedResource Include="UI\js\libs\codemirror\codemirror.lib.js" />
     <EmbeddedResource Include="UI\js\libs\codemirror\mode\javascript.js" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\css\images\closeicon.png" />
+  </ItemGroup>
   <Import Project="..\..\wraps\openwrap\build\OpenWrap.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

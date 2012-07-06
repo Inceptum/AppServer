@@ -15,11 +15,13 @@ namespace Inceptum.AppServer.Management.Handlers
         {
             m_Provider = serverCore.LocalConfigurationProvider;
         }
+        
+        [HttpOperation(ForUriName = "Configurations")]
         public OperationResult Get()
         {
             try
             {
-                return new OperationResult.OK { ResponseResource =  m_Provider.GetConfigurations().ToArray() };
+                return new OperationResult.OK { ResponseResource = m_Provider.GetConfigurations().ToArray() };
             }
             catch (Exception e)
             {
@@ -27,30 +29,62 @@ namespace Inceptum.AppServer.Management.Handlers
             }
         }
 
-         [HttpOperation(ForUriName = "Bundles")]
-        public OperationResult GetBundles(string configuration)
+        [HttpOperation(ForUriName = "Configurations")]
+        public OperationResult Post(ConfigurationInfo configuration)
         {
             try
             {
-                return new OperationResult.OK {ResponseResource = m_Provider.GetBundles(configuration)};
+                var cfgName = m_Provider.CreateConfiguration(configuration.Name);
+                return new OperationResult.OK { ResponseResource = new { name = cfgName, id = cfgName } };
             }
             catch (Exception e)
             {
-                return new OperationResult.InternalServerError {Description = e.Message, ResponseResource = e.ToString(), Title = "Error"};
+                return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
             }
         }
-
-
-         [HttpOperation(ForUriName = "Configuration")]
+        
+        [HttpOperation(ForUriName = "Configuration")]
         public OperationResult GetConfiguration(string configuration)
         {
             try
             {
-                return new OperationResult.OK {ResponseResource = m_Provider.GetConfiguration(configuration)};
+                return new OperationResult.OK { ResponseResource = m_Provider.GetConfiguration(configuration) };
             }
             catch (Exception e)
             {
-                return new OperationResult.InternalServerError {Description = e.Message, ResponseResource = e.ToString(), Title = "Error"};
+                return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.ToString(), Title = "Error" };
+            }
+        }
+
+        [HttpOperation(ForUriName = "Configuration")]
+        public OperationResult DeleteConfiguration(string configuration)
+        {
+            try
+            {
+                m_Provider.DeleteConfiguration(configuration);
+                return new OperationResult.OK ();
+            }
+            catch (BundleNotFoundException e)
+            {
+                return new OperationResult.NotFound { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
+            }
+            catch (Exception e)
+            {
+                return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
+            }
+
+        }
+
+        [HttpOperation(ForUriName = "Bundles")]
+        public OperationResult GetBundles(string configuration)
+        {
+            try
+            {
+                return new OperationResult.OK { ResponseResource = m_Provider.GetBundles(configuration) };
+            }
+            catch (Exception e)
+            {
+                return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.ToString(), Title = "Error" };
             }
         }
 
@@ -58,19 +92,19 @@ namespace Inceptum.AppServer.Management.Handlers
         {
             try
             {
-                var bundleContent = m_Provider.GetBundle(configuration, bundle, overrides == null ? new string[0] : overrides.Split(new[] {':'}));
-                return new OperationResult.OK {ResponseResource =bundleContent};
+                var bundleContent = m_Provider.GetBundle(configuration, bundle, overrides == null ? new string[0] : overrides.Split(new[] { ':' }));
+                return new OperationResult.OK { ResponseResource = bundleContent };
             }
             catch (BundleNotFoundException e)
             {
-                return new OperationResult.NotFound{Description = e.Message,ResponseResource = e.Message,Title = "Error"};
-            }            
+                return new OperationResult.NotFound { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
+            }
             catch (Exception e)
             {
                 return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
             }
-            
         }
+
         public OperationResult Put(string configuration, string bundle, BundleInfo data)
         {
             try
@@ -80,15 +114,15 @@ namespace Inceptum.AppServer.Management.Handlers
             }
             catch (BundleNotFoundException e)
             {
-                return new OperationResult.NotFound{Description = e.Message,ResponseResource = e.Message,Title = "Error"};
-            }            
+                return new OperationResult.NotFound { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
+            }
             catch (Exception e)
             {
                 return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
             }
-            
-        } 
-        
+
+        }
+
         public OperationResult Post(string configuration, string bundle, BundleInfo data)
         {
             try
@@ -98,31 +132,31 @@ namespace Inceptum.AppServer.Management.Handlers
             }
             catch (BundleNotFoundException e)
             {
-                return new OperationResult.NotFound{Description = e.Message,ResponseResource = e.Message,Title = "Error"};
-            }            
+                return new OperationResult.NotFound { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
+            }
             catch (Exception e)
             {
                 return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
             }
-            
-        }   
-        
+
+        }
+
         public OperationResult Delete(string configuration, string bundle)
         {
             try
             {
-                m_Provider.DeleteBundle(configuration,bundle);
+                m_Provider.DeleteBundle(configuration, bundle);
                 return new OperationResult.OK { };
             }
             catch (BundleNotFoundException e)
             {
-                return new OperationResult.NotFound{Description = e.Message,ResponseResource = e.Message,Title = "Error"};
-            }            
+                return new OperationResult.NotFound { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
+            }
             catch (Exception e)
             {
-                return new OperationResult.InternalServerError{Description = e.Message,ResponseResource = e.Message,Title = "Error"};
+                return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
             }
-            
+
         }
     }
 }
