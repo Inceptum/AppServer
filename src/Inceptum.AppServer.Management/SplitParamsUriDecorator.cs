@@ -20,7 +20,7 @@ namespace Inceptum.AppServer.Management
         public bool Parse(Uri uri, out Uri processedUri)
         {
             string[] segments = uri.GetSegments();
-            if (segments.Length > 3 && segments[1].ToLower() == "configuration/")
+            if (segments.Length > 3 && segments[1].ToLower() == "configurations/")
             {
                 processedUri = new UriBuilder(uri)
                                    {
