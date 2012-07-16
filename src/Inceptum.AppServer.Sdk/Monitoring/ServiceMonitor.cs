@@ -41,20 +41,21 @@ namespace Inceptum.AppServer.Monitoring
         private void processHb(HostHbMessage message)
         {
             InstanceInfo instance;
+            bool newInstanceDiscovered;
             lock (m_Instances)
             {
-                if (!m_Instances.TryGetValue(message.InstanceName, out instance))
+                newInstanceDiscovered = !m_Instances.TryGetValue(message.InstanceName, out instance);
+                if (newInstanceDiscovered)
                 {
                     instance = new InstanceInfo(message);
                     m_Instances.Add(message.InstanceName, instance);
-                    m_InstancesSubject.OnNext(instance);
                 }
-            }
 
-            lock (instance)
-            {
                 instance.LastMessage = message;
             }
+
+            if (newInstanceDiscovered)
+                m_InstancesSubject.OnNext(instance);
         }
 
 
