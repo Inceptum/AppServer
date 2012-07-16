@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\DependsOnEndpointsTests.cs" />
+    <Compile Include="Investigation.cs" />
     <Compile Include="OpenWrapApplicationBrowserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServicesMonitorTests.cs" />
