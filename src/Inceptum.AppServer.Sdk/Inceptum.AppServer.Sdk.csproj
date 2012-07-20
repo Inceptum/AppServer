@@ -49,6 +49,7 @@
     <Compile Include="Configuration\BundleNotFoundException.cs" />
     <Compile Include="HostedAppStatus.cs" />
     <Compile Include="IServerCore.cs" />
+    <Compile Include="Logging\GenericsAwareNLoggerFactory.cs" />
     <Compile Include="Monitoring\HbFeedProvider.cs" />
     <Compile Include="Monitoring\HostHbMessage.cs" />
     <Compile Include="Monitoring\InstanceInfo.cs" />

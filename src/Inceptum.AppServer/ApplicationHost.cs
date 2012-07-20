@@ -8,6 +8,7 @@ using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Castle.Windsor.Installer;
 using Inceptum.AppServer.Configuration;
+using Inceptum.AppServer.Logging;
 using Inceptum.Core.Utils;
 
 namespace Inceptum.AppServer
@@ -134,7 +135,8 @@ namespace Inceptum.AppServer
 
 
                 m_Container
-                    .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig("nlog.config"))
+                    //.AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig("nlog.config"))
+                    .AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig("nlog.config"))
                     .Register(
                         Component.For<AppServerContext>().Instance(context),
                         Component.For<IConfigurationProvider>().Instance(configurationProvider)

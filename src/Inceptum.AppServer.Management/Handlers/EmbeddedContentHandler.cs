@@ -8,7 +8,8 @@ namespace Inceptum.AppServer.Management.Handlers
     public class EmbeddedContentHandler
     {
         private readonly ICommunicationContext m_Context;
-        private const string FOLDER = @"x:\WORK\Finam\CODE\ConfigurationUI";
+        //private const string FOLDER = @"x:\WORK\Finam\CODE\ConfigurationUI";
+        private const string FOLDER = @"d:\temp\UI";
         public EmbeddedContentHandler(ICommunicationContext context)
         {
             m_Context = context;
@@ -23,7 +24,8 @@ namespace Inceptum.AppServer.Management.Handlers
                 var file = Path.Combine(FOLDER, fileName);
                 ContentFile responseResource;
 
-                bool debug=false;
+                //bool debug=false;
+                bool debug = true;
 #if DEBUG
                 //debug = true;
 #endif
