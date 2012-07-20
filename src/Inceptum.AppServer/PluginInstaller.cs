@@ -6,6 +6,7 @@ using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Inceptum.AppServer.Configuration;
+using Inceptum.AppServer.Logging;
 
 namespace Inceptum.AppServer
 {
@@ -22,8 +23,10 @@ namespace Inceptum.AppServer
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            //Basic Facilities
-            container.AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig("nlog.config")).AddFacility<TypedFactoryFacility>();
+            //Basic Facilities            
+            //container.AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig("nlog.config")).AddFacility<TypedFactoryFacility>();
+            container.AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig("nlog.config")).AddFacility<TypedFactoryFacility>();
+
             /*container.AddFacility<ConfigurationFacility>(f => f.Configuration("ibank")
                                                                   .ServiceUrl(m_Context["confSvcUrl"]).Params(
                                                                       new

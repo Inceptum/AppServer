@@ -15,6 +15,7 @@ using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.AppDiscovery.Openwrap;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Providers;
+using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Management;
 using Inceptum.AppServer.Windsor;
 using Inceptum.Core.Utils;
@@ -74,7 +75,8 @@ namespace Inceptum.AppServer
                 {
                     container = new WindsorContainer()
                         .AddFacility<StartableFacility>()
-                        .AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig(nlogConf));
+                        //.AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig(nlogConf));
+                        .AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig(nlogConf));
                     
                     container.Kernel.Resolver.AddSubResolver(new ConventionBasedResolver(container.Kernel));
                     
