@@ -62,12 +62,10 @@ namespace Inceptum.AppServer
             AppDomain domain = AppDomain.CreateDomain(appInfo.Name, null, new AppDomainSetup
                                                                               {
                                                                                   ApplicationBase = AppDomain.CurrentDomain.BaseDirectory,
-                                                                                  //ApplicationBase = appInfo.BaseDirectory,
                                                                                   PrivateBinPathProbe = null,
                                                                                   DisallowApplicationBaseProbing = true,
                                                                                   //TODO: use plugin app.config
                                                                                   ConfigurationFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile
-                                                                                  // appInfo.ConfigFile
                                                                               });
             var appDomainInitializer =
                 (AppDomainInitializer)
