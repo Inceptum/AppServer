@@ -96,9 +96,10 @@ namespace Inceptum.AppServer
                     Component.For<IConfigurationProvider, IManageableConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>().Named("localStorageConfigurationProvider")
                                   .DependsOn(new { configFolder = Path.Combine(Environment.CurrentDirectory, Path.Combine("Configuration")) }));
 
+                //If remote configuration source is provided in app.config use it by default
                 if (setup.ConfSvcUrl != null)
                     container.Register(Component.For<IConfigurationProvider>().ImplementedBy<LegacyRemoteConfigurationProvider>()
-                                      .DependsOn(new { serviceUrl = setup.ConfSvcUrl, path = "." })
+                        .DependsOn(new { serviceUrl = setup.ConfSvcUrl, path = "." })
                         .IsDefault());
 
                 //Configuration local/remote

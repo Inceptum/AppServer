@@ -47,7 +47,8 @@ namespace Inceptum.AppServer
         public void RediscoverApps()
         {
             m_Logger.InfoFormat("Discovering applications");
-
+            //TODO: scenario where apps are rediscavered after app server start is nottested. Looks like clearing m_Applications is not enough.  
+            //Get apps and take the latest version of each
             IEnumerable<HostedAppInfo> hostedAppInfos = m_ApplicationBrowsers.SelectMany(b => b.GetAvailabelApps())
                 .GroupBy(x => x.Name)
                 .Select(x => x.OrderByDescending(y => y.Version).First())
