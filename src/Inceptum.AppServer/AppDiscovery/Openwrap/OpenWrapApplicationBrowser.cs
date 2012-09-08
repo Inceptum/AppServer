@@ -39,6 +39,7 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
                                                                                                   new CecilCommandExporter(),
                                                                                                   new SolutionPluginExporter(),
                                                                                                   new NativeDllExporter(),
+                                                                                                  new AppConfigExporter(),
                                                                                                   new HostedApplicationExporter()
                                                                                               }));
             m_ServiceRegistry.Initialize();
@@ -107,9 +108,19 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
                 );
             IEnumerable<Exports.IAssembly> assembliesTooLoad = packages.SelectMany(p => m_Exporter.Exports<Exports.IAssembly>(p.Load(), m_Environment))
                                                         .SelectMany(e => e.Select(f => f));
+
+            var appConfig = packages.SelectMany(p => m_Exporter.Exports<IAppConfig>(p.Load(), m_Environment))
+                .SelectMany(files => files.Select(f=>f)).FirstOrDefault();
+
             IEnumerable<string> nativeDllsToLoad = packages.SelectMany(p => m_Exporter.Exports<INativeDll>(p.Load(), m_Environment)).SelectMany(e => e.Select(f => f.File.Path.FullPath));
-            return new HostedAppInfo(appExport.Name, appExport.Version, appExport.Type, path, 
-                assembliesTooLoad.ToDictionary(a=>a.AssemblyName,a=>a.File.Path.FullPath), nativeDllsToLoad);
+
+            
+
+            return new HostedAppInfo(appExport.Name, appExport.Version, appExport.Type, path,
+                                     assembliesTooLoad.ToDictionary(a => a.AssemblyName, a => a.File.Path.FullPath), nativeDllsToLoad)
+                       {
+                           ConfigFile = appConfig == null ? null : appConfig.File.Path.FullPath
+                       };
         }
     }
 }

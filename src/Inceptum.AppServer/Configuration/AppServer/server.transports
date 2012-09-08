@@ -1,0 +1,17 @@
+{
+  "transports": {
+    "management": {
+      "broker": "msk-mqesb1.office.finam.ru:2511",
+      "login": "ibank.backend",
+      "password": "mmm000",
+      "jailstrategyname": "MachineName"
+    }
+  },
+  "endpoints": {
+    "hbEndpoint": {
+      "transportId": "management",
+      "Destination": "topic://finam.ibank.dev.monitoring.hb"
+    }
+  },
+  "connectionStrings": {}
+}

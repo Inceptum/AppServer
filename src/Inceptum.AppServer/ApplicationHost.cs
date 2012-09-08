@@ -65,7 +65,7 @@ namespace Inceptum.AppServer
                                                                                   PrivateBinPathProbe = null,
                                                                                   DisallowApplicationBaseProbing = true,
                                                                                   //TODO: use plugin app.config
-                                                                                  ConfigurationFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile
+                                                                                  ConfigurationFile = appInfo.ConfigFile// AppDomain.CurrentDomain.SetupInformation.ConfigurationFile
                                                                               });
             var appDomainInitializer =
                 (AppDomainInitializer)

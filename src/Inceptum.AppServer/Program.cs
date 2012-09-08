@@ -30,7 +30,8 @@ namespace Inceptum.AppServer
              
             var setup = new AppServerSetup
                             {
-                                SendHb = true,
+                                //SendHb = true,
+                                SendHb = false,
                                 Environment = ConfigurationManager.AppSettings["Environment"],
                                 ConfSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"]
                             };
@@ -80,7 +81,7 @@ namespace Inceptum.AppServer
             }
             if (!Environment.UserInteractive)
             {
-                const string source = "InternetBank";
+                const string source = "Inceptum.AppServer";
                 const string log = "Application";
 
                 if (!EventLog.SourceExists(source)) EventLog.CreateEventSource(source, log);

@@ -1,0 +1,13 @@
+{
+  "appsToStart": [
+    "Backend",
+    "Orchestrator",
+    "DiasoftAdapter",
+    "CyberplatAdapter",
+    "Messenger"
+  ],
+  "ManagementConsole": {
+    "port": 9223,
+    "enabled": true
+  }
+}
