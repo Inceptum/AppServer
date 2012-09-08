@@ -15,6 +15,7 @@ using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.AppDiscovery.Openwrap;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Providers;
+using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Management;
 using Inceptum.AppServer.Windsor;

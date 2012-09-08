@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using OpenFileSystem.IO;
 using OpenWrap;
 using OpenWrap.PackageManagement;
 using OpenWrap.PackageModel;
@@ -29,28 +28,5 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
         {
             return file.File.Extension.EqualsNoCase(".dll");
         }
-    }
-
-    public interface INativeDll : Exports.IFile
-    {
-    }
-
-    internal class NativeDll : INativeDll
-    {
-        public NativeDll(string path, IPackage package, IFile file)
-        {
-            Path = path;
-            Package = package;
-            File = file;
-        }
-
-        #region INativeDll Members
-
-        public string Path { get; private set; }
-        public IPackage Package { get; private set; }
-
-        public IFile File { get; private set; }
-
-        #endregion
     }
 }
