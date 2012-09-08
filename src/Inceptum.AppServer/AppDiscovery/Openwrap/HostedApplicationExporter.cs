@@ -34,6 +34,7 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
                 if(appType==null)
                       return Enumerable.Empty<IHostedApplicationExport>();
 
+                
                 return new[] {new HostedApplicationExport(package, attribute.ConstructorArguments.First().Value.ToString(), package.Version, appType.FullName + ", " + assembly.FullName)};
             }
             catch

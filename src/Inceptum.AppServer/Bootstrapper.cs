@@ -65,7 +65,7 @@ namespace Inceptum.AppServer
             IWindsorContainer container;
                     
             ILogger logger;
-            var nlogConf = Path.Combine(Path.GetDirectoryName(typeof(Bootstrapper).Assembly.Location),"nlog.config");
+            var nlogConf = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "nlog.config");
             using (var logFactory = new LogFactory(new XmlLoggingConfiguration(nlogConf)))
             {
                 var log = logFactory.GetLogger(typeof (Bootstrapper).Name);
@@ -75,7 +75,6 @@ namespace Inceptum.AppServer
                 {
                     container = new WindsorContainer()
                         .AddFacility<StartableFacility>()
-                        //.AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig(nlogConf));
                         .AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig(nlogConf));
                     
                     container.Kernel.Resolver.AddSubResolver(new ConventionBasedResolver(container.Kernel));
