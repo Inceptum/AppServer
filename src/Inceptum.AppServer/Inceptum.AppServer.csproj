@@ -83,22 +83,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppDiscovery\FolderApplicationBrowser.cs" />
+    <Compile Include="AppDiscovery\Openwrap\AppConfig.cs" />
     <Compile Include="AppDiscovery\Openwrap\AppConfigExporter.cs" />
     <Compile Include="AppDiscovery\Openwrap\HostedApplicationExport.cs" />
+    <Compile Include="AppDiscovery\Openwrap\IAppConfig.cs" />
     <Compile Include="AppDiscovery\Openwrap\IHostedApplicationExport.cs" />
+    <Compile Include="AppDiscovery\Openwrap\INativeDll.cs" />
+    <Compile Include="AppDiscovery\Openwrap\NativeDll.cs" />
     <Compile Include="AppDiscovery\Openwrap\NativeDllExporter.cs" />
     <Compile Include="AppDiscovery\Openwrap\OpenWrapApplicationBrowser.cs" />
     <Compile Include="AppDiscovery\Openwrap\HostedApplicationExporter.cs" />
-    <Compile Include="ApplicationHost.cs" />
+    <Compile Include="Hosting\ApplicationHost.cs" />
     <Compile Include="Bootstrapper.cs" />
-    <Compile Include="Host.cs" />
+    <Compile Include="Hosting\Host.cs" />
     <Compile Include="HbSender.cs" />
-    <Compile Include="IApplicationActivator.cs" />
-    <Compile Include="IApplicationBrowser.cs" />
-    <Compile Include="IApplicationHost.cs" />
-    <Compile Include="MarshalableProxy.cs" />
-    <Compile Include="PluginInstaller.cs" />
-    <Compile Include="PluginInstallerFactory.cs" />
+    <Compile Include="AppDiscovery\IApplicationBrowser.cs" />
+    <Compile Include="Hosting\IApplicationHost.cs" />
+    <Compile Include="Hosting\MarshalableProxy.cs" />
+    <Compile Include="Windsor\PluginInstallerFactory.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerCore.cs" />

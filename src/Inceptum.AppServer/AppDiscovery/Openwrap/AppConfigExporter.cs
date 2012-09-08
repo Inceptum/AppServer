@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using OpenFileSystem.IO;
 using OpenWrap;
 using OpenWrap.PackageManagement;
 using OpenWrap.PackageModel;
@@ -26,28 +25,5 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
         #endregion
 
      
-    }
-
-    public interface IAppConfig : Exports.IFile
-    {
-    }
-
-    internal class AppConfig : IAppConfig
-    {
-        public AppConfig(string path, IPackage package, IFile file)
-        {
-            Path = path;
-            Package = package;
-            File = file;
-        }
-
-        #region INativeDll Members
-
-        public string Path { get; private set; }
-        public IPackage Package { get; private set; }
-
-        public IFile File { get; private set; }
-
-        #endregion
     }
 }
