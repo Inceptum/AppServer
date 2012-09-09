@@ -60,18 +60,19 @@ namespace Inceptum.AppServer.AppDiscovery
         public IEnumerable<HostedAppInfo> GetAvailabelApps()
         {
             var apps = (from file in Directory.GetFiles(m_Folder, "*.dll")
-                       let asm = CeceilExtencions.TryReadAssembly(file)
-                       where asm != null
-                       let attribute = asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof(HostedApplicationAttribute).FullName)
-                       where attribute != null
-                       let name = attribute.ConstructorArguments.First().Value.ToString()
-                       select new { assembly = asm, file ,name});
+                        let asm = CeceilExtencions.TryReadAssembly(file)
+                        where asm != null
+                        let attribute = asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof(HostedApplicationAttribute).FullName)
+                        where attribute != null
+                        let name = attribute.ConstructorArguments.First().Value.ToString()
+                        let  vendor = attribute.ConstructorArguments.Count==2?attribute.ConstructorArguments[1].Value.ToString():HostedApplicationAttribute.DEFAULT_VENDOR
+                        select new { assembly = asm, file, name, vendor });
             foreach (var app in apps)
             {
 
                 if (app == null)
                     continue;
-                TypeDefinition[] appTypes = app.assembly.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof (IHostedApplication).FullName)).ToArray();
+                TypeDefinition[] appTypes = app.assembly.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof(IHostedApplication).FullName)).ToArray();
                 if (appTypes.Length == 0)
                     continue;
 
@@ -79,9 +80,8 @@ namespace Inceptum.AppServer.AppDiscovery
                 if (appTypes.Length > 1)
                     Logger.InfoFormat("Assembly {0} contains several types implementing IHostedApplication, using {1}", app.file, appType.Name);
 
-                yield return new HostedAppInfo(app.name, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, m_Folder, new Dictionary<AssemblyName, string> { { new AssemblyName(app.assembly.FullName), app.file } }, new string[0]);
+                yield return new HostedAppInfo(app.name,app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, m_Folder, new Dictionary<AssemblyName, string> { { new AssemblyName(app.assembly.FullName), app.file } }, new string[0]);
             }
-
         }
 
         #endregion
