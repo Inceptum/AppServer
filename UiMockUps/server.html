@@ -1,0 +1,99 @@
+<html>
+  <head>
+    <title>Inceptum.AppServer</title>
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+<!--	<link href="css/docs.css" rel="stylesheet">-->
+	<style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+  </head>
+  <body>
+   <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+	
+<div class="navbar navbar-fixed-top ">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+      <a class="brand" href="#">Inceptum.AppServer</a>
+      <div class="nav-collapse">
+        <ul class="nav">
+          <li  class="active"><a href="#"><i class="icon-home icon-white"></i> Server</a></li>
+          <li><a href="index.html">Applications</a></li>
+          <!--<li><a href="#">Configuration</a></li>-->
+        </ul>
+      </div><!-- /.nav-collapse -->
+    </div><!-- /.container -->
+  </div><!-- /.navbar-inner -->
+</div><!-- /.navbar -->
+	  	
+<div class="container">
+	<div class="row">
+		<div class="span3">
+			<ul class="nav nav-list">
+			  <li class="active"><a href="#"><i class="icon-list-alt"></i>Status</a></li>
+			  <li><a href="#"><i class="icon-check" ></i>Configuration</a></li>
+			  <li><a href="#"><i class="icon-warning-sign" ></i>Logs</a></li>
+			</ul>
+		</div>
+		  
+		  
+		<div class="span9">
+			<dl>
+				<dt>Machine Name</dt>
+				<dd>KNST-WS</dd>
+				<dt>Mode</dt>
+				<dd>Standalone</dd>
+				<dt>Running apps</dt>
+				<dd>
+					<table class="table table-bordered table-striped">
+					  <tbody>
+						<tr>
+							<td>TestApp</td>
+							<td>1.2.0</td>
+							<td>
+								<div class="btn-group">
+								  <button class="btn">Stop</button>
+								  <button class="btn">Restart</button>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>Orchestrator</td>
+							<td>2.2.7</td>
+							<td>
+								<div class="btn-group">
+								  <button class="btn">Stop</button>
+								  <button class="btn">Restart</button>
+								</div>
+							</td>
+						</tr>
+					  </tbody>
+					</table>
+				</dd>					
+				<dt>Actions</dt>
+				<dd>
+					<div class="btn-group">
+					  <button class="btn">Stop</button>
+					  <button class="btn">Restart</button>
+					</div>
+				</dd>								
+			</dl>
+		</div>
+				 
+
+
+
+		</div>
+	</div>  
+</div>
+
+
+</body>
+</html>
