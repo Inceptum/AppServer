@@ -7,6 +7,7 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
     {
         string Type { get; }
         string Name { get; }
+        string Vendor { get; }
         Version Version { get; }
     }
 }

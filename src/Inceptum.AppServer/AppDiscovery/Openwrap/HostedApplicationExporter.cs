@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OpenWrap.IO;
@@ -18,8 +19,13 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
 
             return from source in GetAssemblies<Exports.IAssembly>(package, environment)
                    from assembly in source
-                   from hostedApp in assembly.File.Read(stream => HostedApps(package, assembly.Path, stream)).Cast<TItem>()
+                   from hostedApp in read (package, assembly).Cast<TItem>()
                    group hostedApp by source.Key;
+        }
+
+        private IEnumerable  read (IPackage package, Exports.IAssembly assembly)
+        {
+            return assembly.File.Read(stream => HostedApps(package, assembly.Path, stream));
         }
 
         private IEnumerable<IHostedApplicationExport> HostedApps(IPackage package, string path, Stream assemblyStream)
@@ -34,8 +40,11 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
                 if(appType==null)
                       return Enumerable.Empty<IHostedApplicationExport>();
 
-                
-                return new[] {new HostedApplicationExport(package, attribute.ConstructorArguments.First().Value.ToString(), package.Version, appType.FullName + ", " + assembly.FullName)};
+
+                var name = attribute.ConstructorArguments.First().Value.ToString();
+                var vendor = attribute.ConstructorArguments.Count==2?attribute.ConstructorArguments[1].Value.ToString():HostedApplicationAttribute.DEFAULT_VENDOR;
+
+                return new[] { new HostedApplicationExport(package, name,vendor, package.Version, appType.FullName + ", " + assembly.FullName) };
             }
             catch
             {
