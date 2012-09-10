@@ -11,17 +11,22 @@ namespace Inceptum.AppServer.Hosting
     internal class AppDomainInitializer : MarshalByRefObject
     {
          private Dictionary<AssemblyName, Lazy<Assembly>> m_LoadedAssemblies;
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+
+         public AppDomainInitializer()
+         {
+             AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
+         }
+
+         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         static extern IntPtr LoadLibrary(string lpFileName);
 
-        public void Initialize(Dictionary<AssemblyName, string> assembliesToLoad, string[] nativeDllToLoad)
+         public void Initialize(string workingDirectory, Dictionary<AssemblyName, string> assembliesToLoad, string[] nativeDllToLoad)
         {
 
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
 
             m_LoadedAssemblies = assembliesToLoad.Where(asm => !loadedAssemblies.Any(a => a.Name == asm.Key.Name))
                 .ToDictionary(asm => asm.Key, asm => new Lazy<Assembly>(() => Assembly.LoadFrom(asm.Value)));
-            AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
 
             foreach (var dll in nativeDllToLoad)
             {
@@ -31,6 +36,7 @@ namespace Inceptum.AppServer.Hosting
                 }
 
             }
+            Directory.SetCurrentDirectory(workingDirectory);
         }
          
          

@@ -60,7 +60,7 @@ namespace Inceptum.AppServer.Hosting
 
                 m_Container
                     //.AddFacility<LoggingFacility>(f => f.LogUsing(LoggerImplementation.NLog).WithConfig("nlog.config"))
-                    .AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig("nlog.config"))
+                    .AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig(Path.Combine(context.BaseDirectory,"nlog.config")))
                     .Register(
                         Component.For<AppServerContext>().Instance(context),
                         Component.For<IConfigurationProvider>().Instance(configurationProvider)
