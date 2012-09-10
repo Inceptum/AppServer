@@ -94,10 +94,12 @@
     <Compile Include="AppDiscovery\Openwrap\OpenWrapApplicationBrowser.cs" />
     <Compile Include="AppDiscovery\Openwrap\HostedApplicationExporter.cs" />
     <Compile Include="Hosting\AppDomainInitializer.cs" />
+    <Compile Include="Hosting\Application.cs" />
     <Compile Include="Hosting\ApplicationHost.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="Hosting\ApplicationHostOfT.cs" />
     <Compile Include="Hosting\ApplicationHostProxy.cs" />
+    <Compile Include="Hosting\AppServerContext.cs" />
     <Compile Include="Hosting\Host.cs" />
     <Compile Include="HbSender.cs" />
     <Compile Include="AppDiscovery\IApplicationBrowser.cs" />

@@ -99,10 +99,6 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
 
         private HostedAppInfo getAppLoadParams(IHostedApplicationExport appExport)
         {
-            string path = Path.GetFullPath(Path.Combine("apps", appExport.Name));
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
-
             IEnumerable<IPackageInfo> packages = new[] {appExport.Package}.Concat(
                 ServiceLocator.GetService<IPackageResolver>().TryResolveDependencies(appExport.Package.Descriptor, new[] {m_ProjectRepository}).SuccessfulPackages.Select(_ => _.Packages.First())
                 );
@@ -116,7 +112,7 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
 
             
 
-            return new HostedAppInfo(appExport.Name,appExport.Vendor, appExport.Version, appExport.Type, path,
+            return new HostedAppInfo(appExport.Name,appExport.Vendor, appExport.Version, appExport.Type,
                                      assembliesTooLoad.ToDictionary(a => a.AssemblyName, a => a.File.Path.FullPath), nativeDllsToLoad)
                        {
                            ConfigFile = appConfig == null ? null : appConfig.File.Path.FullPath,

@@ -44,7 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppInfo.cs" />
-    <Compile Include="AppServerContext.cs" />
     <Compile Include="Configuration\BundleNotFoundException.cs" />
     <Compile Include="HostedAppStatus.cs" />
     <Compile Include="IServerCore.cs" />

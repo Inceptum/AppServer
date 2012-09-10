@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace Inceptum.AppServer.Hosting
         private readonly IConfigurationProvider m_ConfigurationProvider;
         private readonly List<HostedAppInfo> m_Applications = new List<HostedAppInfo>();
         private readonly List<IApplicationHost> m_ApplicationHosts = new  List<IApplicationHost>();
+        private AppServerContext m_AppServerContext;
 
         public Host( IApplicationBrowser applicationBrowser, ILogger logger = null, IConfigurationProvider configurationProvider = null, string name = null)
         {
@@ -26,6 +28,12 @@ namespace Inceptum.AppServer.Hosting
             m_Logger = logger ?? NullLogger.Instance;
             m_ApplicationBrowsers.Add(applicationBrowser);
             AppsStateChanged=new Subject<Tuple<HostedAppInfo, HostedAppStatus>[]>();
+            m_AppServerContext = new AppServerContext
+                                     {
+                                         Name = Name, 
+                                         AppsDirectory = Path.Combine(Directory.GetCurrentDirectory(),"apps"),
+                                         BaseDirectory = AppDomain.CurrentDomain.BaseDirectory
+                                     };
         }
 
         public Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged { get; private set; }
@@ -122,7 +130,7 @@ namespace Inceptum.AppServer.Hosting
             var sw = Stopwatch.StartNew();
             try
             {
-                appHost.Start(MarshalableProxy.Generate(m_ConfigurationProvider), new AppServerContext {Name = Name});
+                appHost.Start(MarshalableProxy.Generate(m_ConfigurationProvider), m_AppServerContext);
                 sw.Stop();
                 m_Logger.InfoFormat("Starting application '{0}' complete in {1}ms", appHost.AppInfo, sw.ElapsedMilliseconds);
             }
@@ -201,7 +209,7 @@ namespace Inceptum.AppServer.Hosting
         /// </summary>
         internal virtual IApplicationHost CreateApplicationHost(HostedAppInfo appInfo)
         {
-            return ApplicationHost.Create(appInfo);
+            return ApplicationHost.Create(m_AppServerContext,appInfo);
         }
 
         #region IDisposable Members

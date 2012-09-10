@@ -80,7 +80,7 @@ namespace Inceptum.AppServer.AppDiscovery
                 if (appTypes.Length > 1)
                     Logger.InfoFormat("Assembly {0} contains several types implementing IHostedApplication, using {1}", app.file, appType.Name);
 
-                yield return new HostedAppInfo(app.name,app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, m_Folder, new Dictionary<AssemblyName, string> { { new AssemblyName(app.assembly.FullName), app.file } }, new string[0]);
+                yield return new HostedAppInfo(app.name,app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, new Dictionary<AssemblyName, string> { { new AssemblyName(app.assembly.FullName), app.file } }, new string[0]);
             }
         }
 

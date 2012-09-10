@@ -12,13 +12,13 @@ namespace Inceptum.AppServer
     {
 
 
-        public HostedAppInfo(string name,string vendor, Version version,string appType, string baseDirectory, IDictionary<AssemblyName, string> assembliesToLoad, IEnumerable<string> nativeDllToLoad = null)
+        public HostedAppInfo(string name,string vendor, Version version,string appType, IDictionary<AssemblyName, string> assembliesToLoad, IEnumerable<string> nativeDllToLoad = null)
         {
             AssembliesToLoad = new Dictionary<AssemblyName, string>(assembliesToLoad);
             NativeDllToLoad = (nativeDllToLoad??new string[0]).ToArray();
             Name = name;
             AppType = appType;
-            BaseDirectory = baseDirectory;
+            
             Version = version;
             Vendor = vendor;
         }
@@ -28,7 +28,6 @@ namespace Inceptum.AppServer
         public string Name { get; set; }
         public string Vendor { get; set; }
         public string AppType { get; set; }
-        public string BaseDirectory { get; set; }
         public string ConfigFile { get; set; }
         public Version Version { get; set; }
 
