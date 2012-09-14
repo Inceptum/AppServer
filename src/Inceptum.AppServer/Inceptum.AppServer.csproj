@@ -82,6 +82,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\Application.cs" />
+    <Compile Include="Hosting\ApplicationInstance.cs" />
+    <Compile Include="Model\ApplicationParams.cs" />
+    <Compile Include="Model\ApplicationVersion.cs" />
+    <Compile Include="Model\HostedApp.cs" />
     <Compile Include="AppDiscovery\FolderApplicationBrowser.cs" />
     <Compile Include="AppDiscovery\Openwrap\AppConfig.cs" />
     <Compile Include="AppDiscovery\Openwrap\AppConfigExporter.cs" />
@@ -95,15 +100,14 @@
     <Compile Include="AppDiscovery\Openwrap\HostedApplicationExporter.cs" />
     <Compile Include="Hosting\AppDomainInitializer.cs" />
     <Compile Include="Hosting\Application.cs" />
-    <Compile Include="Hosting\ApplicationHost.cs" />
     <Compile Include="Bootstrapper.cs" />
-    <Compile Include="Hosting\ApplicationHostOfT.cs" />
-    <Compile Include="Hosting\ApplicationHostProxy.cs" />
+    <Compile Include="Hosting\ApplicationHost.cs" />
+    <Compile Include="Model\ApplicationName.cs" />
     <Compile Include="Hosting\AppServerContext.cs" />
-    <Compile Include="Hosting\Host.cs" />
     <Compile Include="HbSender.cs" />
     <Compile Include="AppDiscovery\IApplicationBrowser.cs" />
     <Compile Include="Hosting\IApplicationHost.cs" />
+    <Compile Include="Hosting\IApplicationInstanceFactory.cs" />
     <Compile Include="Hosting\MarshalableProxy.cs" />
     <Compile Include="Windsor\PluginInstallerFactory.cs" />
     <Compile Include="Program.cs" />

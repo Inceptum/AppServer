@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Threading;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
+using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
+using Inceptum.AppServer.Model;
 using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.AppDiscovery.Openwrap;
 using Inceptum.AppServer.Configuration;
@@ -74,8 +77,11 @@ namespace Inceptum.AppServer
                 log.Info("Creating container");
                 try
                 {
+                    var logFolder = new[] { AppDomain.CurrentDomain.BaseDirectory, "logs", "server" }.Aggregate(Path.Combine);
+                    GlobalDiagnosticsContext.Set("logfolder", logFolder);
                     container = new WindsorContainer()
                         .AddFacility<StartableFacility>()
+                        .AddFacility<TypedFactoryFacility>()
                         .AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig(nlogConf));
                     
                     container.Kernel.Resolver.AddSubResolver(new ConventionBasedResolver(container.Kernel));
@@ -111,11 +117,16 @@ namespace Inceptum.AppServer
                     //messaging
                     .AddFacility<MessagingFacility>(f => { })
                     .Register(
+                        Component.For<IApplicationInstanceFactory>().AsFactory(),
+                        Component.For<ApplicationInstance>(),
+                        //Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
                         Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
                     //Applications to be started
                         setup.AppsToStart == null
                             ? Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
                             : Component.For<Bootstrapper>().DependsOn(new { appsToStart = setup.AppsToStart }),
+
+                            //TODO: get rid of this
                         Component.For<IServerCore>().ImplementedBy<ServerCore>(),
                         Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
                         Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(

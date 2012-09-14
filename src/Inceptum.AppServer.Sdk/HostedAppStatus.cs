@@ -2,7 +2,7 @@ namespace Inceptum.AppServer
 {
     public enum HostedAppStatus
     {
-        NotStarted,
+        Stopped,
         Starting,
         Stopping,
         Started
