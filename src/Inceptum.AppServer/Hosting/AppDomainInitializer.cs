@@ -40,17 +40,17 @@ namespace Inceptum.AppServer.Hosting
         }
          
          
-         public IApplicationHost CreateHost(HostedAppInfo appInfo)
+         public IApplicationHost CreateHost(string appTypeName)
          {
-             Type hostType = typeof(ApplicationHost<>).MakeGenericType(Type.GetType(appInfo.AppType));
-             return (IApplicationHost)Activator.CreateInstance(hostType, appInfo);
+             Type hostType = typeof(ApplicationHost<>).MakeGenericType(Type.GetType(appTypeName));
+             return (IApplicationHost)Activator.CreateInstance(hostType);
 
          }
 
         private Assembly onAssemblyResolve(object sender, ResolveEventArgs args)
         {
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            var assembly = loadedAssemblies.Where(a => a.GetName().Name == new AssemblyName(args.Name).Name|| a.FullName == args.Name || a.GetName().Name == args.Name).FirstOrDefault();
+            var assembly = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == new AssemblyName(args.Name).Name|| a.FullName == args.Name || a.GetName().Name == args.Name);
 
             if(assembly!=null)
                 return assembly;
