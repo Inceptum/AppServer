@@ -1,0 +1,16 @@
+
+        <dl>
+            <dt>Name</dt>
+            <dd><%= model.Name %></dd>
+            <dt>Application</dt>
+            <dd><a href="#/applications/<%=model.ApplicationId%>"><%=model.ApplicationId%></a></a></dd>
+            <dt>Version</dt>
+            <dd><%= model.Version %></dd>
+            <dt>Actions</dt>
+            <dd>
+                <div class="btn-group">
+                    <button class="btn">Stop</button>
+                    <button class="btn">Restart</button>
+                </div>
+            </dd>
+        </dl>

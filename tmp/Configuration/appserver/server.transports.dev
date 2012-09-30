@@ -1,8 +1,0 @@
-{
-	"endpoints":{
-			"hbEndpoint":{
-				"Destination":"topic://finam.ibank.dev.monitoring.hb"
-				}
-	
-		}	
-}

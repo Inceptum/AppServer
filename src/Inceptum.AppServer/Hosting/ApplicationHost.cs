@@ -11,6 +11,7 @@ using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Windsor;
 using Inceptum.Core.Utils;
 using NLog;
+using NLog.Config;
 
 namespace Inceptum.AppServer.Hosting
 {
@@ -34,7 +35,7 @@ namespace Inceptum.AppServer.Hosting
         public HostedAppStatus Status { get; private set; }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void Start(IConfigurationProvider configurationProvider, AppServerContext context)
+        public void Start(IConfigurationProvider configurationProvider, ILogCache logCache, AppServerContext context, string instanceName)
         {
             Status = HostedAppStatus.Starting;
             if (m_Container != null)
@@ -52,15 +53,24 @@ namespace Inceptum.AppServer.Hosting
                         .Install(Castle.Windsor.Installer.Configuration.FromXmlFile(configurationFile));
                 }
 
+                m_Container.Register(
+                   Component.For<ILogCache>().Instance(logCache).Named("LogCache"),
+                   Component.For<ManagementConsoleTarget>().DependsOn(new { source = instanceName })
+                   );
 
-                var logFolder = new[] {context.BaseDirectory, "logs", AppDomain.CurrentDomain.FriendlyName}.Aggregate(Path.Combine);
+
+                var logFolder = new[] { context.BaseDirectory, "logs", instanceName }.Aggregate(Path.Combine);
                 GlobalDiagnosticsContext.Set("logfolder",logFolder);
+                ConfigurationItemFactory.Default.Targets.RegisterDefinition("ManagementConsole", typeof(ManagementConsoleTarget));
+                var createInstanceOriginal = ConfigurationItemFactory.Default.CreateInstance;
+                ConfigurationItemFactory.Default.CreateInstance = type => m_Container.Kernel.HasComponent(type) ? m_Container.Resolve(type) : createInstanceOriginal(type);
+
 
                 m_Container
                     .AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig(Path.Combine(context.BaseDirectory,"nlog.config")))
                     .Register(
                         Component.For<AppServerContext>().Instance(context),
-                        Component.For<IConfigurationProvider>().Instance(configurationProvider)
+                        Component.For<IConfigurationProvider>().Named("ConfigurationProvider").Instance(configurationProvider)
                     )
                     .Install(FromAssembly.Instance(typeof (TApp).Assembly, new PluginInstallerFactory()))
                     .Register(Component.For<IHostedApplication>().ImplementedBy<TApp>())

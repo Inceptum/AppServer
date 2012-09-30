@@ -6,11 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Threading;
+using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
 using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
+using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Inceptum.AppServer.Model;
@@ -20,13 +22,15 @@ using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Providers;
 using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Logging;
-using Inceptum.AppServer.Management;
+using Inceptum.AppServer.Management2;
+using Inceptum.AppServer.Notification;
 using Inceptum.AppServer.Windsor;
 using Inceptum.Core.Utils;
 using Inceptum.Messaging;
 using Inceptum.Messaging.Castle;
 using NLog;
 using NLog.Config;
+using SignalR;
 
 namespace Inceptum.AppServer
 {
@@ -57,8 +61,11 @@ namespace Inceptum.AppServer
 
         private void start()
         {
+/*
             m_Host.RediscoverApps();
             m_Host.StartApps(m_AppsToStart);
+*/
+            m_Host.Start();
         }
 
         internal static IDisposable Start(AppServerSetup setup)
@@ -66,26 +73,47 @@ namespace Inceptum.AppServer
             
             AppDomainRenderer.Register();
                 string machineName = Environment.MachineName;
-            IWindsorContainer container;
-                    
+                
+            IWindsorContainer container = new WindsorContainer();
+
             ILogger logger;
+            var logFolder = new[] { AppDomain.CurrentDomain.BaseDirectory, "logs", "server" }.Aggregate(Path.Combine);
+            GlobalDiagnosticsContext.Set("logfolder", logFolder);
+            ConfigurationItemFactory.Default.Targets.RegisterDefinition("ManagementConsole", typeof(ManagementConsoleTarget));
+            container.Register(
+                Component.For<ILogCache>().ImplementedBy<LogCache>().Forward<LogCache>().DependsOn(new { capacity = 2000 }),
+                Component.For<LogConnection>(),
+                Component.For<ManagementConsoleTarget>().DependsOn(new {source="Server"}),
+                Component.For<UiNotificationHub>().Forward<IHostNotificationListener>()
+                );
+
+            GlobalHost.DependencyResolver = new WindsorToSignalRAdapter(container);
+            //TODO: stop!!!
+            SignalRhost.Start();
+
+
+            var createInstanceOriginal = ConfigurationItemFactory.Default.CreateInstance;
+            ConfigurationItemFactory.Default.CreateInstance = type => container.Kernel.HasComponent(type) ? container.Resolve(type) : createInstanceOriginal(type);
+
             var nlogConf = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "nlog.config");
-            using (var logFactory = new LogFactory(new XmlLoggingConfiguration(nlogConf)))
+            var loggingConfiguration = new XmlLoggingConfiguration(nlogConf);
+
+            using (var logFactory = new LogFactory(loggingConfiguration))
             {
+                Thread.Sleep(1000);
                 var log = logFactory.GetLogger(typeof (Bootstrapper).Name);
                 log.Info("Initializing...");
                 log.Info("Creating container");
                 try
                 {
-                    var logFolder = new[] { AppDomain.CurrentDomain.BaseDirectory, "logs", "server" }.Aggregate(Path.Combine);
-                    GlobalDiagnosticsContext.Set("logfolder", logFolder);
-                    container = new WindsorContainer()
+                    container
                         .AddFacility<StartableFacility>()
                         .AddFacility<TypedFactoryFacility>()
                         .AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig(nlogConf));
-                    
+
+                    container.Kernel.Resolver.AddSubResolver(new CollectionResolver(container.Kernel));
                     container.Kernel.Resolver.AddSubResolver(new ConventionBasedResolver(container.Kernel));
-                    
+
                     logger = container.Resolve<ILoggerFactory>().Create(typeof (Bootstrapper));
                 }catch(Exception e)
                 {
@@ -118,7 +146,7 @@ namespace Inceptum.AppServer
                     .AddFacility<MessagingFacility>(f => { })
                     .Register(
                         Component.For<IApplicationInstanceFactory>().AsFactory(),
-                        Component.For<ApplicationInstance>(),
+                        Component.For<ApplicationInstance>().LifestyleTransient(),
                         //Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
                         Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
                     //Applications to be started
@@ -134,13 +162,34 @@ namespace Inceptum.AppServer
                             {
                                 repository = setup.Repository ?? "Repository",
                                 debugWraps = setup.DebugWraps ?? new string[0]
-                            })
-                    );
+                            }));
 
                 //HearBeats
                 if (setup.SendHb)
                     container.Register(Component.For<HbSender>().DependsOn(new { environment = setup.Environment, hbInterval = setup.HbInterval }));
 
+                UiNotificationHub hub = container.Resolve<UiNotificationHub>();
+                Task.Factory.StartNew(() =>
+                                          {
+                                              int i=0;
+                                              while (true)
+                                              {
+/*                                                  if (i % 11 == 0)
+                                                    logger.FatalFormat("message {0}", i);
+                                                  else if (i % 7 == 0)
+                                                    logger.ErrorFormat("message {0}", i);
+                                                  else if (i % 5== 0)
+                                                    logger.WarnFormat("message {0}", i);
+                                                  else if (i % 3 == 0)
+                                                    logger.InfoFormat("message {0}", i);
+                                                  else
+                                                    logger.DebugFormat("message {0}", i);*/
+                                                //  hub.InstancesChanged();
+                                                  //hub.HeartBeat();
+                                                  Thread.Sleep(1000);
+                                                  i++;
+                                              }
+                                          });  
             }
             catch (Exception e)
             {

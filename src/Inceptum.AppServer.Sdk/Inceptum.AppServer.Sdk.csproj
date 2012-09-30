@@ -48,6 +48,11 @@
     <Compile Include="HostedAppStatus.cs" />
     <Compile Include="IServerCore.cs" />
     <Compile Include="Logging\GenericsAwareNLoggerFactory.cs" />
+    <Compile Include="Model\Application.cs" />
+    <Compile Include="Model\ApplicationInstanceInfo.cs" />
+    <Compile Include="Model\ApplicationName.cs" />
+    <Compile Include="Model\ApplicationParams.cs" />
+    <Compile Include="Model\ApplicationVersion.cs" />
     <Compile Include="Monitoring\HbFeedProvider.cs" />
     <Compile Include="Monitoring\HostHbMessage.cs" />
     <Compile Include="Monitoring\InstanceInfo.cs" />
@@ -65,6 +70,7 @@
     <Compile Include="IHost.cs" />
     <Compile Include="IHostedApplication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StringVersionJsonConverter.cs" />
   </ItemGroup>
   <Import Project="..\..\wraps\openwrap\build\OpenWrap.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

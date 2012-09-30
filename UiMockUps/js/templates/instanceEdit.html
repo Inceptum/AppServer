@@ -1,0 +1,40 @@
+<form class="form-horizontal">
+    <div class="control-group">
+        <label class="control-label" for="inputName">Name</label>
+        <div class="controls">
+            <input type="text" id="inputName" name="Name" placeholder="Name">
+        </div>
+    </div>    
+    <div class="control-group">
+        <label class="control-label" for="inputApplication">Application</label>
+        <div class="controls">
+            <input disabled="disabled" type="text" id="inputApplication"  placeholder="Application" value="<%=model.ApplicationId%>">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="inputVersion">Version</label>
+        <div class="controls">
+            <select id="inputVersion" placeholder="Version"  name="Version">
+                <option value="latest">Use latest</option>
+            </select>
+        </div>
+    </div>
+
+<!--    <div class="control-group">
+        <label class="control-label" for="inputStartup">Start on server startup </label>
+        <div class="controls">
+            <input type="checkbox" id="inputStartup" placeholder="Startup">
+        </div>
+    </div>-->
+    <div class="control-group">
+
+        <div class="controls">
+            <label class="checkbox">
+                Start on server startup <input type="checkbox" id="inputStartup"  name="Startup">
+            </label>
+        </div>
+    </div>
+    <div>
+        <button type="submit" id="submit" class="btn">Update</button>
+    </div>
+</form>

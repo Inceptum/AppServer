@@ -1,0 +1,7 @@
+﻿name: AnotherTestApp
+depends: openwrap anchored content
+depends: Inceptum.AppServer >=1.1
+
+build: command; path=msbuild; args=/p:Configuration=Release "/p:Platform=Any CPU" "/property:OpenWrap-EmitOutputInstructions=false" src/TestApp.sln
+build: files; file=config -> src\Inceptum.AppServer.TestApp\app.config
+build: files; file=bin-net40 -> src\Inceptum.AppServer.TestApp\bin\Release\Inceptum.AppServer.TestApp.dll

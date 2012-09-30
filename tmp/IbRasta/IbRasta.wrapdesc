@@ -1,3 +1,0 @@
-﻿name: IbRasta
-build: files; file=bin-net40 -> src\*.*
-depends: openwrap anchored content

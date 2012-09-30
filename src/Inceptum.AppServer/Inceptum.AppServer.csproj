@@ -82,11 +82,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\Application.cs" />
     <Compile Include="Hosting\ApplicationInstance.cs" />
-    <Compile Include="Model\ApplicationParams.cs" />
-    <Compile Include="Model\ApplicationVersion.cs" />
-    <Compile Include="Model\HostedApp.cs" />
     <Compile Include="AppDiscovery\FolderApplicationBrowser.cs" />
     <Compile Include="AppDiscovery\Openwrap\AppConfig.cs" />
     <Compile Include="AppDiscovery\Openwrap\AppConfigExporter.cs" />
@@ -99,16 +95,22 @@
     <Compile Include="AppDiscovery\Openwrap\OpenWrapApplicationBrowser.cs" />
     <Compile Include="AppDiscovery\Openwrap\HostedApplicationExporter.cs" />
     <Compile Include="Hosting\AppDomainInitializer.cs" />
-    <Compile Include="Hosting\Application.cs" />
+    <Compile Include="Hosting\Host.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="Hosting\ApplicationHost.cs" />
-    <Compile Include="Model\ApplicationName.cs" />
     <Compile Include="Hosting\AppServerContext.cs" />
     <Compile Include="HbSender.cs" />
     <Compile Include="AppDiscovery\IApplicationBrowser.cs" />
     <Compile Include="Hosting\IApplicationHost.cs" />
-    <Compile Include="Hosting\IApplicationInstanceFactory.cs" />
+    <Compile Include="Logging\ILogCache.cs" />
+    <Compile Include="Logging\LogCache.cs" />
+    <Compile Include="Logging\LogConnection.cs" />
+    <Compile Include="Logging\LogEvent.cs" />
+    <Compile Include="Logging\ManagementConsoleTarget.cs" />
+    <Compile Include="Notification\UiNotificationHub.cs" />
+    <Compile Include="Windsor\IApplicationInstanceFactory.cs" />
     <Compile Include="Hosting\MarshalableProxy.cs" />
+    <Compile Include="Windsor\WindsorToSignalRAdapter.cs" />
     <Compile Include="Windsor\PluginInstallerFactory.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -143,6 +145,10 @@
     <ProjectReference Include="..\Inceptum.AppServer.Configuration\Inceptum.AppServer.Configuration.csproj">
       <Project>{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}</Project>
       <Name>Inceptum.AppServer.Configuration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Inceptum.AppServer.Management2\Inceptum.AppServer.Management2.csproj">
+      <Project>{0F7D48A2-BAA8-4FCF-AA11-FFEA5891ED27}</Project>
+      <Name>Inceptum.AppServer.Management2</Name>
     </ProjectReference>
     <ProjectReference Include="..\Inceptum.AppServer.Management\Inceptum.AppServer.Management.csproj">
       <Project>{7BC75E31-2A09-4E4B-8D3A-17828BCC8CC7}</Project>

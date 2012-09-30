@@ -1,0 +1,30 @@
+<style>
+    .log p{
+        margin:0 0 0px;
+    }
+
+    .log{
+        height:600px;
+        overflow: auto;
+        /*min-height: 100%;*/
+    }
+
+
+</style>
+<div class="row">
+    <div class="span3 sidebar">
+    </div>
+
+
+    <div class="span9" id="serverArea">
+        <h4>Recent logs <span  class="connectionState label label-important" style="margin-left:20px">Connection lost</span></h4>
+        <select id="filter">
+            <option>All</option>
+            <option value="Server">Server</option>
+        </select>
+        <div class="well log">
+
+        </div>
+
+    </div>
+</div>

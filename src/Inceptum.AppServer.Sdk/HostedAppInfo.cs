@@ -27,6 +27,7 @@ namespace Inceptum.AppServer
 
         public string Name { get; set; }
         public string Vendor { get; set; }
+        public string Description { get; set; }
         public string AppType { get; set; }
         public string ConfigFile { get; set; }
         public Version Version { get; set; }
