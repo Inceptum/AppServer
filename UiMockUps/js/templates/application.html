@@ -1,0 +1,51 @@
+<style>
+    .app-versions   .tab-content > .active, .pill-content > .active {
+        display: block;
+        margin-top: -1px;
+    }
+
+
+    .app-versions  .tab-pane {
+        padding: 20px; margin-bottom: 30px; border: 1px solid #ddd;
+        -webkit-border-radius:0 0 4px 4px;
+        -moz-border-radius: 0 0 4px 4px;
+        border-radius: 0 0 4px 4px; }
+    .app-versions  ul.nav-tabs { margin-bottom: 0;}
+
+    .app-versions .tab-content > .active, .pill-content > .active {
+        display: block;
+        margin-top: -1px;
+    }
+
+</style>
+
+<dl>
+    <dt>Name</dt>
+    <dd><%= model.Name %></dd>
+    <dt>Vendor</dt>
+    <dd><a href="http://inceptumsoft.com"><%= model.Vendor %></a></dd>
+    <dt>Available versions</dt>
+    <dd class="app-versions">
+        <div class="tabbable">
+        <ul class="nav nav-tabs ">
+            <% _.each(model.Versions,function(ver) { %>
+            <li class="<%= ver.Version.split('.').join('_')%>"><a  data-toggle="tab" data-version="<%=ver.Version%>"  href="#<%= ver.Version.split('.').join('_')%>"><%= ver.Version%></a></li>
+            <% }); %>
+        </ul>
+        <div class="tab-content"  >
+            <% _.each(model.Versions,function(ver) { %>
+            <div class="tab-pane active" id="<%= ver.Version.split('.').join('_')%>">
+                <p><%=ver.Description%>.</p>
+            </div>
+            <% }); %>
+        </div>
+        </div>
+        <span class="description"></span>
+    </dd>
+
+    <dt >Instances</dt>
+    <dd class="instances">
+
+    </dd>
+    <a href="#/applications/<%=model.Name%>/instances/create"  class="btn btn-small btn-primary" type="button">Create instance</a>
+</dl>

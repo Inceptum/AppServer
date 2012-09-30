@@ -1,0 +1,11 @@
+    <td><a href="#/instances/<%=model.Name%>"><%=model.Name%></a></td>
+    <td><a href="#/applications/<%=model.ApplicationId%>"><%=model.ApplicationId%></a></td>
+    <td><%=model.Version%></td>
+    <td><%=model.Status%></td>
+    <td>
+        <div class="btn-group actions">
+            <button class="btn btn-mini start" disabled="disabled">Start</button>
+            <button class="btn btn-mini stop" disabled="disabled">Stop</button>
+            <button class="btn btn-mini btn-danger delete" disabled="disabled">Delete</button>
+        </div>
+    </td>

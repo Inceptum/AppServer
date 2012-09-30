@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Subjects;
+using Inceptum.AppServer.Model;
 
 
 namespace Inceptum.AppServer
@@ -8,11 +9,17 @@ namespace Inceptum.AppServer
     {
         string Name { get; }
         string MachineName { get; }
-        AppInfo[] DiscoveredApps { get; }
-        Tuple<HostedAppInfo, HostedAppStatus>[] HostedApps { get; }
-        void RediscoverApps();
-        void StartApps(params string[] appsToStart);
-        void StopApps(params string[] appsToStart);
+        Application[] Applications { get; }
+        ApplicationInstanceInfo[] Instances { get; }
         Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged { get;  }
+
+
+        void RediscoverApps();
+        void Start();
+        void StartInstance(string name);
+        void StopInstance(string name);
+        void AddInstance(ApplicationInstanceInfo config);
+        void DeleteInstance(string name);
+
     }
 }

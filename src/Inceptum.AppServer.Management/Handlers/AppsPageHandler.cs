@@ -15,10 +15,12 @@ namespace Inceptum.AppServer.Management.Handlers
 
         public void Post(string app)
         {
-            if (m_Host.HostedApps.Any(a => a.Item1.Name == app))
+/*
+            if (m_Host.Instances.Any(a => a.Name == app))
                 m_Host.StopApps(app);
             else
                 m_Host.StartApps(app);
+*/
 
         }
 
@@ -34,12 +36,12 @@ namespace Inceptum.AppServer.Management.Handlers
                                                    Name = m_Host.Name,
                                                    MachineName = m_Host.MachineName,
                                                    Apps = 
-                                                        m_Host.DiscoveredApps
+                                                        m_Host.Applications
                                                                 .Select(
                                                                         a => new Application
                                                                                  {
                                                                                      Name=a.Name,
-                                                                                     IsStarted = m_Host.HostedApps.Any(app=>app.Item1.Name==a.Name&& app.Item1.Version==a.Version)
+                                                                                     IsStarted = m_Host.Instances.Any(app=>app.Name==a.Name)
                                                                                  })
                                                                 .ToArray()
                                                }

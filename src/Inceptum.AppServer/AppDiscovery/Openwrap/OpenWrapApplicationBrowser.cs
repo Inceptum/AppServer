@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Castle.Components.DictionaryAdapter;
 using Castle.Core.Logging;
 using OpenFileSystem.IO.FileSystems.InMemory;
 using OpenFileSystem.IO.FileSystems.Local.Win32;
@@ -83,9 +84,25 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
             var debugApps = m_DebugRepo != null
                                 ? m_PackageManager.GetSystemExports<IHostedApplicationExport>(m_DebugRepo, m_Environment).SelectMany(x => x).Select(getAppLoadParams).ToArray()
                                 : new HostedAppInfo[0];
-            var releaseApps = m_PackageManager.GetSystemExports<IHostedApplicationExport>(m_ProjectRepository, m_Environment)
+
+            var packages = m_ProjectRepository.PackagesByName.SelectMany(x => x);
+
+            List<HostedAppInfo> releaseApps = new List<HostedAppInfo>();
+            foreach (var package in packages)
+            {
+                PackageDescriptor descriptor = new PackageDescriptor();
+                descriptor.Name = "tester";
+                descriptor.Version = new Version(0,0,1,1);
+                descriptor.Dependencies.Add(new PackageDependency(package.Name, new[] { new EqualVersionVertex(package.Version) }));
+                releaseApps.AddRange(m_PackageManager.GetProjectExports<IHostedApplicationExport>(descriptor, m_ProjectRepository, m_Environment)
+                    .SelectMany(x => x).Where(x => !debugApps.Any(p => p.Name == x.Name)).Select(getAppLoadParams));
+            }
+
+            
+      /*      var releaseApps = m_PackageManager.GetSystemExports<IHostedApplicationExport>(m_ProjectRepository, m_Environment)
                                             .SelectMany(x => x).Where(x => !debugApps.Any(p => p.Name == x.Name)).Select(getAppLoadParams).ToArray();
-            return debugApps.Concat(releaseApps);
+    */
+            return debugApps.Concat(releaseApps.GroupBy(a => a.Version).Select(g => g.First())).ToArray();
         }
 
         #endregion
@@ -116,7 +133,8 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
                                      assembliesTooLoad.ToDictionary(a => a.AssemblyName, a => a.File.Path.FullPath), nativeDllsToLoad)
                        {
                            ConfigFile = appConfig == null ? null : appConfig.File.Path.FullPath,
-                           Vendor=appExport.Vendor
+                           Vendor=appExport.Vendor,Description = appExport.Vendor+"© "+appExport.Name+" v"+appExport.Version
+                           
                        };
         }
     }

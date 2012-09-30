@@ -45,8 +45,8 @@
     <Compile Include="Handlers\AppsPageHandler.cs" />
     <Compile Include="Handlers\BundleHandler.cs" />
     <Compile Include="Handlers\ConfPageHandler.cs" />
-    <Compile Include="Handlers\ServerPageHandler.cs" />
     <Compile Include="Handlers\EmbeddedContentHandler.cs" />
+    <Compile Include="Handlers\ServerPageHandler.cs" />
     <Compile Include="HttpListenerHostWithConfiguration.cs" />
     <Compile Include="ManagementConsole.cs" />
     <Compile Include="NewtonsoftJsonCodec.cs" />

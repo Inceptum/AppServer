@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inceptum.AppServer</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        }
+        html, body {
+            height: 100%;
+        }
+
+        dt{
+            margin-top: .5em;
+            margin-bottom: .3em;
+        }
+#sidebar>div{
+    position:fixed;
+    width:220px;
+}
+
+    </style>
+
+    <script src="js/libs/console-log-wrapper.js"></script>
+    <script data-main="js/main" src="js/require-jquery.js"></script>
+</head>
+<body>
+
+<div id="header"></div>
+
+<div class="container"  id="main">
+    <div class="row">
+        <div class="span3" id="sidebar">
+        </div>
+
+        <div class="span9" id="content">
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>

@@ -36,7 +36,8 @@ namespace Inceptum.AppServer.Hosting
                 }
 
             }
-            Directory.SetCurrentDirectory(workingDirectory);
+             //TODO: current directory is defined per process. Need to arrange app dirs somehow
+           // Directory.SetCurrentDirectory(workingDirectory);
         }
          
          

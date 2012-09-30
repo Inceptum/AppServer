@@ -38,7 +38,7 @@ namespace Inceptum.AppServer
                                 {
                                     Services = empty 
                                             ? new string[0]
-                                            : m_Host.HostedApps.Where(a => a.Item2 == HostedAppStatus.Started).Select(a => a.Item1.Name).ToArray(),
+                                            : m_Host.Instances.Where(a => a.Status == HostedAppStatus.Started).Select(a => a.ApplicationId).ToArray(),
 
                                     InstanceName = m_InstanceName,
                                     Period = m_HbInterval
@@ -69,7 +69,7 @@ namespace Inceptum.AppServer
 
         public void Stop()
         {
-           m_AppsChangeSubscription.Dispose();
+            m_AppsChangeSubscription.Dispose();
             m_AppsChangeSubscription = null;
             sendHb(true);
 

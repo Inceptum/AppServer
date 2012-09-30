@@ -1,0 +1,17 @@
+<div class="well" style="padding: 8px 0;">
+    <ul class="nav nav-list appsMenu">
+        <!--                <li class="nav-header">System</li>
+       <li><a href="#">Configuration <span class="badge">1</span></a></li>
+       <li><a href="#">Management <span class="badge">1</span></a></li>
+       <li class="nav-header">Hosted</li>-->
+        <% _.each(model,function(app) { %>
+        <li data-id="<%= app.Name %>"><a href="#applications/<%= app.Name %>"><%= app.Name %></a></li>
+        <% }); %>
+        <!--
+                    <li class="active"><a href="#">TestApp <span class="badge">2</span></a></li>
+                    <li><a href="#">Orchestrator</a></li>
+                    <li ><a href="#">DiasoftAdapter</a></li>
+                    <li><a href="#">CyberplatAdapter</a></li>
+        -->
+    </ul>
+</div>

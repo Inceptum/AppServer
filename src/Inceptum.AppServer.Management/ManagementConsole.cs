@@ -38,7 +38,7 @@ namespace Inceptum.AppServer.Management
         private readonly IWindsorContainer m_Container;
         private readonly string m_Uri = "http://+:9222/";
         private readonly bool m_Enabled;
-
+        //TODO: create installer instead of passing container directly (may be use child container for openwrap stuff)
         public ManagementConsole(IWindsorContainer container, ILogger logger, int port=9222, bool enabled=true)
         {
             m_Enabled = enabled;
@@ -46,7 +46,6 @@ namespace Inceptum.AppServer.Management
             m_Logger = logger;
             m_Uri = string.Format("http://+:{0}/", port);
             m_Container = container;
-
         }
 
 
