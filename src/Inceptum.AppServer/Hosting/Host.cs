@@ -14,17 +14,27 @@ using Newtonsoft.Json.Linq;
 
 namespace Inceptum.AppServer.Hosting
 {
+
+    class InstanceNode
+    {
+        public InstanceConfig Config { get; set; }
+        public ApplicationInstance Instance { get; set; }
+    }
+
     class Host:IHost,IDisposable
     {
         private ILogger Logger { get; set; }
         public string Name { get; set; }
-        readonly List<Application> m_Applications=new List<Application>();
+        List<Application> m_Applications=new List<Application>();
         readonly List<ApplicationInstance> m_Instances = new List<ApplicationInstance>();
+        private InstanceConfig[] m_InstancesConfiguration =new InstanceConfig[0];
+
         private readonly IApplicationBrowser m_ApplicationBrowser;
         private readonly IApplicationInstanceFactory m_InstanceFactory;
         private readonly AppServerContext m_Context;
         private readonly IEnumerable<IHostNotificationListener> m_Listeners;
-        private IManageableConfigurationProvider m_ConfigurationProvider;
+        private readonly IManageableConfigurationProvider m_ConfigurationProvider;
+        object m_SyncRoot=new object();
 
         public Host(IManageableConfigurationProvider configurationProvider,IApplicationBrowser applicationBrowser, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ILogger logger = null, string name = null)
         {
@@ -32,7 +42,7 @@ namespace Inceptum.AppServer.Hosting
             m_Listeners = listeners;
             m_InstanceFactory = instanceFactory;
             Logger = logger;
-            Name = name??Environment.MachineName;;
+            Name = name??Environment.MachineName;
             m_ApplicationBrowser = applicationBrowser;
             m_Context = new AppServerContext
             {
@@ -52,7 +62,7 @@ namespace Inceptum.AppServer.Hosting
         public Application[] Applications
         {
             get {
-                lock (m_Applications)
+                lock (m_SyncRoot)
                 {
                     return m_Applications.ToArray();
                 }
@@ -63,13 +73,20 @@ namespace Inceptum.AppServer.Hosting
         {
             get
             {
-                return m_Instances.Select(i => new ApplicationInstanceInfo
-                                            {
-                                                Name = i.Name,
-                                                ApplicationId = i.ApplicationId,
-                                                Status = i.Status,
-                                                Version = i.Version
-                                            }).OrderByDescending(i=>i.Version).ToArray();
+                lock (m_SyncRoot)
+                    {
+                        return (from cfg in m_InstancesConfiguration
+                                join instance in m_Instances on cfg.Name equals instance.Name into t
+                                from instance in t
+                                select new ApplicationInstanceInfo
+                                           {
+                                               Name = cfg.Name,
+                                               ApplicationId = cfg.ApplicationId,
+                                               Status = instance.Status,
+                                               Version = cfg.Version,
+                                               AutoStart = cfg.AutoStart
+                                           }).ToArray();
+                    }
             }
         }
 
@@ -78,79 +95,70 @@ namespace Inceptum.AppServer.Hosting
         {
             RediscoverApps();
             updateInstancesConfiguration();
-            foreach (var instance in m_Instances)
+            lock (m_SyncRoot)
             {
-                StartInstance(instance.Name);
+                foreach (var instance in m_InstancesConfiguration.Where(c => c.AutoStart).Select(c => c.Name))
+                {
+                    StartInstance(instance);
+                }
             }
         }
 
         public void RediscoverApps()
         {
             var appInfos = m_ApplicationBrowser.GetAvailabelApps();
+            var applications = new List<Application>();
             foreach (var appInfo in appInfos)
             {
-                Application application;
-                lock (m_Applications)
+                Application application = applications.FirstOrDefault(a => a.Name == appInfo.Name);
+                if (application == null)
                 {
-                    application = m_Applications.FirstOrDefault(a=>a.Name==appInfo.Name);
-                    if (application==null)
-                    {
-                        application = new Application(appInfo.Name,appInfo.Vendor);
-                        m_Applications.Add(application);
-                    }
+                    application = new Application(appInfo.Name, appInfo.Vendor);
+                    applications.Add(application);
                 }
 
-                lock(application)
-                    application.RegisterOrUpdateVersion(appInfo);
-            }
-        }
 
-        private  void updateInstancesConfiguration()
-        {
-            var bundle = m_ConfigurationProvider.GetBundle("AppServer", "instances");
-            var infos = JsonConvert.DeserializeObject<ApplicationInstanceInfo[]>(bundle);
-            lock (m_Instances)
+                application.RegisterOrUpdateVersion(appInfo);
+            }
+
+
+            lock(m_SyncRoot)
             {
-                foreach (var info in infos)
-                {
-                    var instance = m_Instances.FirstOrDefault(i => i.Name == info.Name);
-                    if(instance==null)
-                    {
-                        createInstance(info);
-                    }
-                }
+                m_Applications = applications;
+                updateInstances();
             }
         }
 
+        private void updateInstances()
+        {
+            var instanceParams = from config in m_InstancesConfiguration
+                             join app in m_Applications on config.ApplicationId equals app.Name into matchedApp
+                             from app in matchedApp.DefaultIfEmpty()
+                             let applicationParams = app != null ? app.GetLoadParams(config.Version) : null
+                             join instance in m_Instances on config.Name equals instance.Name into matchedInstance
+                             from instance in matchedInstance.DefaultIfEmpty()
+                             select new {config.Name, applicationParams, instance=instance??createInstance(config)};
 
-        public void AddInstance(ApplicationInstanceInfo config)
-        {
-            var instances = JsonConvert.SerializeObject(Instances.Concat(new []{config}).ToArray(),Formatting.Indented);
-            m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
-            updateInstancesConfiguration();
-        }        
-        
-        public void DeleteInstance(string name)
-        {
-            lock (m_Instances)
+            foreach (var instanceParam in instanceParams)
             {
-                var instance = m_Instances.FirstOrDefault(i => i.Name == name);
-                if(instance==null)
-                    return;
-                StopInstance(name);
-                m_Instances.Remove(instance);
-                //TODO: cleanup instance folder
-                var instances = JsonConvert.SerializeObject(Instances.Where(i=>i.Name!=name).ToArray(),Formatting.Indented);
-                m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
-                updateInstancesConfiguration();
+                instanceParam.instance.UpdateApplicationParams(instanceParam.applicationParams);
             }
-        
+            notefyInstancesChanged();
         }
 
-        public void createInstance(ApplicationInstanceInfo config)
+        private ApplicationInstance createInstance(InstanceConfig config)
+        {
+            var instance = m_InstanceFactory.Create(config.Name, m_Context);
+            m_Instances.Add(instance);
+            instance.Subscribe(status => notefyInstancesChanged(instance.Name + ":" + instance.Status));
+            return instance;
+        }
+
+      /*  private ApplicationInstance createInstance(InstanceConfig config)
         {
             if (config == null) throw new ArgumentNullException("config");
             if (string.IsNullOrWhiteSpace(config.Name)) throw new ArgumentException("Can not create instance with empty name", "config");
+            ApplicationInstance instance;
             lock(m_Instances)
             {
                 if(m_Instances.Any(i => i.Name == config.Name))
@@ -164,14 +172,140 @@ namespace Inceptum.AppServer.Hosting
                     applicationParams = application.GetLoadParams(config.Version);
                 }
 
-                var instance = m_InstanceFactory.Create(config.ApplicationId, config.Name, config.Version, applicationParams, m_Context);
+                instance = m_InstanceFactory.Create(config.Name, applicationParams, m_Context);
                 m_Instances.Add(instance);
                 notefyInstancesChanged();
-                //TODO: unsubscribe
                 instance.Subscribe(status => notefyInstancesChanged(instance.Name + ":" + instance.Status));
             }
+            return instance;
+        }
+*/
+        private  void updateInstancesConfiguration()
+        {
+            var bundle = m_ConfigurationProvider.GetBundle("AppServer", "instances");
+            var configs = JsonConvert.DeserializeObject<InstanceConfig[]>(bundle).GroupBy(i=>i.Name).Select(g=>g.First());
+
+            lock (m_SyncRoot)
+            {
+                m_InstancesConfiguration = configs.ToArray();
+                updateInstances();
+            }
+
+/*
+            lock (m_Instances)
+                lock (m_InstancesConfiguration)
+            {
+                var updated =(from newConfig in configs
+                              join oldConfig in m_InstancesConfiguration on newConfig.Name equals oldConfig.Name into changed
+                              from oldConfig in changed
+                              where newConfig.ApplicationId != oldConfig.ApplicationId || newConfig.Version != oldConfig.Version
+                              from instance in m_Instances
+                              where instance.Name == newConfig.Name
+                              select new {instance, config = newConfig}).ToArray();
+
+
+                var added = (from newConfig in configs
+                            join oldConfig in m_InstancesConfiguration on newConfig.Name equals oldConfig.Name into changed
+                            from oldConfig in changed.DefaultIfEmpty()
+                            where oldConfig == null
+                            select newConfig).ToArray();
+
+                var deleted = (from oldConfig in m_InstancesConfiguration
+                              join newConfig in configs on oldConfig.Name equals newConfig.Name into changed
+                              from newConfig in changed.DefaultIfEmpty()
+                              where newConfig == null
+                              from instance in m_Instances
+                              where instance.Name == oldConfig.Name
+                              select instance).ToArray();
+
+                foreach (var config in added)
+                {
+                    var instance = m_Instances.FirstOrDefault(i => i.Name == config.Name);
+                    if(instance==null)
+                    {
+                        createInstance(config);
+                    }
+                }
+
+                foreach (var instance in updated)
+                {
+                    if(instance.instance.Status==HostedAppStatus.Stopping||instance.instance.Status==HostedAppStatus.Stopped)
+                    {
+                        m_Instances.Remove(instance.instance);
+                        //TODO: cleanup instance folder
+                        instance.instance.Dispose();
+                        createInstance(instance.config);
+                    }
+                    else
+                    {
+                        instance.instance.HasToBeRecreated = true;
+                    }
+                }
+
+
+                foreach (var instance in deleted)
+                {
+                    m_Instances.Remove(instance);
+                    //TODO: cleanup instance folder
+                    instance.Dispose();
+                }
+                    m_InstancesConfiguration.Clear();
+                    m_InstancesConfiguration.AddRange(configs);
+            }
+*/
         }
 
+
+        public void AddInstance(ApplicationInstanceInfo config)
+        {
+            if(m_InstancesConfiguration.Any(x=>x.Name ==config.Name))
+                throw new ConfigurationErrorsException(string.Format("Instance named '{0}' already exists", config.Name));
+            var cfg = new InstanceConfig
+                                     {
+                                         Name = config.Name,
+                                         Version = config.Version,
+                                         ApplicationId = config.ApplicationId,
+                                         AutoStart = config.AutoStart
+                                     };
+            var instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Concat(new[] { cfg }).ToArray(), Formatting.Indented);
+            m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
+            updateInstancesConfiguration();
+        }
+        
+        public void UpdateInstance(ApplicationInstanceInfo config)
+        {
+            if (!m_InstancesConfiguration.Any(x => x.Name == config.Name))
+                throw new ConfigurationErrorsException(string.Format("Instance named '{0}' not found", config.Name));
+          
+            var cfg = new InstanceConfig()
+            {
+                Name = config.Name,
+                Version = config.Version,
+                ApplicationId = config.ApplicationId,
+                AutoStart = config.AutoStart
+            };
+
+            var instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(c=>c.Name!=cfg.Name).Concat(new[] { cfg }).ToArray(), Formatting.Indented);
+            m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
+            updateInstancesConfiguration();
+        }        
+        
+        public void DeleteInstance(string name)
+        {
+            ApplicationInstance instance;
+            lock (m_SyncRoot)
+            {
+                instance = m_Instances.FirstOrDefault(i => i.Name == name);
+                if(instance==null)
+                    return;
+                m_Instances.Remove(instance);
+           }
+            //TODO: cleanup instance folder, release with factory
+            var instances = JsonConvert.SerializeObject(Instances.Where(i => i.Name != name).ToArray(), Formatting.Indented);
+            m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
+            updateInstancesConfiguration();
+            instance.Dispose();
+        }
 
 
         public void StopInstance(string name)
@@ -179,7 +313,7 @@ namespace Inceptum.AppServer.Hosting
             try
             {
                 ApplicationInstance instance;
-                lock (m_Instances)
+                lock (m_SyncRoot)
                 {
                     instance = m_Instances.FirstOrDefault(i => i.Name == name);
                 }
@@ -202,14 +336,13 @@ namespace Inceptum.AppServer.Hosting
             try
             {
                 ApplicationInstance instance;
-                lock (m_Instances)
+                lock (m_SyncRoot)
                 {
                     instance = m_Instances.FirstOrDefault(i => i.Name == name);
                 }
 
                 if (instance == null)
                     throw new ConfigurationErrorsException(string.Format("Instance '{0}' not found",name));
-
                 instance.Start();
             }
             catch (Exception e)
@@ -243,10 +376,6 @@ namespace Inceptum.AppServer.Hosting
         public void Dispose()
         {
             Logger.InfoFormat("Host is disposed");
-      /*      foreach (var instance in m_Instances)
-            {
-                m_InstanceFactory.Release(instance);
-            }*/
         }
     }
 }

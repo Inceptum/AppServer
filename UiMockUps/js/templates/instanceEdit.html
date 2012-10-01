@@ -2,7 +2,7 @@
     <div class="control-group">
         <label class="control-label" for="inputName">Name</label>
         <div class="controls">
-            <input type="text" id="inputName" name="Name" placeholder="Name">
+            <input type="text" id="inputName" name="Name" placeholder="Name" value="<%=model.Name%>">
         </div>
     </div>    
     <div class="control-group">
@@ -14,23 +14,23 @@
     <div class="control-group">
         <label class="control-label" for="inputVersion">Version</label>
         <div class="controls">
-            <select id="inputVersion" placeholder="Version"  name="Version">
+            <select id="inputVersion" placeholder="Version"  name="Version"  value="<%=model.Version%>">
                 <option value="latest">Use latest</option>
             </select>
         </div>
     </div>
 
 <!--    <div class="control-group">
-        <label class="control-label" for="inputStartup">Start on server startup </label>
+        <label class="control-label" for="inputAutostart">Start on server startup </label>
         <div class="controls">
-            <input type="checkbox" id="inputStartup" placeholder="Startup">
+            <input type="checkbox" id="inputAutostart" placeholder="Autostart">
         </div>
     </div>-->
     <div class="control-group">
 
         <div class="controls">
             <label class="checkbox">
-                Start on server startup <input type="checkbox" id="inputStartup"  name="Startup">
+                Start on server startup <input type="checkbox" id="inputAutostart"  name="Autostart" <% if (model.AutoStart) { %>checked<%}%>>
             </label>
         </div>
     </div>

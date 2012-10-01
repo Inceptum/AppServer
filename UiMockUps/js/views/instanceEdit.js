@@ -20,8 +20,17 @@ define([
             render: function(){
                 this.template = _.template( template, { model: this.model.toJSON() } );
                 $(this.el).html(this.template);
+                if(!this.model.isNew()){
+                    $(this.el).find("#inputName").attr("disabled", "disabled");
+                }
                 var versionSelect = $(this.el).find("#inputVersion");
-                this.application.versions.each(function(version){$("<option></option>").text(version.id).attr("value",version.id).appendTo(versionSelect);})
+                var self=this;
+                this.application.versions.each(function(version){
+                    var option = $("<option></option>");
+                    if(self.model.get("Version")===version.id)
+                        option.attr("selected","selected")
+                    option.text(version.id).attr("value",version.id).appendTo(versionSelect);
+                });
             },
             'submit':function(e){
                 e.preventDefault();
@@ -46,7 +55,10 @@ define([
                 // Apply the change to the model
                 var target = event.target;
                 var change = {};
-                change[target.name] = target.value;
+                if(event.target.type=="checkbox")
+                    change[target.name] = target.value!="";
+                else
+                    change[target.name] = target.value;
                 this.model.set(change);
 
             /*    // Run validation rule (if any) on changed item

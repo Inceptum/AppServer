@@ -1,9 +1,9 @@
 using System;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Inceptum.AppServer.Configuration;
@@ -14,7 +14,6 @@ namespace Inceptum.AppServer.Hosting
 {
     public class ApplicationInstance : IDisposable, IObservable<HostedAppStatus>
     {
-        private readonly ApplicationParams m_ApplicationParams;
         private readonly IConfigurationProvider m_ConfigurationProvider;
         private readonly AppServerContext m_Context;
         private readonly ILogCache m_LogCache;
@@ -25,25 +24,12 @@ namespace Inceptum.AppServer.Hosting
         private Task m_CurrentTask;
         private bool m_IsDisposing;
         private HostedAppStatus m_Status;
-
-
-        public ApplicationInstance(string applicationId, string name, Version version, ApplicationParams applicationParams, AppServerContext context, IConfigurationProvider configurationProvider,
-                                   ILogCache logCache, ILogger logger)
-        {
-            m_LogCache = logCache;
-            ApplicationId = applicationId;
-            m_ApplicationParams = applicationParams;
-            Name = name;
-            Version = version;
-            Logger = logger;
-            m_ConfigurationProvider = configurationProvider;
-            m_Context = context;
-        }
+        private ApplicationParams m_ApplicationParams;
 
         public string Name { get; set; }
-        public string ApplicationId { get; private set; }
-        public Version Version { get; private set; }
         public ILogger Logger { get; set; }
+        public bool HasToBeRecreated { get; set; }
+        public bool IsMisconfigured { get; set; }
 
         public HostedAppStatus Status
         {
@@ -62,24 +48,42 @@ namespace Inceptum.AppServer.Hosting
                         return;
                     m_Status = value;
                 }
-                Logger.DebugFormat("Status changed to {0}",value);
+                Logger.DebugFormat("Instance '{0}' status changed to {1}",Name,value);
                 m_StatusSubject.OnNext(value);
             }
         }
 
-        #region IObservable<HostedAppStatus> Members
+ 
 
-        public IDisposable Subscribe(IObserver<HostedAppStatus> observer)
+        public ApplicationInstance(string name,AppServerContext context, IConfigurationProvider configurationProvider,
+                                   ILogCache logCache, ILogger logger)
         {
-            return m_StatusSubject.Subscribe(observer);
+            m_LogCache = logCache;
+            Name = name;
+            Logger = logger;
+            m_ConfigurationProvider = configurationProvider;
+            m_Context = context;
+            IsMisconfigured = true;
         }
 
-        #endregion
+        public void UpdateApplicationParams(ApplicationParams applicationParams)
+        {
+            lock (m_SyncRoot)
+            {
+                if(m_ApplicationParams==applicationParams)
+                    return;
+                m_ApplicationParams = applicationParams;
+                IsMisconfigured = applicationParams == null;
+                HasToBeRecreated = !IsMisconfigured && Status==HostedAppStatus.Starting || Status==HostedAppStatus.Started;
+            }
+        }
 
         public void Start()
         {
             lock (m_SyncRoot)
             {
+                if (IsMisconfigured)
+                    throw new ConfigurationErrorsException("Instance is misconfigured");
                 if (m_IsDisposing)
                     throw new ObjectDisposedException("Instance is being disposed");
                 if (Status == HostedAppStatus.Starting || Status == HostedAppStatus.Stopping)
@@ -88,24 +92,27 @@ namespace Inceptum.AppServer.Hosting
                     throw new InvalidOperationException("Instance already started");
                 Status = HostedAppStatus.Starting;
 
-                Logger.InfoFormat("Starting application {0} v{1} instance '{2}'", ApplicationId, Version, Name);
+                Logger.InfoFormat("Starting instance '{0}'", Name);
                 m_CurrentTask = Task.Factory.StartNew(() =>
                                                           {
                                                               try
                                                               {              
-                                                                  Logger.InfoFormat("Application {0} v{1} instance '{2}' started", ApplicationId, Version, Name);
                                                                   createHost();
                                                                   //TODO: may be it is better to move wrapping with MarshalableProxy to castle
-                                                                  m_ApplicationHost.Start(MarshalableProxy.Generate(m_ConfigurationProvider), MarshalableProxy.Generate(m_LogCache), m_Context,Name);
+                                                                  m_ApplicationHost.Start(
+                                                                      MarshalableProxy.Generate(m_ConfigurationProvider),
+                                                                      MarshalableProxy.Generate(m_LogCache),
+                                                                      m_Context,Name);
 
                                                                   lock (m_SyncRoot)
                                                                   {
                                                                       Status = HostedAppStatus.Started;
                                                                   }
+                                                                  Logger.InfoFormat("Instance {0} started", Name);
                                                               }
                                                               catch (Exception e)
                                                               {
-                                                                  Logger.ErrorFormat(e, "Application {0} v{1} instance '{2}' failed to start", ApplicationId, Version, Name);
+                                                                  Logger.ErrorFormat(e, "Instance '{0}' failed to start", Name);
                                                                   lock (m_SyncRoot)
                                                                   {
                                                                       Status = HostedAppStatus.Stopped;
@@ -117,27 +124,33 @@ namespace Inceptum.AppServer.Hosting
 
         private void createHost()
         {
-            //TODO: use folders for named instances
             string path = Path.GetFullPath(new[] {m_Context.AppsDirectory, Name}.Aggregate(Path.Combine));
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
-            AppDomain domain = AppDomain.CreateDomain(ApplicationId, null, new AppDomainSetup
+
+            ApplicationParams applicationParams;
+            lock(m_SyncRoot)
+            {
+                applicationParams = m_ApplicationParams.Clone();
+            }
+            
+
+            m_AppDomain =  AppDomain.CreateDomain(Name, null, new AppDomainSetup
                                                                                {
                                                                                    ApplicationBase = path,
                                                                                    PrivateBinPathProbe = null,
                                                                                    DisallowApplicationBaseProbing = true,
-                                                                                   ConfigurationFile = m_ApplicationParams.ConfigFile
+                                                                                   ConfigurationFile = applicationParams.ConfigFile
                                                                                });
-            m_AppDomain = domain;
             m_AppDomain.Load(typeof (HostedAppInfo).Assembly.GetName());
             var appDomainInitializer =
                 (AppDomainInitializer)
                 m_AppDomain.CreateInstanceFromAndUnwrap(typeof (AppDomainInitializer).Assembly.Location, typeof (AppDomainInitializer).FullName, false, BindingFlags.Default, null, null, null, null);
 
 
-            appDomainInitializer.Initialize(path, m_ApplicationParams.AssembliesToLoad, m_ApplicationParams.NativeDllToLoad.ToArray());
-            m_ApplicationHost = appDomainInitializer.CreateHost(m_ApplicationParams.AppType);
+            appDomainInitializer.Initialize(path, applicationParams.AssembliesToLoad, applicationParams.NativeDllToLoad.ToArray());
+            m_ApplicationHost = appDomainInitializer.CreateHost(applicationParams.AppType);
         }
 
 
@@ -152,18 +165,18 @@ namespace Inceptum.AppServer.Hosting
                 if (Status == HostedAppStatus.Stopped)
                     throw new InvalidOperationException("Instance is not started started");
                 Status = HostedAppStatus.Stopping;
-                Logger.InfoFormat("Stopping application {0} v{1} instance '{2}'", ApplicationId, Version, Name);
+                Logger.InfoFormat("Stopping instance '{0}'", Name);
                 m_CurrentTask = Task.Factory.StartNew(() =>
                                                           {
                                                               try
                                                               {
                                                                   m_ApplicationHost.Stop();
                                                                   AppDomain.Unload(m_AppDomain);
-                                                                  Logger.InfoFormat("Application {0} v{1} instance '{2}' stopped", ApplicationId, Version, Name);
+                                                                  Logger.InfoFormat("Instance '{0}' stopped",  Name);
                                                               }
                                                               catch (Exception e)
                                                               {
-                                                                  Logger.ErrorFormat(e, "Application {0} v{1} instance '{2}' failed to stop", ApplicationId, Version, Name);
+                                                                  Logger.ErrorFormat(e, "Instance '{0}' failed to stop",  Name);
                                                               }
                                                               lock (m_SyncRoot)
                                                               {
@@ -173,6 +186,15 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
+        #region IObservable<HostedAppStatus> Members
+
+        public IDisposable Subscribe(IObserver<HostedAppStatus> observer)
+        {
+            return m_StatusSubject.Subscribe(observer);
+        }
+
+        #endregion
+
         #region IDisposable Members
 
         public void Dispose()
@@ -181,11 +203,22 @@ namespace Inceptum.AppServer.Hosting
             {
                 m_IsDisposing = true;
             }
-            if (m_CurrentTask != null)
-                m_CurrentTask.Wait();
 
-            if (Status == HostedAppStatus.Started)
-                m_ApplicationHost.Stop();
+            Action finishDispose = () =>
+            {
+                if (Status == HostedAppStatus.Started)
+                    m_ApplicationHost.Stop();
+                m_StatusSubject.Dispose();
+            };
+
+            if (m_CurrentTask != null)
+            {
+                m_CurrentTask.ContinueWith(task => finishDispose());
+            }
+            else
+            {
+                Task.Factory.StartNew(finishDispose);
+            }
         }
 
         #endregion

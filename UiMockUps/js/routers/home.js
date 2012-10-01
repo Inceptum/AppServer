@@ -72,11 +72,14 @@ function($, Backbone, _,Applications,Instances,HostModel, HeaderView,
             var model = this.instances.get(name);
 
             var active;
-            if(model)
+            var application;
+            if (model) {
                 active = model.get("ApplicationId");
+                application = this.apps.get(model.get("ApplicationId"));
+            }
             this.showViews([
                 new AppsSideBarView({collection:this.apps, active:active}),
-                new ApplicationInstanceView({model:model})
+                new InstanceEditView({application:application,model:model})
             ]);
             this.headerView.selectMenuItem("applications");
 		},

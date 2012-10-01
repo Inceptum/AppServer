@@ -4,18 +4,12 @@ using Newtonsoft.Json.Converters;
 
 namespace Inceptum.AppServer.Model
 {
-    public class ApplicationInstanceInfo
+    public class InstanceConfig
     {
         public string Name { get; set; }
-        public string Id { get { return Name; } }
         public string ApplicationId { get; set; }
-
-        [JsonConverter(typeof (StringVersionJsonConverter))]
+        [JsonConverter(typeof(StringVersionJsonConverter))]
         public Version Version { get; set; }
-
-        [JsonConverter(typeof (StringEnumConverter))]
-        public HostedAppStatus Status { get; set; }
-
         public bool AutoStart { get; set; }
     }
 }

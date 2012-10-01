@@ -23,9 +23,15 @@ namespace Inceptum.AppServer.Management2.Handlers
 /*
         [HttpOperation(HttpMethod.PUT)]
 */
-        public void Put(string instance, ApplicationInstanceInfo instanceConfig)
+        public void Post(ApplicationInstanceInfo instanceConfig)
         {
             m_Host.AddInstance(instanceConfig);
+        }
+         
+
+        public void Put(string instance, ApplicationInstanceInfo instanceConfig)
+        {
+            m_Host.UpdateInstance(instanceConfig);
         }
          
 

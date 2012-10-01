@@ -95,6 +95,7 @@
     <Compile Include="AppDiscovery\Openwrap\OpenWrapApplicationBrowser.cs" />
     <Compile Include="AppDiscovery\Openwrap\HostedApplicationExporter.cs" />
     <Compile Include="Hosting\AppDomainInitializer.cs" />
+    <Compile Include="Hosting\ApplicationsRepository.cs" />
     <Compile Include="Hosting\Host.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="Hosting\ApplicationHost.cs" />
