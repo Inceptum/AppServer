@@ -53,6 +53,7 @@
     <Compile Include="Model\ApplicationName.cs" />
     <Compile Include="Model\ApplicationParams.cs" />
     <Compile Include="Model\ApplicationVersion.cs" />
+    <Compile Include="Model\InstanceConfig.cs" />
     <Compile Include="Monitoring\HbFeedProvider.cs" />
     <Compile Include="Monitoring\HostHbMessage.cs" />
     <Compile Include="Monitoring\InstanceInfo.cs" />

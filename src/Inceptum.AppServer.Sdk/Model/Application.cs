@@ -11,13 +11,6 @@ namespace Inceptum.AppServer.Model
         private readonly SortedDictionary<ApplicationVersion, ApplicationParams> m_Versions;
         public string Name { get; set; }
         public string Vendor { get; set; }
-        private Version m_VersionToUse;
-         [JsonConverter(typeof(StringVersionJsonConverter))]
-        public Version VersionToUse
-        {
-            get { return m_VersionToUse??m_Versions.Max(v=>v.Key.Version); }
-            set { m_VersionToUse = value; }
-        }
 
         public Application(string id,  string vendor)
         {
@@ -40,8 +33,10 @@ namespace Inceptum.AppServer.Model
         public ApplicationParams GetLoadParams(Version version)
         {
             ApplicationParams loadParams = m_Versions.Where(v => v.Key.Version == version).Select(p => p.Value).FirstOrDefault();
+/*
             if(loadParams==null)
                     throw new ConfigurationErrorsException(string.Format("Can not find version {0} of application {1}",version,Name));
+*/
             return loadParams;
         }
 

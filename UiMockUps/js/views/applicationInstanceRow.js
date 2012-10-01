@@ -14,6 +14,7 @@ define([
                 "click .delete":"delete"
             },
             delete:function(e){
+                console.log("delete in row");
                 e.preventDefault();
                 $(this.el).find(".actions button").attr("disabled", "disabled");
                 this.model.destroy();
