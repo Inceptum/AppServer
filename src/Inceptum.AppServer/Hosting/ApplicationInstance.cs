@@ -25,6 +25,7 @@ namespace Inceptum.AppServer.Hosting
         private bool m_IsDisposing;
         private HostedAppStatus m_Status;
         private ApplicationParams m_ApplicationParams;
+        private Version m_ActualVersion;
 
         public string Name { get; set; }
         public ILogger Logger { get; set; }
@@ -53,7 +54,17 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
- 
+        public Version ActualVersion
+        {
+            get
+            {
+                lock (m_SyncRoot)
+                {
+                    return m_ActualVersion;
+                }
+            }
+        }
+
 
         public ApplicationInstance(string name,AppServerContext context, IConfigurationProvider configurationProvider,
                                    ILogCache logCache, ILogger logger)
@@ -66,8 +77,9 @@ namespace Inceptum.AppServer.Hosting
             IsMisconfigured = true;
         }
 
-        public void UpdateApplicationParams(ApplicationParams applicationParams)
+        public void UpdateApplicationParams(ApplicationParams applicationParams, Version actualVersion)
         {
+            m_ActualVersion = actualVersion;
             lock (m_SyncRoot)
             {
                 if(m_ApplicationParams==applicationParams)
@@ -163,7 +175,7 @@ namespace Inceptum.AppServer.Hosting
                 if (Status == HostedAppStatus.Starting || Status == HostedAppStatus.Stopping)
                     throw new InvalidOperationException("Instance is " + Status);
                 if (Status == HostedAppStatus.Stopped)
-                    throw new InvalidOperationException("Instance is not started started");
+                    throw new InvalidOperationException("Instance is not started");
                 Status = HostedAppStatus.Stopping;
                 Logger.InfoFormat("Stopping instance '{0}'", Name);
                 m_CurrentTask = Task.Factory.StartNew(() =>
@@ -206,6 +218,7 @@ namespace Inceptum.AppServer.Hosting
 
             Action finishDispose = () =>
             {
+                //TODO: exception handling
                 if (Status == HostedAppStatus.Started)
                     m_ApplicationHost.Stop();
                 m_StatusSubject.Dispose();

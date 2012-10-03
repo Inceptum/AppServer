@@ -17,5 +17,8 @@ namespace Inceptum.AppServer.Model
         public HostedAppStatus Status { get; set; }
 
         public bool AutoStart { get; set; }
+
+        [JsonConverter(typeof(StringVersionJsonConverter))]
+        public Version ActualVersion { get; set; }
     }
 }

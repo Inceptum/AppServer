@@ -3,7 +3,7 @@ define([
     'backbone',
     'underscore',
     //'models/model',
-    'text!templates/header.html','context','signalr','signalrHubs'],
+    'text!templates/header.html','context','signalr','noext!sr/signalr/hubs'],
     function($, Backbone, _, template, context){
         var View = Backbone.View.extend({
             el: '#header',
@@ -28,7 +28,10 @@ define([
             render: function () {
                 $(this.el).html(this.template);
                 this.led=$(this.el).find('.led').fadeTo(10,.25);
-                $.connection.hub.start();
+                $.connection.hub.start({
+                    //SignalR is loaded via requireJs. In IE window load event is already fired at connection start. Thus signalr would wait forever if waitForPageLoad is true
+                    waitForPageLoad: false
+                });
                 this.rendered=true;
             },
 

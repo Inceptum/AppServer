@@ -1,20 +1,28 @@
 // This set's up the module paths for underscore and backbone
 require.config({
+    //To get timely, correct error triggers in IE, force a define/shim exports check.
+    //enforceDefine: true,
     'paths': {
-        "noext": 'lib/noext',
+        "noext": 'libs/noext',
         "underscore": "libs/underscore-min",
         "backbone": "libs/backbone-min",
         "bootstrap":"libs/bootstrap.min",
         "scrollTo":"libs/jquery.scrollTo-min",
-        "signalr": "libs/jquery.signalR-0.5.3.min",
-        "signalrHubs": '/sr/signalr/hubs?'
+        "throttle":"libs/jquery.ba-throttle-debounce.min",
+        "signalr": "libs/jquery.signalR-0.5.3",
+        "json2": "libs/json2.min"
     },
     'shim':
     {
-        "signalr": {
+        "throttle":{
             deps: ["jquery"]
         },
-        "signalrHubs":{
+        "signalr": {
+            deps: ["json2"],
+            deps: ["jquery"]
+
+        },
+        "noext!sr/signalr/hubs":{
             deps: ["signalr"]
         },
         backbone: {
@@ -24,7 +32,9 @@ require.config({
         underscore: {
             'exports': '_'
         },
-        'scrollTo': ['jquery']
+        'scrollTo': {
+			 deps:		['jquery']
+		}
     }
 });
 

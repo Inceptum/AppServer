@@ -2,16 +2,18 @@ define([
     'jquery',
     'backbone',
     'underscore',
-    'models/applicationInstance',
+    'models/instance',
     'text!templates/instanceEdit.html'],
-    function($, Backbone, _, ApplicationInstanceModel, template){
+    function($, Backbone, _, instanceModel, template){
         var View = Backbone.View.extend({
             el:'#content',
             initialize: function(){
                 _(this).bindAll('submit');
                 this.application=this.options.application;
                 if(!this.model)
-                    this.model=new ApplicationInstanceModel({"ApplicationId":this.application.id});
+                    this.model=new instanceModel({"ApplicationId":this.application.id});
+                else
+                    this.model=this.model.clone();
             },
             events:{
                 "change":"change",
@@ -38,15 +40,8 @@ define([
                 this.model.save(null, {
                     success: function (model) {
                         self.render();
-/*
-                        app.navigate('wines/' + model.id, false);
-                        utils.showAlert('Success!', 'Wine saved successfully', 'alert-success');
-*/
                     },
                     error: function () {
-/*
-                        utils.showAlert('Error', 'An error occurred while trying to delete this item', 'alert-error');
-*/
                     }
                 });
                 return false;

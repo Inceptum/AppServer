@@ -22,6 +22,7 @@ namespace Inceptum.AppServer.Management2.OpenRasta
                 ResourceSpace.Uses.PipelineContributor<StaticContentPipelineContributor>();*/
                 ResourceSpace.Uses.ViewsEmbeddedInTheAssembly(Assembly.GetExecutingAssembly(), "Inceptum.AppServer.Management2.Views");
                 ResourceSpace.Has.ResourcesOfType<string>().WithoutUri.TranscodedBy<UtfTextPlainCodec>();
+                ResourceSpace.Has.ResourcesOfType<ServerError>().WithoutUri.TranscodedBy<NewtonsoftJsonCodec>();
 
                 ResourceSpace.Has
                     .ResourcesOfType<Application[]>()
@@ -44,7 +45,7 @@ namespace Inceptum.AppServer.Management2.OpenRasta
 
                 ResourceSpace.
                     Has.ResourcesOfType<ApplicationInstanceInfo>()
-                    .AtUri("api/instance")//TODO: looks like it should be removed
+                    .AtUri("api/instance") //For post (as it processec new instance there is no id yet)
                     .And.AtUri("api/instance/{instance}")
                     .And.AtUri("api/instance/{instance}/start").Named("start")
                     .And.AtUri("api/instance/{instance}/stop").Named("stop")

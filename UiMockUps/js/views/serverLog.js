@@ -4,9 +4,11 @@ define([
     'underscore',
     'context',
     'views/serverSideBar',
-    'collections/applicationInstances',
-    'text!templates/serverLog.html','scrollTo'],
-    function($, Backbone, _,context,ServerSideBarView,applicationInstances, template){
+    'collections/instances',
+    'text!templates/serverLog.html',
+    'scrollTo',
+    'noext!sr/signalr/hubs'],
+    function($, Backbone, _,context,ServerSideBarView,instances, template){
         var View = Backbone.View.extend({
             el:'#content',
             levelMap:{
@@ -19,10 +21,12 @@ define([
             initialize: function(){
                 _.bindAll(this, "onMessageReceived","onReconnected","applyFilter");
                 var self=this;
-                this.connection = $.connection(context.signalRUrl('/log'));
-                //this.connection = $.connection(context.httpUrl('/log'));
+                this.connection = $.connection('http://app.inceptumsoft.com:9223/sr/log');//(context.signalRUrl('/log'));
                 this.connection.received(this.onMessageReceived);
                 this.connection.reconnected(this.onReconnected);
+                this.connection.error(function(error) {
+                    console.log(error);
+                });
                 this.connection.stateChanged(function (change) {
                     if (change.oldState == $.signalR.connectionState.connected ||  change.newState === $.signalR.connectionState.disconnected) {
                         self.connectionStateLabel.show();
@@ -96,10 +100,13 @@ define([
                 this.filter = $(this.el).find('#filter');
                 var self=this;
                 //TODO: update select on instances change
-                applicationInstances.each(function(i){
+                instances.each(function(i){
                     self.filter.append($("<option></option>").text(i.id));
                 });
-                this.connection.start();
+                this.connection.start({
+                    //SignalR is loaded via requireJs. In IE window load event is already fired at connection start. Thus signalr would wait forever if waitForPageLoad is true
+                    waitForPageLoad: false
+                });
                 this.connectionStateLabel= $(this.el).find(".connectionState").hide();
             },
             'dispose':function(){

@@ -3,20 +3,20 @@ define([
 	'backbone', 
 	'underscore',
     'collections/applications',
-    'collections/applicationInstances',
+    'collections/instances',
     'models/host',
 	'views/header',
     'views/serverSideBar',
 	'views/serverStatus',
 	'views/serverLog',
     'views/appsSideBar',
-    'views/applicationInstance',
+    'views/instance',
     'views/application',
     'views/instanceEdit'
 ],
 function($, Backbone, _,Applications,Instances,HostModel, HeaderView,
          ServerSideBarView, ServerStatusView, ServerLogView,
-         AppsSideBarView, ApplicationInstanceView, AppView,
+         AppsSideBarView, instanceView, AppView,
          InstanceEditView){
 	var Router = Backbone.Router.extend({
 		initialize: function(){
