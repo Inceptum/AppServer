@@ -5,7 +5,6 @@ define(['routers/home','jquery','services/notificationsListener'], function(rout
         this.undelegateEvents();
         $(this.el).html('');
         this.dispose();
-        console.log(arguments.callee.name+" closed");
     },
     Backbone.View.prototype.dispose = function(){
     }

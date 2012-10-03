@@ -33,10 +33,6 @@ namespace Inceptum.AppServer.Model
         public ApplicationParams GetLoadParams(Version version)
         {
             ApplicationParams loadParams = m_Versions.Where(v => v.Key.Version == version).Select(p => p.Value).FirstOrDefault();
-/*
-            if(loadParams==null)
-                    throw new ConfigurationErrorsException(string.Format("Can not find version {0} of application {1}",version,Name));
-*/
             return loadParams;
         }
 

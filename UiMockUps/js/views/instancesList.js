@@ -2,14 +2,17 @@ define([
     'jquery',
     'backbone',
     'underscore',
-    'views/applicationInstanceRow',
-    'text!templates/instancesList.html'],
-    function($, Backbone, _,ApplicationInstanceView, template){
+    'views/instanceRow',
+    'text!templates/instancesList.html',
+    'text!templates/error.html',
+    'views/confirm'
+],
+    function($, Backbone, _,instanceView, template,errorTemplate,confirmView){
         var View = Backbone.View.extend({
             el: '#main',
             initialize: function(){
                 this.filter=this.options.filter;
-                _(this).bindAll('add', 'remove','reset');
+                _(this).bindAll('add', 'remove','reset','destroy','start','stop');
                 this.instances=this.options.instances;
                 this.subViews=[];
                 var self=this;
@@ -38,11 +41,16 @@ define([
             add : function(instance) {
                 if(this.filter && instance.get("ApplicationId")!=this.filter)
                     return;
-                var view = new ApplicationInstanceView({
+                var view = new instanceView({
                     tagName : 'tr',
                     model : instance
                 });
+                view.bind("destroy",this.destroy);
+                view.bind("start",this.start);
+                view.bind("stop",this.stop);
 
+
+                //TODO: sort order id not preserved
                 // And add it to the collection so that it's easy to reuse.
                 this.subViews.push(view);
 
@@ -60,6 +68,9 @@ define([
                 if (this.rendered) {
                     $(viewToRemove.el).remove();
                     viewToRemove.close();
+                    viewToRemove.unbind("destroy",this.destroy);
+                    viewToRemove.unbind("start",this.start);
+                    viewToRemove.unbind("stop",this.stop);
                 }
 
             },
@@ -75,6 +86,7 @@ define([
                 this.template = _.template( template, {  } );
                 $(this.el).empty();
                 $(this.el).append(this.template);
+                this.alerts=this.$(".alerts");
 
                 _(this.subViews).each(function(v) {
                     this.$('.instances tbody').append(v.render().el);
@@ -85,12 +97,43 @@ define([
                 this.rendered = true;
                 return this;
             },
+            destroy:function(model,view){
+                var self=this;
+                confirmView.open({title:"Delete",body:"You are bout to delete '"+model.id+"' instance. Are you sure?",confirm_text:"Delete"})
+                    .done(function(){
+                        model.destroy({
+                             wait: true,
+                             error:function(model,response){
+                                 view.render();
+                                 self.alerts.empty().append(_.template( errorTemplate, { model:JSON.parse(response.responseText) }));
+                             }});
+                    }).fail(view.render());
+            },
+            start:function(model,view){
+                var self=this;
+                model.start({
+                    error:function(model,response){
+                        view.render();
+                        self.alerts.empty().append(_.template( errorTemplate, { model:JSON.parse(response.responseText) }));
+                    }});
+            },
+            stop:function(model,view){
+                var self=this;
+                model.stop({
+                    error:function(model,response){
+                        view.render();
+                        self.alerts.empty().append(_.template( errorTemplate, { model:JSON.parse(response.responseText) }));
+                    }});
+            },
             'dispose':function(){
                 this.instances.unbind('add', this.add);
                 this.instances.unbind('remove', this.remove);
                 this.instances.unbind('reset', this.reset);
                 _.each(this.subViews,function(subView){
                     subView.close();
+                    subView.unbind("destroy",this.destroy);
+                    subView.unbind("start",this.start);
+                    subView.unbind("stop",this.stop);
                 });
             }
         });

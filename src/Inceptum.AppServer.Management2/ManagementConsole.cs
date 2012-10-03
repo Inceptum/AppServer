@@ -7,6 +7,7 @@ using Inceptum.AppServer.Management2.Handlers;
 using Inceptum.AppServer.Management2.OpenRasta;
 using OpenRasta.Configuration;
 using OpenRasta.DI;
+using OpenRasta.Pipeline;
 
 namespace Inceptum.AppServer.Management2
 {
@@ -67,7 +68,8 @@ namespace Inceptum.AppServer.Management2
             m_Logger.Info("Starting management console.");
             m_Container.Register(
                 Component.For<IConfigurationSource>().ImplementedBy<Configurator>(),
-                AllTypes.FromThisAssembly().InSameNamespaceAs<CrossDomainPipelineContributor>().LifestyleTransient()
+                Classes.FromThisAssembly().BasedOn<IPipelineContributor>().WithServiceSelf().LifestyleTransient(),
+                Component.For<ErrorHandlingOperationInterceptor>().LifestyleTransient()
                 );
             Accessor.SetResolver(new WindsorDependencyResolver(m_Container));
             m_OpenRastaHost = new HttpListenerHostWithConfiguration(new Configurator());

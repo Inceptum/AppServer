@@ -45,6 +45,7 @@
     <Compile Include="Handlers\InstancesHandler.cs" />
     <Compile Include="OpenRasta\Configurator.cs" />
     <Compile Include="OpenRasta\Constants.cs" />
+    <Compile Include="OpenRasta\ErrorHandlingOperationInterceptor.cs" />
     <Compile Include="OpenRasta\StaticContentPipelineContributor.cs" />
     <Compile Include="OpenRasta\CrossDomainPipelineContributor.cs" />
     <Compile Include="OpenRasta\HttpListenerHostWithConfiguration.cs" />
@@ -57,6 +58,7 @@
     <Compile Include="OpenRasta\WindsorDependencyResolver.cs" />
     <Compile Include="Resources\ContentFile.cs" />
     <Compile Include="Resources\HostInfo.cs" />
+    <Compile Include="Resources\ServerError.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Content\css\bootstrap-responsive.css" />

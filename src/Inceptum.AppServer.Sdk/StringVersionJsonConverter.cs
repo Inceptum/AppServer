@@ -24,6 +24,8 @@ namespace Inceptum.AppServer
             Version version=null;
             if (reader.TokenType == JsonToken.String)
             {
+                if (reader.Value == null || reader.Value.ToString() == string.Empty)
+                    return null;
                 if(!Version.TryParse(reader.Value.ToString(),out version))
                     throw new Exception("Unexpected token when parsing version. Expected String in version format (\\d+.\\d+.\\d+.\\d+)");
             }else if (reader.TokenType != JsonToken.Null)

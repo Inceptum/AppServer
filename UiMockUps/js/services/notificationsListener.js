@@ -1,10 +1,11 @@
-define(['jquery','underscore','collections/applicationInstances','context','signalrHubs'],
-    function(jQuery,_,applicationInstances,context){
+define(['jquery','underscore','collections/instances','context','noext!sr/signalr/hubs','throttle'],
+    function(jQuery,_,instances,context){
     var listener={};
     _.extend(listener,{
         init:function(){
-            applicationInstances.fetch({async:false});
+            instances.fetch({async:false});
             this.initSignalR();
+            this.fetch=$.throttle(500,this.fetch);
         },
         initSignalR:function(){
             this.notifications = $.connection.uiNotificationHub;
@@ -14,7 +15,11 @@ define(['jquery','underscore','collections/applicationInstances','context','sign
                 console.log("Scheduling fetch due to "+comment);
                 self.fetch(comment);
             }
-            $.connection.hub.start();
+            $.connection.hub.start({
+                //SignalR is loaded via requireJs. In IE window load event is already fired at connection start. Thus signalr would wait forever if waitForPageLoad is true
+                waitForPageLoad: false
+            });
+            this.cnt=0;
         },
         fetch:function(comment){
             var self=this;
@@ -22,15 +27,26 @@ define(['jquery','underscore','collections/applicationInstances','context','sign
                 self.needToFetch=true;
                 return;
             }
-            self.needToFetch=false;
             this.isFetching=true;
-            applicationInstances.fetch({
+            self.needToFetch=false;
+            console.log("fetch #"+this.cnt+ " start");
+            var cnt=this.cnt;
+
+            instances.fetch({
+                removeMissing:true,
+                update:true,
                 success:function(){
+                    console.log("fetch #"+cnt+ " complete")
                     self.isFetching=false;
                     if(self.needToFetch)
                         self.fetch();
+                },
+                error:function(){
+                    console.log("fetch #"+cnt+ " failed")
+                    self.fetch();
                 }
             });
+            this.cnt++;
         },
         dispose:function(){
             $.connection.hub.stop();

@@ -4,8 +4,8 @@ define([
     'underscore',
     'views/serverSideBar',
     'views/instancesList',
-    'text!templates/serverStatus.html','context','signalr','signalrHubs'],
-    function($, Backbone, _, ServerSideBarView,InstancesListView, template,context){
+    'text!templates/serverStatus.html'],
+    function($, Backbone, _, ServerSideBarView,InstancesListView, template){
         var View = Backbone.View.extend({
             el:'#content',
             initialize: function(){
