@@ -32,6 +32,7 @@ define([
                     //SignalR is loaded via requireJs. In IE window load event is already fired at connection start. Thus signalr would wait forever if waitForPageLoad is true
                     waitForPageLoad: false
                 });
+                this.led.tooltip();
                 this.rendered=true;
             },
 

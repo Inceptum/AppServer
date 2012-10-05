@@ -110,7 +110,7 @@ define([
             },
             destroy:function(model,view){
                 var self=this;
-                confirmView.open({title:"Delete",body:"You are bout to delete '"+model.id+"' instance. Are you sure?",confirm_text:"Delete"})
+                confirmView.open({title:"Delete",body:"You are about to delete '"+model.id+"' instance. Are you sure?",confirm_text:"Delete"})
                     .done(function(){
                         model.destroy({
                              wait: true,
@@ -126,9 +126,6 @@ define([
                     error:function(model,response){
                         view.render();
                         self.alert.show({type:"error",text:"Failed to start instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});
-                    },
-                    success:function(){
-                        self.alert.show({type:"info",text:"Instance '" +model.id+"' started"});
                     }
                 });
             },
@@ -138,9 +135,6 @@ define([
                     error:function(model,response){
                         view.render();
                         self.alert.show({type:"error",text:"Failed to stop instance '"+model.id+"'.  "+JSON.parse(response.responseText).Error});
-                    },
-                    success:function(){
-                        self.alert.show({type:"info",text:"Instance '" +model.id+"' stopped"});
                     }
                 });
             },
