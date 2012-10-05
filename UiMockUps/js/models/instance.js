@@ -19,7 +19,9 @@ define(['jquery', 'backbone', 'underscore','context'], function($, Backbone, _,c
             $.ajax({
                 url: context.httpUrl('/api/instance/'+id+'/'+action),
                 type: 'POST',
-                success: function () { console.log(action+' '+id+' complete'); },
+                success: function () { console.log(action+' '+id+' complete');
+                    options.success(self);
+                },
                 error: function (args) {
                     console.log(action+' '+id+' failed:');
                     console.log(args);
