@@ -14,17 +14,17 @@ define(['jquery', 'backbone', 'underscore','context'], function($, Backbone, _,c
         },
         command:function(action,options){
             var id = this.id;
-            console.log(action+' '+id+' sent');
+           // console.log(action+' '+id+' sent');
             var self=this;
             $.ajax({
                 url: context.httpUrl('/api/instance/'+id+'/'+action),
                 type: 'POST',
-                success: function () { console.log(action+' '+id+' complete');
+                success: function () {
+                    //console.log(action+' '+id+' complete');
                     options.success(self);
                 },
                 error: function (args) {
-                    console.log(action+' '+id+' failed:');
-                    console.log(args);
+                    //console.log(action+' '+id+' failed:');
                     options.error(self,args);
                 }
             });
