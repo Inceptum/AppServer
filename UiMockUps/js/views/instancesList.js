@@ -4,15 +4,16 @@ define([
     'underscore',
     'views/instanceRow',
     'text!templates/instancesList.html',
-    'text!templates/error.html',
-    'views/confirm'
+    'text!templates/alert.html',
+    'views/confirm',
+    'views/alert'
 ],
-    function($, Backbone, _,instanceView, template,errorTemplate,confirmView){
+    function($, Backbone, _,instanceView, template,errorTemplate,confirmView,AlertView){
         var View = Backbone.View.extend({
             el: '#main',
             initialize: function(){
                 this.filter=this.options.filter;
-                _(this).bindAll('add', 'remove','reset','destroy','start','stop');
+                _(this).bindAll('add', 'remove','reset','destroy','start','stop','dispose');
                 this.instances=this.options.instances;
                 this.subViews=[];
                 var self=this;
@@ -67,12 +68,21 @@ define([
                 this.subViews = _(this.subViews).without(viewToRemove);
                 if (this.rendered) {
                     $(viewToRemove.el).remove();
-                    viewToRemove.close();
-                    viewToRemove.unbind("destroy",this.destroy);
-                    viewToRemove.unbind("start",this.start);
-                    viewToRemove.unbind("stop",this.stop);
+                    this.removeViews(viewToRemove);
                 }
 
+            },
+            removeViews:function(views){
+                if(!( Object.prototype.toString.call( views ) === '[object Array]' )){
+                    views=[views];
+                }
+                var self=this;
+                _.each(views,function(v){
+                    v.unbind("destroy",self.destroy);
+                    v.unbind("start",self.start);
+                    v.unbind("stop",self.stop);
+                    v.close();
+                });
             },
             reset : function(model) {
                 _(this.subViews).each(function(v) {
@@ -87,7 +97,8 @@ define([
                 $(this.el).empty();
                 $(this.el).append(this.template);
                 this.alerts=this.$(".alerts");
-
+                this.alert=new AlertView();
+                this.alert.render();
                 _(this.subViews).each(function(v) {
                     this.$('.instances tbody').append(v.render().el);
                 });
@@ -105,7 +116,7 @@ define([
                              wait: true,
                              error:function(model,response){
                                  view.render();
-                                 self.alerts.empty().append(_.template( errorTemplate, { model:JSON.parse(response.responseText) }));
+                                 self.alert.show({type:"error",text:"Failed to delete instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});
                              }});
                     }).fail(view.render());
             },
@@ -114,27 +125,30 @@ define([
                 model.start({
                     error:function(model,response){
                         view.render();
-                        self.alerts.empty().append(_.template( errorTemplate, { model:JSON.parse(response.responseText) }));
-                    }});
+                        self.alert.show({type:"error",text:"Failed to start instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});
+                    },
+                    success:function(){
+                        self.alert.show({type:"info",text:"Instance '" +model.id+"' started"});
+                    }
+                });
             },
             stop:function(model,view){
                 var self=this;
                 model.stop({
                     error:function(model,response){
                         view.render();
-                        self.alerts.empty().append(_.template( errorTemplate, { model:JSON.parse(response.responseText) }));
-                    }});
+                        self.alert.show({type:"error",text:"Failed to stop instance '"+model.id+"'.  "+JSON.parse(response.responseText).Error});
+                    },
+                    success:function(){
+                        self.alert.show({type:"info",text:"Instance '" +model.id+"' stopped"});
+                    }
+                });
             },
             'dispose':function(){
                 this.instances.unbind('add', this.add);
                 this.instances.unbind('remove', this.remove);
                 this.instances.unbind('reset', this.reset);
-                _.each(this.subViews,function(subView){
-                    subView.close();
-                    subView.unbind("destroy",this.destroy);
-                    subView.unbind("start",this.start);
-                    subView.unbind("stop",this.stop);
-                });
+                this.removeViews(this.subViews)
             }
         });
 
