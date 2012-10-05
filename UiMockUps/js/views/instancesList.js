@@ -4,11 +4,9 @@ define([
     'underscore',
     'views/instanceRow',
     'text!templates/instancesList.html',
-    'text!templates/alert.html',
     'views/confirm',
-    'views/alert'
-],
-    function($, Backbone, _,instanceView, template,errorTemplate,confirmView,AlertView){
+    'views/alerts'],
+    function($, Backbone, _,instanceView, template,confirmView,alerts){
         var View = Backbone.View.extend({
             el: '#main',
             initialize: function(){
@@ -96,9 +94,6 @@ define([
                 this.template = _.template( template, {  } );
                 $(this.el).empty();
                 $(this.el).append(this.template);
-                this.alerts=this.$(".alerts");
-                this.alert=new AlertView();
-                this.alert.render();
                 _(this.subViews).each(function(v) {
                     this.$('.instances tbody').append(v.render().el);
                 });
@@ -116,7 +111,7 @@ define([
                              wait: true,
                              error:function(model,response){
                                  view.render();
-                                 self.alert.show({type:"error",text:"Failed to delete instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});
+                                 alerts.show({type:"error",text:"Failed to delete instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});
                              }});
                     }).fail(view.render());
             },
@@ -125,7 +120,8 @@ define([
                 model.start({
                     error:function(model,response){
                         view.render();
-                        self.alert.show({type:"error",text:"Failed to start instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});
+                        var i=alerts.show({type:"error",text:"Failed to start instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});
+                        console.log("error "+i);
                     }
                 });
             },
@@ -134,7 +130,7 @@ define([
                 model.stop({
                     error:function(model,response){
                         view.render();
-                        self.alert.show({type:"error",text:"Failed to stop instance '"+model.id+"'.  "+JSON.parse(response.responseText).Error});
+                        alerts.show({type:"error",text:"Failed to stop instance '"+model.id+"'.  "+JSON.parse(response.responseText).Error});
                     }
                 });
             },
