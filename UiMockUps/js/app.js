@@ -1,5 +1,5 @@
 // This is the main entry point for the App
-define(['routers/home','jquery','services/notificationsListener'], function(router,jQuery,notificationsListener){
+define(['routers/home','jquery','services/notificationsListener'], function(Router,jQuery,notificationsListener){
     Backbone.View.prototype.dispose = function(){
     }
 
@@ -10,10 +10,13 @@ define(['routers/home','jquery','services/notificationsListener'], function(rout
         this.dispose();
     }
 
-
     var init = function(){
         notificationsListener.init();
-		this.router = new router();
+        var router = new Router();
+        this.router = router;
+        Backbone.View.prototype.navigate = function (loc) {
+            router.navigate(loc, true);
+        };
 	};
 	
 	return { init: init};

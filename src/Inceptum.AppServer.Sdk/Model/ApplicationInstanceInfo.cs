@@ -7,7 +7,7 @@ namespace Inceptum.AppServer.Model
     public class ApplicationInstanceInfo
     {
         public string Name { get; set; }
-        public string Id { get { return Name; } }
+        public string Id { get; set; }
         public string ApplicationId { get; set; }
 
         [JsonConverter(typeof (StringVersionJsonConverter))]
