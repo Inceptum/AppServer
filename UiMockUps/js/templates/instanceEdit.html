@@ -8,7 +8,11 @@
     <div class="control-group">
         <label class="control-label" for="inputApplication">Application</label>
         <div class="controls">
+            <% if(!model.Id){%>
             <input disabled="disabled" type="text" id="inputApplication"  placeholder="Application" value="<%=model.ApplicationId%>">
+            <% }else {%>
+            <%=model.ApplicationId%>
+            <% }%>
         </div>
     </div>
     <div class="control-group">

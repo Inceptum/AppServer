@@ -235,5 +235,14 @@ namespace Inceptum.AppServer.Hosting
         }
 
         #endregion
+
+        public void Rename(string name)
+        {
+            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            lock (m_SyncRoot)
+            {
+                Name = name;
+            }
+        }
     }
 }

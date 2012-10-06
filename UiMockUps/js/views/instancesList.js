@@ -120,8 +120,7 @@ define([
                 model.start({
                     error:function(model,response){
                         view.render();
-                        var i=alerts.show({type:"error",text:"Failed to start instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});
-                        console.log("error "+i);
+                        alerts.show({type:"error",text:"Failed to start instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});
                     }
                 });
             },

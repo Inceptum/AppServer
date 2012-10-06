@@ -3,8 +3,9 @@ define([
     'backbone',
     'underscore',
     'models/instance',
-    'text!templates/instanceEdit.html'],
-    function($, Backbone, _, instanceModel, template){
+    'text!templates/instanceEdit.html',
+    'views/alerts'],
+    function($, Backbone, _, instanceModel, template,alerts){
         var View = Backbone.View.extend({
             el:'#content',
             initialize: function(){
@@ -22,9 +23,9 @@ define([
             render: function(){
                 this.template = _.template( template, { model: this.model.toJSON() } );
                 $(this.el).html(this.template);
-                if(!this.model.isNew()){
-                    $(this.el).find("#inputName").attr("disabled", "disabled");
-                }
+
+                var action = this.model.isNew()?"Create":"Update";
+                this.$("#submit").text(action);
                 var versionSelect = $(this.el).find("#inputVersion");
                 var self=this;
                 this.application.versions.each(function(version){
@@ -37,11 +38,16 @@ define([
             'submit':function(e){
                 e.preventDefault();
                 var self = this;
+                var action=this.model.isNew()?"create":"update";
+
                 this.model.save(null, {
                     success: function (model) {
-                        self.render();
+                        alerts.show({type:"info",text:"Instance '"+model.get("Name")+"' "+action+"d"});
+                        self.navigate('#/applications/'+model.get("ApplicationId"), true);
                     },
-                    error: function () {
+                    error: function (model,response) {
+                        var instanceId=action==="update"?"'"+model.id+"'":"";
+                        alerts.show({type:"error",text:"Failed to "+action+" instance "+instanceId+". "+JSON.parse(response.responseText).Error});
                     }
                 });
                 return false;

@@ -74,6 +74,7 @@ namespace Inceptum.AppServer.Hosting
                                 select new ApplicationInstanceInfo
                                            {
                                                Name = cfg.Name,
+                                               Id = cfg.Name,
                                                ApplicationId = cfg.ApplicationId,
                                                Status = instance.Status,
                                                Version = cfg.Version,
@@ -164,36 +165,60 @@ namespace Inceptum.AppServer.Hosting
 
         public void AddInstance(ApplicationInstanceInfo config)
         {
-            if(m_InstancesConfiguration.Any(x=>x.Name ==config.Name))
-                throw new ConfigurationErrorsException(string.Format("Instance named '{0}' already exists", config.Name));
-            var cfg = new InstanceConfig
-                                     {
-                                         Name = config.Name,
-                                         Version = config.Version,
-                                         ApplicationId = config.ApplicationId,
-                                         AutoStart = config.AutoStart
-                                     };
-            var instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Concat(new[] { cfg }).ToArray(), Formatting.Indented);
+            string instances;
+            lock (m_SyncRoot)
+            {
+                validateInstanceConfig(config);
+                if (m_InstancesConfiguration.Any(x => x.Name == config.Name))
+                    throw new ConfigurationErrorsException(string.Format("Instance named '{0}' already exists", config.Name));
+                var cfg = new InstanceConfig
+                {
+                    Name = config.Name,
+                    Version = config.Version,
+                    ApplicationId = config.ApplicationId,
+                    AutoStart = config.AutoStart
+                };
+                instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Concat(new[] { cfg }).ToArray(), Formatting.Indented);
+            }
             m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
             updateInstancesConfiguration();
         }
         
         public void UpdateInstance(ApplicationInstanceInfo config)
         {
-            if (!m_InstancesConfiguration.Any(x => x.Name == config.Name))
-                throw new ConfigurationErrorsException(string.Format("Instance named '{0}' not found", config.Name));
-          
-            var cfg = new InstanceConfig()
+            string instances;
+            lock (m_SyncRoot)
             {
-                Name = config.Name,
-                Version = config.Version,
-                ApplicationId = config.ApplicationId,
-                AutoStart = config.AutoStart
-            };
+                validateInstanceConfig(config);
+                if (m_InstancesConfiguration.All(x => x.Name != config.Id))
+                    throw new ConfigurationErrorsException(string.Format("Instance named '{0}' not found", config.Name));
+                if (config.Name!=config.Id && m_InstancesConfiguration.Any(x => x.Name == config.Name))
+                    throw new ConfigurationErrorsException(string.Format("Can not rename instance '{0}' to {1}. Instance with this name already exists", config.Id, config.Name));
+                var cfg = new InstanceConfig()
+                {
+                    Name = config.Name,
+                    Version = config.Version,
+                    ApplicationId = config.ApplicationId,
+                    AutoStart = config.AutoStart
+                };
 
-            var instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(c=>c.Name!=cfg.Name).Concat(new[] { cfg }).ToArray(), Formatting.Indented);
+                instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(c => c.Name != config.Id).Concat(new[] { cfg }).ToArray(), Formatting.Indented);
+                m_Instances.First(i => i.Name == config.Id).Rename(cfg.Name);
+            }
+
             m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
             updateInstancesConfiguration();
+        }
+
+        private void validateInstanceConfig(ApplicationInstanceInfo config)
+        {
+            if (string.IsNullOrEmpty(config.Name))
+                throw new ArgumentException("Instance name should be not empty string");
+            if (string.IsNullOrEmpty(config.ApplicationId))
+                throw new ArgumentException("Instance application is not provided");
+            if (m_Applications.All(x => x.Name != config.ApplicationId))
+                throw new ArgumentException("Application '" + config.ApplicationId + "' not found");
+
         }
 
         public void DeleteInstance(string name)
