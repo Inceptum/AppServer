@@ -232,9 +232,10 @@ namespace Inceptum.AppServer.Hosting
                     if (instance == null)
                         return;
                     m_Instances.Remove(instance);
+                    m_InstanceFactory.Release(instance);
                 }
-                //TODO: cleanup instance folder, release with factory
-                var instances = JsonConvert.SerializeObject(Instances.Where(i => i.Name != name).ToArray(), Formatting.Indented);
+                //TODO: cleanup instance folder
+                var instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(i => i.Name != name).ToArray(), Formatting.Indented);
                 m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
                 updateInstancesConfiguration();
                 instance.Dispose();
