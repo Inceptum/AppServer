@@ -10,15 +10,17 @@ define([
                 this.collection = this.model.bundles;
             },
             render:function(){
-                var escapedId=this.model.id.replace(".","\\.");
+                var escapedId=this.model.id.split(".").join("\\.");
 
                 if(this.model.bundles.length>0){
                     this.template = _.template( '<span><a href="#" data-toggle="collapse" data-target="#<%= model.id%>"><i class="icon-chevron-down "></i></a><a href="#"><%= model.name%></a></span>', { model:_.extend(this.model.toJSON(),{id:escapedId}) } );
                     $(this.el).html(this.template);
                     $(this.el).append(new TreeRoot({model:this.model}).render().el);
+                  //  $(this.el).find("a").first().collapse('hide');
                     $(this.el).find("a:first").click(function(e){
                         $(e.target).toggleClass("icon-chevron-right").toggleClass("icon-chevron-down");
                         e.preventDefault();});
+                 //   $(this.el).find("#"+escapedId).collapse("hide");
                 }else{
                     this.template = _.template( '<span><i class="icon-file"></i><a href="#"><%= model.name%></a></span>', { model:_.extend(this.model.toJSON(),{id:escapedId}) } );
                     $(this.el).html(this.template);
