@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigurationService.cs" />
+    <Compile Include="IManageableConfigurationProvider.cs" />
     <Compile Include="Json\JsonContentProcessor.cs" />
     <Compile Include="Model\Bundle.cs" />
     <Compile Include="Model\BundleCollectionBase.cs" />

@@ -4,6 +4,7 @@ define([
 	'underscore',
     'collections/applications',
     'collections/instances',
+    'collections/configurations',
     'models/host',
 	'views/header',
     'views/serverSideBar',
@@ -12,12 +13,14 @@ define([
     'views/appsSideBar',
     'views/instance',
     'views/application',
-    'views/instanceEdit'
+    'views/instanceEdit',
+    'views/configuration',
+    'views/configurationsSideBar'
 ],
-function($, Backbone, _,Applications,Instances,HostModel, HeaderView,
+function($, Backbone, _,Applications,Instances,Configurations,HostModel, HeaderView,
          ServerSideBarView, ServerStatusView, ServerLogView,
          AppsSideBarView, instanceView, AppView,
-         InstanceEditView){
+         InstanceEditView,ConfigurationView,ConfigurationsSideBarView){
 	var Router = Backbone.Router.extend({
 		initialize: function(){
             //TODO: need to have collections injected as singletons and react on events to render views
@@ -52,7 +55,9 @@ function($, Backbone, _,Applications,Instances,HostModel, HeaderView,
 			'applications': 'applications',
 			'applications/:app': 'applications',
 			'applications/:app/instances/create': 'createInstance',
-			'instances/:name': 'instance'
+			'instances/:name': 'instance',
+			'configurations': 'configurations',
+			'configurations/:config': 'configurations'
 		},
 		'serverStatus': function(){
             this.showViews([
@@ -104,7 +109,21 @@ function($, Backbone, _,Applications,Instances,HostModel, HeaderView,
             ];
             this.showViews(views);
             this.headerView.selectMenuItem("applications");
-		}
+		},
+        'configurations': function(config){
+            Configurations.fetch({async:false});
+
+            var views = [
+                new ConfigurationsSideBarView({active:config})
+            ];
+            if(Configurations.get(config)){
+                views.push(
+                    new ConfigurationView({model:Configurations.get(config), active:config})
+                );
+            }
+            this.showViews(views);
+            this.headerView.selectMenuItem("configurations");
+        }
 	});
 
 	return Router;
