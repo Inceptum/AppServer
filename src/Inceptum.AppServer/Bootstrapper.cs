@@ -154,8 +154,6 @@ namespace Inceptum.AppServer
                             ? Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
                             : Component.For<Bootstrapper>().DependsOn(new { appsToStart = setup.AppsToStart }),
 
-                            //TODO: get rid of this
-                        Component.For<IServerCore>().ImplementedBy<ServerCore>(),
                         Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
                         Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
                             new

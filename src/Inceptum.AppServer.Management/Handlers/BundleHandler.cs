@@ -11,9 +11,9 @@ namespace Inceptum.AppServer.Management.Handlers
     {
         private readonly IManageableConfigurationProvider m_Provider;
 
-        public BundleHandler(IServerCore serverCore)
+        public BundleHandler(IManageableConfigurationProvider configurationProvider)
         {
-            m_Provider = serverCore.LocalConfigurationProvider;
+            m_Provider = configurationProvider;
         }
         
         [HttpOperation(ForUriName = "Configurations")]

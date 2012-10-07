@@ -28,29 +28,14 @@ namespace Inceptum.AppServer.Configuration.Providers
 
         #region IManageableConfigurationProvider Members
 
-        public IEnumerable<object> GetConfigurations()
+        public IEnumerable<Config> GetConfigurations()
         {
-            return m_Persister
-                .GetAvailableConfigurations()
-                .Select(getConfiguration)
-                .Select(c => new
-                                 {
-                                     id = c.Name,
-                                     name = c.Name,
-                                     // bundlesmap = c.Select(serializeBundle)
-                                 });
+            return m_Persister.GetAvailableConfigurations().Select(getConfiguration);
         }
 
-
-        public object GetConfiguration(string configuration)
+        public Config GetConfiguration(string configuration)
         {
-            var c = getConfiguration(configuration);
-            return new
-                       {
-                           id = c.Name,
-                           name = c.Name,
-                           bundlesmap = c.Select(serializeBundle),
-                       };
+           return  getConfiguration(configuration);
         }
 
 
@@ -98,18 +83,7 @@ namespace Inceptum.AppServer.Configuration.Providers
                                                                 String.Join(",", extraParams ?? new string[0])));
             return bundle.Content;
         }
-
-        /*
-                public void UpdateBundle(string configuration, string name, string content)
-                {
-                    var config = getConfiguration(configuration);
-                    var bundle = config.Bundles.FirstOrDefault(b=>b.Name.ToLower()==name.ToLower());
-                    if (bundle != null)
-                        bundle.Content = content;
-                    m_Persister.Save(config);
-                }
-    
-        */
+ 
         public void CreateOrUpdateBundle(string configuration, string name, string content)
         {
             var config = getConfiguration(configuration);

@@ -2,10 +2,9 @@ define([
     'jquery',
     'backbone',
     'underscore',
-    'views/serverSideBar',
     'views/instancesList',
     'text!templates/serverStatus.html'],
-    function($, Backbone, _, ServerSideBarView,InstancesListView, template){
+    function($, Backbone, _, InstancesListView, template){
         var View = Backbone.View.extend({
             el:'#content',
             initialize: function(){

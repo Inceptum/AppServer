@@ -18,8 +18,6 @@ namespace Inceptum.AppServer.Management2.OpenRasta
         {
             using (OpenRastaConfiguration.Manual)
             {
-/*                ResourceSpace.Uses.PipelineContributor<CrossDomainPipelineContributor>();
-                ResourceSpace.Uses.PipelineContributor<StaticContentPipelineContributor>();*/
                 ResourceSpace.Uses.ViewsEmbeddedInTheAssembly(Assembly.GetExecutingAssembly(), "Inceptum.AppServer.Management2.Views");
                 ResourceSpace.Has.ResourcesOfType<string>().WithoutUri.TranscodedBy<UtfTextPlainCodec>();
                 ResourceSpace.Has.ResourcesOfType<ServerError>().WithoutUri.TranscodedBy<NewtonsoftJsonCodec>();
@@ -56,6 +54,12 @@ namespace Inceptum.AppServer.Management2.OpenRasta
                     .ResourcesOfType<HostInfo>()
                     .AtUri("api/host")
                     .HandledBy<HostHandler>()
+                    .TranscodedBy<NewtonsoftJsonCodec>();
+
+                ResourceSpace.Has
+                    .ResourcesOfType<object>()
+                    .AtUri("api/configurations")
+                    .HandledBy<ConfigurationsHandler>()
                     .TranscodedBy<NewtonsoftJsonCodec>();
             }
         }

@@ -189,12 +189,13 @@ namespace Inceptum.AppServer.Hosting
             string instances;
             lock (m_SyncRoot)
             {
+                //TODO: rename app and logs folders on rename
                 validateInstanceConfig(config);
                 if (m_InstancesConfiguration.All(x => x.Name != config.Id))
                     throw new ConfigurationErrorsException(string.Format("Instance named '{0}' not found", config.Name));
                 if (config.Name!=config.Id && m_InstancesConfiguration.Any(x => x.Name == config.Name))
                     throw new ConfigurationErrorsException(string.Format("Can not rename instance '{0}' to {1}. Instance with this name already exists", config.Id, config.Name));
-                var cfg = new InstanceConfig()
+                var cfg = new InstanceConfig
                 {
                     Name = config.Name,
                     Version = config.Version,
@@ -234,7 +235,7 @@ namespace Inceptum.AppServer.Hosting
                     m_Instances.Remove(instance);
                     m_InstanceFactory.Release(instance);
                 }
-                //TODO: cleanup instance folder
+                //TODO: cleanup instance folder.
                 var instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(i => i.Name != name).ToArray(), Formatting.Indented);
                 m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
                 updateInstancesConfiguration();

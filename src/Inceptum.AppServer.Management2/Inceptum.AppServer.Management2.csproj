@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Handlers\ApplicationsHandler.cs" />
+    <Compile Include="Handlers\ConfigurationsHandler.cs" />
     <Compile Include="Handlers\HostHandler.cs" />
     <Compile Include="Handlers\InstancesHandler.cs" />
     <Compile Include="OpenRasta\Configurator.cs" />
@@ -77,6 +78,10 @@
     <EmbeddedResource Include="Content\favicon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Inceptum.AppServer.Configuration\Inceptum.AppServer.Configuration.csproj">
+      <Project>{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}</Project>
+      <Name>Inceptum.AppServer.Configuration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Inceptum.AppServer.Sdk\Inceptum.AppServer.Sdk.csproj">
       <Project>{CAFF34B8-90CD-46D6-BCE8-C7B275473346}</Project>
       <Name>Inceptum.AppServer.Sdk</Name>

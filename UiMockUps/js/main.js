@@ -5,7 +5,8 @@ require.config({
     'paths': {
         "noext": 'libs/noext',
         "underscore": "libs/underscore-min",
-        "backbone": "libs/backbone-min",
+//        "backbone": "libs/backbone-min",
+        "backbone": "libs/backbone",
         "bootstrap":"libs/bootstrap.min",
         "scrollTo":"libs/jquery.scrollTo-min",
         "throttle":"libs/jquery.ba-throttle-debounce.min",
