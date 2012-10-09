@@ -1,29 +1,33 @@
-<h4><%=model.id%></h4>
+<style>
+    .CodeMirror{
+        //padding: 3px!important;
+        border: 1px solid #E1E1E8;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        line-height: 20px;
+    }
 
-        <style>
-            .CodeMirror{
-                padding: 3px!important;
-            }
+    .CodeMirror-scroll {
+        height: 600px;/*auto;*/
+        overflow-y: hidden;
+        overflow-x: auto;
+    }
+    .cm-s-default span.cm-string{
+        color: #D14;
+    }
+    #verificationErrors{
+        white-space:pre;
+    }
 
-            .CodeMirror-scroll {
-                height: 600px;/*auto;*/
-                overflow-y: hidden;
-                overflow-x: auto;
-            }
-            .cm-s-default span.cm-string{
-                color: #D14;
-            }
-            #verificationErrors{
-                white-space:pre;
-            }
-
-            .error{
-                background: #F2DEDE!important;
-            }
-        </style>
+    .error{
+        background: #F2DEDE!important;
+    }
+</style>
 <div id="verificationErrors" class="alert alert-error">
 
 </div>
 
-        <textarea id="code" class="well"><%=model.content%></textarea>
-        <button class="btn btn-small btn-primary" id="verify">Verify</button>
+<textarea id="code" class=""><%=model.content%></textarea>
+        <br>
+<button class="btn btn-small btn-primary" id="verify">Verify</button>

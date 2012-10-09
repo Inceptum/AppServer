@@ -52,7 +52,7 @@ define([
                     lineNumberFormatter:function(integer){return integer+".";}
                 });
                 this.verificationErrors=$("#verificationErrors").hide();
-                $(".CodeMirror").addClass("well");
+          //      $(".CodeMirror").addClass("well");
                 prettyPrint();
             }
         });
