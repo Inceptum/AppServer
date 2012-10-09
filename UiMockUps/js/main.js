@@ -11,12 +11,17 @@ require.config({
         "scrollTo":"libs/jquery.scrollTo-min",
         "throttle":"libs/jquery.ba-throttle-debounce.min",
         "signalr": "libs/jquery.signalR-0.5.3",
-        "json2": "libs/json2.min"
+        "json2": "libs/json2.min",
+        "codemirror": "libs/codemirror/codemirror",
+        "codemirrorjs": "libs/codemirror/mode/javascript"
     },
     'shim':
     {
         "throttle":{
             deps: ["jquery"]
+        },
+        "codemirrorjs":{
+            deps: ["codemirror"]
         },
         "signalr": {
             deps: ["json2"],
