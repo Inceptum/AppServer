@@ -4,6 +4,13 @@
 
 
     <div class="span9" id="serverArea">
+        <%if(model.id=="appserver"){%>
+        <div class="alert">
+
+            <strong>Warning!</strong> It is application server configuration. Do not edit it if you are not sure.
+        </div>
+
+        <%}%>
         <h4>Configuration</h4>
         <div id="confTree" >
         </div>

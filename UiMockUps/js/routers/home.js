@@ -6,6 +6,7 @@ define([
     'collections/instances',
     'collections/configurations',
     'models/host',
+    'models/bundle',
 	'views/header',
     'views/serverSideBar',
 	'views/serverStatus',
@@ -15,12 +16,13 @@ define([
     'views/application',
     'views/instanceEdit',
     'views/configuration',
+    'views/bundle',
     'views/configurationsSideBar'
 ],
-function($, Backbone, _,Applications,Instances,Configurations,HostModel, HeaderView,
+function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleModel, HeaderView,
          ServerSideBarView, ServerStatusView, ServerLogView,
          AppsSideBarView, instanceView, AppView,
-         InstanceEditView,ConfigurationView,ConfigurationsSideBarView){
+         InstanceEditView,ConfigurationView,BundleView,ConfigurationsSideBarView){
 	var Router = Backbone.Router.extend({
 		initialize: function(){
             //TODO: need to have collections injected as singletons and react on events to render views
@@ -57,7 +59,8 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel, HeaderV
 			'applications/:app/instances/create': 'createInstance',
 			'instances/:name': 'instance',
 			'configurations': 'configurations',
-			'configurations/:config': 'configurations'
+			'configurations/:config': 'configurations',
+			'configurations/:config/:bundle': 'bundle'
 		},
 		'serverStatus': function(){
             this.showViews([
@@ -111,7 +114,7 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel, HeaderV
             this.headerView.selectMenuItem("applications");
 		},
         'configurations': function(config){
-            Configurations.fetch({async:false});
+            Configurations.fetch({async:false,update:true});
 
             var views = [
                 new ConfigurationsSideBarView({active:config})
@@ -119,6 +122,22 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel, HeaderV
             if(Configurations.get(config)){
                 views.push(
                     new ConfigurationView({model:Configurations.get(config), active:config})
+                );
+            }
+            this.showViews(views);
+            this.headerView.selectMenuItem("configurations");
+        },
+        'bundle': function(config,bundle){
+            Configurations.fetch({async:false,update:true});
+            var b = new BundleModel({configuration:config,id:bundle});
+            b.fetch({async:false});
+
+            var views = [
+                new ConfigurationsSideBarView({active:config})
+            ];
+            if(Configurations.get(config)){
+                views.push(
+                    new BundleView({model:b})
                 );
             }
             this.showViews(views);
