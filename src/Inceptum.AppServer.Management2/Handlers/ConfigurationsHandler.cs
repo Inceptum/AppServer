@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Castle.Core.Logging;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using Inceptum.AppServer.Configuration;
@@ -15,9 +16,11 @@ namespace Inceptum.AppServer.Management2.Handlers
     public class ConfigurationsHandler
     {
         private readonly IManageableConfigurationProvider m_Provider;
+        private ILogger m_Logger;
 
-        public ConfigurationsHandler(IManageableConfigurationProvider provider)
+        public ConfigurationsHandler(IManageableConfigurationProvider provider, ILogger logger)
         {
+            m_Logger = logger;
             m_Provider = provider;
         }
 
@@ -29,6 +32,25 @@ namespace Inceptum.AppServer.Management2.Handlers
                         id=c.Name,
                         bundles=getBundles(c,c.Name)}
                         ).ToArray();
+        }
+
+        public object Get(string configuration)
+        {
+            Config c = m_Provider.GetConfiguration(configuration);
+
+            return new
+                       {
+                           id = c.Name,
+                           bundles = getBundles(c, c.Name)
+                       };
+        }
+
+   
+ 
+
+        public void Delete(string configuration)
+        {
+            throw new NotImplementedException();
         }   
         
         public object GetBundle(string configuration,string bundle)
@@ -46,7 +68,28 @@ namespace Inceptum.AppServer.Management2.Handlers
                        };
         }
 
+        public OperationResult PostImport(string configuration, IFile file)
+        {
+            var memoryStream = new MemoryStream();
+            file.OpenStream().CopyTo(memoryStream);
+            Config config = m_Provider.GetConfiguration(configuration);
+            var zipFile = new ZipFile(memoryStream);
+ 
+            m_Provider.DeleteConfiguration(configuration);
+            m_Provider.CreateConfiguration(configuration);
+ 
+            int i = 0;
+            foreach (ZipEntry bundleFile in zipFile)
+            {
+                i++;
+                m_Logger.InfoFormat(bundleFile.Name);
+                m_Provider.CreateOrUpdateBundle(configuration, bundleFile.Name, new StreamReader(zipFile.GetInputStream(bundleFile)).ReadToEnd());
+            }
+            m_Logger.InfoFormat("{0}",i);
+            return new OperationResult.NoContent();
+        }
 
+         [HttpOperation(HttpMethod.POST, ForUriName = "export")]
         public OperationResult GetExport(string configuration)
         {
             try
