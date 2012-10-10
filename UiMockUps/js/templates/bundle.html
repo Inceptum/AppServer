@@ -24,10 +24,20 @@
         background: #F2DEDE!important;
     }
 </style>
+
+<div class="page-header">
+    <h3><%=model.id%>
+        <span class="pull-right">
+            <a id="verify" class="btn btn-mini"><i class="icon-align-left"></i> <strong>Format</strong></a>
+            <a class="btn btn-mini"><i class=" icon-ok"></i> <strong>Save</strong></a>
+            <a class="btn btn-mini btn-danger"><i class="icon-trash"></i> <strong>Delete</strong></a>
+        </span>
+    </h3>
+</div>
+
 <div id="verificationErrors" class="alert alert-error">
 
 </div>
 
 <textarea id="code" class=""><%=model.content%></textarea>
         <br>
-<button class="btn btn-small btn-primary" id="verify">Verify</button>

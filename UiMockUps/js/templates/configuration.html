@@ -1,19 +1,19 @@
-<div class="row">
-    <div class="span3 sidebar">
-    </div>
+<div class="page-header">
+    <h3>
+        <%=model.id%>        
+        <span class="pull-right">
+            <a href="/api/configurations/<%=model.id%>/export" id="verify" class="btn btn-mini"><i class="icon-share"></i> <strong>Export</strong></a>
+            <a class="btn btn-mini btn-danger"><i class="icon-trash"></i> <strong>Delete</strong></a>
+        </span>
+    </h3>
+</div>
+<%if(model.id=="appserver"){%>
+<div class="alert">
 
+    <strong>Warning!</strong> It is application server configuration. Do not edit it if you are not sure.
+</div>
 
-    <div class="span9" id="serverArea">
-        <%if(model.id=="appserver"){%>
-        <div class="alert">
+<%}%>
 
-            <strong>Warning!</strong> It is application server configuration. Do not edit it if you are not sure.
-        </div>
-
-        <%}%>
-        <h4>Configuration</h4>
-        <div id="confTree" >
-        </div>
-    </div>
-
+<div id="confTree" >
 </div>

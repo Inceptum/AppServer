@@ -62,6 +62,12 @@ namespace Inceptum.AppServer.Management2.OpenRasta
                     .And.AtUri("api/configurations/{configuration}/{bundle}")
                     .HandledBy<ConfigurationsHandler>()
                     .TranscodedBy<NewtonsoftJsonCodec>();
+
+                ResourceSpace.Has
+                    .ResourcesOfType<IDownloadableFile>()
+                    .AtUri("api/configurations/{configuration}/export")
+                    .HandledBy<ConfigurationsHandler>()
+                    .TranscodedBy<ApplicationOctetStreamCodec>(null); 
             }
         }
 

@@ -1,7 +1,8 @@
 <div class="well" style="padding: 8px 0;">
     <ul class="nav nav-list">
+        <li class="nav-header">Configurations</li>
         <% _.each(model,function(config) { %>
-        <li data-id="<%= config.id %>"><a href="#configurations/<%= config.id %>"><%= config.id %></a></li>
+        <li data-id="<%= config.id %>"><a href="#configurations/<%= config.id %>"><i class="icon-list-alt"></i> <%= config.id %></a></li>
         <% }); %>
     </ul>
 </div>
