@@ -4,8 +4,9 @@
        <li><a href="#">Configuration <span class="badge">1</span></a></li>
        <li><a href="#">Management <span class="badge">1</span></a></li>
        <li class="nav-header">Hosted</li>-->
+        <li class="nav-header">Applications</li>
         <% _.each(model,function(app) { %>
-        <li data-id="<%= app.Name %>"><a href="#applications/<%= app.Name %>"><%= app.Name %></a></li>
+        <li data-id="<%= app.Name %>"><a href="#applications/<%= app.Name %>"><i class="icon-cog"></i> <%= app.Name %></a></li>
         <% }); %>
         <!--
                     <li class="active"><a href="#">TestApp <span class="badge">2</span></a></li>

@@ -6,9 +6,10 @@ define([
     'views/serverSideBar',
     'collections/instances',
     'text!templates/serverLog.html',
+    'context',
     'scrollTo',
     'noext!sr/signalr/hubs'],
-    function($, Backbone, _,context,ServerSideBarView,instances, template){
+    function($, Backbone, _,context,ServerSideBarView,instances, template,context){
         var View = Backbone.View.extend({
             el:'#content',
             levelMap:{
@@ -21,7 +22,7 @@ define([
             initialize: function(){
                 _.bindAll(this, "onMessageReceived","onReconnected","applyFilter");
                 var self=this;
-                this.connection = $.connection('http://app.inceptumsoft.com:9223/sr/log');//(context.signalRUrl('/log'));
+                this.connection = $.connection(context.signalRUrl('/log'));
                 this.connection.received(this.onMessageReceived);
                 this.connection.reconnected(this.onReconnected);
                 this.connection.error(function(error) {

@@ -24,8 +24,8 @@ define([
                 this.template = _.template( template, { model: this.model.toJSON() } );
                 $(this.el).html(this.template);
 
-                var action = this.model.isNew()?"Create":"Update";
-                this.$("#submit").text(action);
+                var action = this.model.isNew()?"Create":"Save";
+                this.$("#submit strong").text(action);
                 var versionSelect = $(this.el).find("#inputVersion");
                 var self=this;
                 this.application.versions.each(function(version){

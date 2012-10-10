@@ -18,14 +18,13 @@ define([
                 {
                     if(this.errorLine)
                         this.codeMirror.setLineClass(this.errorLine, null,null);
-                    jsonlint.parse(this.codeMirror.getValue());
-                    this.verificationErrors.text("");
-                    this.verificationErrors.hide();
+                    var result = jsonlint.parse(this.codeMirror.getValue());
+                        this.codeMirror.setValue(JSON.stringify(result, null, "  "));
+                    this.verificationErrors.text("").hide();
                     this.errorLine=undefined;
                 }catch(ex){
                     this.errorLine = (/Parse error on line (\d+)/g).exec(ex.message)[1]*1-1;
-                    this.verificationErrors.text("<strong>Error:</strong>: "+ex.message);
-                    this.verificationErrors.show();
+                    this.verificationErrors.html("<strong>Error:</strong> "+ex.message).show();
                     this.codeMirror.setLineClass(this.errorLine, "error","error");
                     this.jumpToLine(this.errorLine);
                     console.log(ex);
