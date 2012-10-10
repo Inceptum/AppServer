@@ -30,16 +30,18 @@ namespace Inceptum.AppServer.Management2.OpenRasta
                 catch (Exception ex)
                 {
 
+                    if (ex.InnerException != null)
+                        ex = ex.InnerException;
                     var error = new Error
                     {
-                        Exception = ex.InnerException,
-                        Message = ex.InnerException.Message,
-                        Title = ex.InnerException.Message
+                        Exception = ex,
+                        Message = ex.Message,
+                        Title = ex.Message
                     };
                     var errors = new List<Error> { error }; 
 
 
-                    var response = new OperationResult.BadRequest{ ResponseResource = new ServerError(){Error = ex.InnerException.Message},Errors = errors};
+                    var response = new OperationResult.BadRequest{ ResponseResource = new ServerError(){Error = ex.Message},Errors = errors};
                     m_Context.OperationResult = response;
 
                     var outputMember = new OutputMember

@@ -2,8 +2,10 @@ define([
     'jquery',
     'backbone',
     'underscore',
-    'text!templates/configuration.html'],
-    function($, Backbone, _, template){
+    'views/confirm',
+    'views/alerts',
+    'text!templates/configuration.html','fileupload'],
+    function($, Backbone, _, confirmView,alerts, template){
         var TreeView = Backbone.View.extend({
             tagName: "li",
             folderTemplate:'<span><a href="#" data-toggle="collapse" data-target="#<%= model.uiid%>"><i class="<%=model.imgClass%>"></i></a><a href="#/configurations/<%=model.configuration%>/<%=model.id%>"><%= model.name%></a></span>',
@@ -57,13 +59,71 @@ define([
         var View = Backbone.View.extend({
             el:'#content',
             initialize: function(){
+                _.bindAll(this,"upload");
+            },events:{
+                "click #delete":"destroy",
+                "click #import":"upload",
+                "click #importSubmit":"doImport"
+            },
+            upload:function(){
+
+                var input = $('#inputFile').unbind();
+                input.after(input.clone(true).change(function() {
+                    $('#fakeInputFile').val($(this).val());
+                })).remove();
+                $('#fakeInputFile').val("");
+                $('#progress .bar').css('width','0%');
+                var self=this;
+                this.uploader=this.importDialog.find("#inputFile").fileupload({
+                    dataType: 'json',
+                    multipart:false,
+                    autoUpload:false,
+                    fileInput:null,
+                    done: function (e, data) {
+                        $('#progressAlert').addClass("hide");
+                        self.model.fetch({async:false});
+                        self.render();
+                    },
+                    fail: function (e, data) {
+                        $('#progressAlert').addClass("hide");
+                        self.model.fetch({async:false});
+                        self.render();
+                    },
+                    progressall: function (e, data) {
+                        var progress = parseInt(data.loaded / data.total * 100, 10);
+                        $('#progress .bar').css(
+                            'width',
+                            progress + '%'
+                        );
+                    }
+                });
+                this.importDialog.modal();
+            },
+            doImport:function(){
+                $('#progressAlert').removeClass("hide");
+                this.importDialog.modal('hide');
+                this.uploader.fileupload('send',{fileInput: this.uploader});
+            },
+            destroy:function(){
+                var self=this;
+                confirmView.open({title:"Delete",body:"You are about to delete '"+this.model.id+"' configuration. Are you sure?",confirm_text:"Delete"})
+                    .done(function(){
+                        self.model.destroy({
+                            wait: true,
+                            error:function(model,response){
+                                alerts.show({
+                                    type:"error",
+                                    text:"Failed to delete instance '"+self.model.id+"'. "+JSON.parse(response.responseText).Error});
+                            }
+                        });
+                    });
             },
             render: function(){
                 this.template = _.template( template, {model: this.model.toJSON() } );
                 $(this.el).html(this.template);
                 $(this.el).find("#confTree").append(new TreeRoot({model:this.model,visible:true}).render().el);
-
-                //  $(this.el).find("#confTree li").collapse();
+                this.importDialog=$("#importDialog");
+                $('#fakeInputFile').val("").next().click(function(){$('#inputFile').click();});
                 return this;
             },
             'dispose':function(){

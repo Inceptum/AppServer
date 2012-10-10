@@ -60,12 +60,14 @@ namespace Inceptum.AppServer.Management2.OpenRasta
                     .ResourcesOfType<object>()
                     .AtUri("api/configurations")
                     .And.AtUri("api/configurations/{configuration}/{bundle}")
+                    .And.AtUri("api/configurations/{configuration}")
                     .HandledBy<ConfigurationsHandler>()
                     .TranscodedBy<NewtonsoftJsonCodec>();
 
                 ResourceSpace.Has
                     .ResourcesOfType<IDownloadableFile>()
-                    .AtUri("api/configurations/{configuration}/export")
+                    .AtUri("api/configurations/{configuration}/export").Named("export")
+                    .And.AtUri("api/configurations/{configuration}/import")
                     .HandledBy<ConfigurationsHandler>()
                     .TranscodedBy<ApplicationOctetStreamCodec>(null); 
             }

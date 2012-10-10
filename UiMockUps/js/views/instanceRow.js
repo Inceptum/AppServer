@@ -22,19 +22,6 @@ define([
                 $(this.el).find(".actions button").attr("disabled", "disabled");
                 this.trigger('destroy',this.model,this);
             },
-/*
-            start:function(e){
-                e.preventDefault();
-                $(this.el).find(".actions button").attr("disabled", "disabled");
-                this.model.start();
-            },
-            stop:function(e){
-                e.preventDefault();
-                $(this.el).find(".actions button").attr("disabled", "disabled");
-                this.model.stop();
-            },
-*/
-
             stop:function(e){
                 e.preventDefault();
                 $(this.el).find(".actions button").attr("disabled", "disabled");

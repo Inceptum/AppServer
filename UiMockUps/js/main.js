@@ -13,10 +13,15 @@ require.config({
         "signalr": "libs/jquery.signalR-0.5.3",
         "json2": "libs/json2.min",
         "codemirror": "libs/codemirror/codemirror",
-        "codemirrorjs": "libs/codemirror/mode/javascript"
+        "codemirrorjs": "libs/codemirror/mode/javascript",
+        "fileupload": "libs/jquery.fileupload",
+        "jquery.ui.widget": "libs/jquery.ui.widget"
     },
     'shim':
     {
+        "fileupload":{
+            deps: ["jquery","libs/jquery.iframe-transport","jquery.ui.widget"]
+        },
         "throttle":{
             deps: ["jquery"]
         },
