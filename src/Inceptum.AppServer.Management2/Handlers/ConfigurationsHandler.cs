@@ -63,6 +63,7 @@ namespace Inceptum.AppServer.Management2.Handlers
             return new BundleInfo()
                        {
                            id = b.Name,
+                           Parent = b.Name,
                            Name = b.ShortName,
                            Content= b.Content,
                            Configuration=configuration
@@ -77,9 +78,11 @@ namespace Inceptum.AppServer.Management2.Handlers
 
         public object PostBundle(string configuration, BundleInfo info)
         {
-            m_Provider.CreateOrUpdateBundle(configuration, info.Name, info.Content);
-            return GetBundle(configuration, info.Name);
+            string id = string.IsNullOrEmpty(info.Parent) ? info.Name : info.Parent + "." + info.Name;
+            m_Provider.CreateOrUpdateBundle(configuration, id, info.Content);
+            return GetBundle(configuration, id);
         }
+
         public void DeleteBundle(string configuration, string bundle)
         {
             m_Provider.DeleteBundle(configuration, bundle);
