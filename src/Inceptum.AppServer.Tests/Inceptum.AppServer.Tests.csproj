@@ -32,6 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -40,7 +41,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\ComponentRegistrationExtentionsTests.cs" />
+    <Compile Include="Configuration\ConfigurationFacilityTests.cs" />
+    <Compile Include="Configuration\ConfigurationProviderTests.cs" />
     <Compile Include="Configuration\DependsOnEndpointsTests.cs" />
+    <Compile Include="Configuration\FileSystemConfigurationProviderTests.cs" />
+    <Compile Include="Configuration\RemoteConfigurationProviderTests.cs" />
+    <Compile Include="Configuration\ResourceConfigurationProviderBaseTests.cs" />
     <Compile Include="Investigation.cs" />
     <Compile Include="OpenWrapApplicationBrowserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
