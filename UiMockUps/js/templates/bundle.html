@@ -26,11 +26,19 @@
 </style>
 
 <div class="page-header">
-    <h3><%=model.id%>
+    <h3>
+        <% if(!model.id){%>
+            New bundle
+        <% }else {%>
+            <%=model.id%>
+        <% }%>
         <span class="pull-right">
             <a id="verify" class="btn btn-mini"><i class="icon-align-left"></i> <strong>Format</strong></a>
-            <a class="btn btn-mini"><i class=" icon-ok"></i> <strong>Save</strong></a>
+            <a id="save" class="btn btn-mini"><i class=" icon-ok"></i> <strong>Save</strong></a>
+            <% if(model.Id){%>
             <a class="btn btn-mini btn-danger"><i class="icon-trash"></i> <strong>Delete</strong></a>
+        <% }%>
+
         </span>
     </h3>
 </div>
@@ -39,5 +47,9 @@
 
 </div>
 
-<textarea id="code" class=""><%=model.content%></textarea>
+<% if(!model.id){%>
+    Name:<input type="text" id="inputName" name="Name" value="<%=model.Name%>" >
+<% }%>
+
+<textarea id="code" name="Content"><%=model.Content%></textarea>
         <br>

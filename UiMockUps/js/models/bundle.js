@@ -16,8 +16,9 @@ define(['jquery', 'backbone', 'underscore','collections/bundles'], function($, B
             });
 
 
-        }, url:function () {
-            return "/api/configurations/" + this.get("configuration") + "/" + this.id;
+        },
+        url:function () {
+            return "/api/configurations/" + this.get("configuration") + "/" + (this.isNew()?"":this.id);
         }
     });
     return Model;

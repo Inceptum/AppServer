@@ -1,5 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Inceptum.AppServer.Model;
 using NUnit.Framework;
 using Newtonsoft.Json;
@@ -96,5 +102,98 @@ WWkCICCW4uD/IFcWFvfkpqYvgj4/FQoaqTi5O6fu8NE6HVXl
 }
 "));
         }
+
+        [Test]
+        public void HttpRequestTest()
+        {
+            ThreadPool.SetMinThreads(100, 100); 
+            var client=new WebClient();
+            var phone = 9265603326;
+            var pass = 5998;
+            var address = string.Format("https://www.serviceguide.megafonmoscow.ru/ROBOTS/SC_TRAY_INFO?X_Username={0}&X_Password={1}", phone, pass);
+            Console.WriteLine(address);
+            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
+            ServicePointManager.DefaultConnectionLimit = 20;
+            var r = new Regex("<BALANCE>(\\d*.\\d+)</BALANCE>");
+
+            AutoResetEvent ev=new AutoResetEvent(false);
+            var sw = Stopwatch.StartNew();
+
+            HttpWebRequest webRequest;
+
+            var currentProcess = Process.GetCurrentProcess();
+            Console.WriteLine(currentProcess.Threads.Count);
+            var tasks = Enumerable.Range(0, 20).Select(i => ValidateUrlAsync("http://ya.ru", sw, i)
+                .ContinueWith(task =>{
+                                        var response = task.Result.Item1;
+                                        var matches = r.Matches(response);
+                                        decimal? balance = null;
+
+                                        if (matches.Count > 0)
+                                        {
+                                            decimal b;
+                                            if (decimal.TryParse(matches[0].Groups[1].ToString(), out b))
+                                                balance = b;
+                                        }
+
+
+                                        Console.WriteLine(string.Format("[{0} of total {1}threads] {2} {3} {4}ms",
+                                            Thread.CurrentThread.ManagedThreadId,
+                                            currentProcess.Threads.Count,
+                                            task.Result.Item3, balance, sw.ElapsedMilliseconds - task.Result.Item2));
+                                    }));
+            Task.WaitAll(tasks.ToArray());
+            
+            sw.Stop();
+            Console.WriteLine(currentProcess.Threads.Count);
+                
+                
+       
+/*
+
+            foreach (var i in Enumerable.Range(0, 10))
+            {
+                var sw = Stopwatch.StartNew();
+                decimal? balance = null;
+                var response = client.DownloadString(address);
+                var matches = r.Matches(response);
+                if (matches.Count > 0)
+                {
+                    decimal b;
+                    if (decimal.TryParse(matches[0].Groups[1].ToString(), out b))
+                        balance = b;
+                }
+                sw.Stop();
+                Console.WriteLine(string.Format("{0} {1} {2}ms", i, balance, sw.ElapsedMilliseconds));
+                
+            }
+*/
+        }
+
+        public Task<Tuple<string,long,int>> ValidateUrlAsync(string url, Stopwatch sw,int i)
+        {
+            var tcs = new TaskCompletionSource<Tuple<string, long, int>>();
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            try
+            {
+                var elapsedMilliseconds = sw.ElapsedMilliseconds;
+                request.BeginGetResponse(iar =>
+                {
+                    HttpWebResponse response = null;
+                    try
+                    {
+                        response = (HttpWebResponse)request.EndGetResponse(iar);
+                        var text = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                        tcs.SetResult(Tuple.Create(text, elapsedMilliseconds,i));
+                    }
+                    catch (Exception exc) { tcs.SetException(exc); }
+                    finally { if (response != null) response.Close(); }
+                }, null);
+            }
+            catch (Exception exc) { tcs.SetException(exc); }
+            return tcs.Task;
+
+        }
+
     }
 }
