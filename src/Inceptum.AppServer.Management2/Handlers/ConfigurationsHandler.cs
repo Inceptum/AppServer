@@ -51,21 +51,38 @@ namespace Inceptum.AppServer.Management2.Handlers
         public void Delete(string configuration)
         {
             throw new NotImplementedException();
-        }   
-        
-        public object GetBundle(string configuration,string bundle)
+        }
+
+        public object GetBundle(string configuration, string bundle)
         {
             var configurations = m_Provider.GetConfiguration(configuration);
             var b = configurations.Bundles.FirstOrDefault(x => x.Name == bundle);
             if (b == null)
                 return new OperationResult.NotFound();
 
-            return new
+            return new BundleInfo()
                        {
                            id = b.Name,
-                           name = b.ShortName,
-                           content=b.Content
+                           Name = b.ShortName,
+                           Content= b.Content,
+                           Configuration=configuration
                        };
+        }
+
+        public object PutBundle(string configuration, string bundle, BundleInfo info)
+        {
+            m_Provider.CreateOrUpdateBundle(configuration, info.Name, info.Content);
+            return GetBundle(configuration, info.Name);
+        }
+
+        public object PostBundle(string configuration, BundleInfo info)
+        {
+            m_Provider.CreateOrUpdateBundle(configuration, info.Name, info.Content);
+            return GetBundle(configuration, info.Name);
+        }
+        public void DeleteBundle(string configuration, string bundle)
+        {
+            m_Provider.DeleteBundle(configuration, bundle);
         }
 
         public OperationResult PostImport(string configuration, IFile file)
@@ -74,7 +91,7 @@ namespace Inceptum.AppServer.Management2.Handlers
             file.OpenStream().CopyTo(memoryStream);
             Config config = m_Provider.GetConfiguration(configuration);
             var zipFile = new ZipFile(memoryStream);
- 
+
             m_Provider.DeleteConfiguration(configuration);
             m_Provider.CreateConfiguration(configuration);
  

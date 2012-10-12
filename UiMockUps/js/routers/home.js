@@ -60,7 +60,8 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
 			'instances/:name': 'instance',
 			'configurations': 'configurations',
 			'configurations/:config': 'configurations',
-			'configurations/:config/:bundle': 'bundle'
+			'configurations/:config/bundles/:bundle': 'bundle',
+			'configurations/:config/create': 'bundle'
 		},
 		'serverStatus': function(){
             this.showViews([
@@ -130,7 +131,8 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
         'bundle': function(config,bundle){
             Configurations.fetch({async:false,update:true});
             var b = new BundleModel({configuration:config,id:bundle});
-            b.fetch({async:false});
+            if(bundle)
+                b.fetch({async:false});
 
             var views = [
                 new ConfigurationsSideBarView({active:config})

@@ -2,8 +2,11 @@
     <h3>
         <%=model.id%>        
         <span class="pull-right">
-            <a href="/api/configurations/<%=model.id%>/export" id="export" class="btn btn-mini"><i class="icon-download"></i> <strong>Export</strong></a>
-            <a   id="import" class="btn btn-mini"><i class="icon-upload"></i> <strong>Import</strong></a>
+            <a href="/#configurations/<%=model.id%>/create" id="createBundle" class="btn btn-mini"><i
+                    class="icon-file"></i> <strong>Create root bundle</strong></a>
+            <a href="/api/configurations/<%=model.id%>/export" id="export" class="btn btn-mini"><i
+                    class="icon-download"></i> <strong>Export</strong></a>
+            <a id="import" class="btn btn-mini"><i class="icon-upload"></i> <strong>Import</strong></a>
             <a id="delete" class="btn btn-mini btn-danger"><i class="icon-trash"></i> <strong>Delete</strong></a>
         </span>
     </h3>
@@ -18,36 +21,48 @@
 
 <div class="alert alert-info hide" id="progressAlert">
     Import progress:
-    <div class="progress" id="progress"  >
+    <div class="progress" id="progress">
         <div class="bar" style="width: 60%; "></div>
     </div>
 </div>
+
+        <style>
+            #confTree span{
+                line-height: 1.7em;
+            }
+
+            #confTree span .btn{
+                cursor:pointer;
+            }
+        </style>
 
 <div id="confTree" >
 </div>
 
 
-        <div class="modal hide fade" id="importDialog">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>Import configuration</h3>
-            </div>
-            <div class="modal-body">
-                <form class="form-horizontal">
-                    <input id="inputFile" type="file" style="display:none" data-url="/api/configurations/<%=model.id%>/import">
-                    <div class="control-group">
-                        <label class="control-label" for="fakeInputFile">Choose file:</label>
-                        <div class="controls">
-                            <div class="input-append">
-                                <input id="fakeInputFile" class="input-large" type="text">
-                                <a class="btn">Browse</a>
-                            </div>
-                        </div>
+<div class="modal hide fade" id="importDialog">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Import configuration</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal">
+            <input id="inputFile" type="file" style="display:none" data-url="/api/configurations/<%=model.id%>/import">
+
+            <div class="control-group">
+                <label class="control-label" for="fakeInputFile">Choose file:</label>
+
+                <div class="controls">
+                    <div class="input-append">
+                        <input id="fakeInputFile" class="input-large" type="text">
+                        <a class="btn">Browse</a>
                     </div>
-                </form>
+                </div>
             </div>
-            <div class="modal-footer">
-                <a  class="btn cancel" data-dismiss="modal" aria-hidden="true">Cancel</a>
-                <a   id="importSubmit" class="btn btn-danger confirm">Import</a>
-            </div>
-        </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a class="btn cancel" data-dismiss="modal" aria-hidden="true">Cancel</a>
+        <a id="importSubmit" class="btn btn-danger confirm">Import</a>
+    </div>
+</div>
