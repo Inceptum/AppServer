@@ -13,7 +13,8 @@ using Newtonsoft.Json.Linq;
 
 namespace Inceptum.AppServer.Configuration
 {
-    internal interface IConfigurationFacility
+    //TODO: changed from internal to public for testing. Need to take a closer look .
+    public interface IConfigurationFacility
     {
         T DeserializeFromBundle<T>(string configuration,string bundleName, string jsonPath, IEnumerable<string> parameters);
     }
