@@ -61,7 +61,8 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
 			'configurations': 'configurations',
 			'configurations/:config': 'configurations',
 			'configurations/:config/bundles/:bundle': 'bundle',
-			'configurations/:config/create': 'bundle'
+			'configurations/:config/create': 'createBundle',
+			'configurations/:config/:parent/create': 'createBundle'
 		},
 		'serverStatus': function(){
             this.showViews([
@@ -128,12 +129,24 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
             this.showViews(views);
             this.headerView.selectMenuItem("configurations");
         },
-        'bundle': function(config,bundle){
+        'bundle': function(config,bundle,parent){
             Configurations.fetch({async:false,update:true});
             var b = new BundleModel({configuration:config,id:bundle});
-            if(bundle)
-                b.fetch({async:false});
-
+            b.fetch({async:false});
+            var views = [
+                new ConfigurationsSideBarView({active:config})
+            ];
+            if(Configurations.get(config)){
+                views.push(
+                    new BundleView({model:b})
+                );
+            }
+            this.showViews(views);
+            this.headerView.selectMenuItem("configurations");
+        },
+        'createBundle': function(config,parent){
+            Configurations.fetch({async:false,update:true});
+            var b = new BundleModel({configuration:config,Parent:parent});
             var views = [
                 new ConfigurationsSideBarView({active:config})
             ];

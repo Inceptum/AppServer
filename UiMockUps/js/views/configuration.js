@@ -13,14 +13,14 @@ define([
                 '<a href="#/configurations/<%=model.configuration%>/bundles/<%=model.id%>"><%= model.name%></a>' +
                 '<div class="btn-group pull-right hide" style="margin-left:20px">' +
                 '<a href="#/configurations/<%=model.configuration%>/bundles/<%=model.id%>" class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-pencil"></i></a>' +
-                '<a  class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-plus"></i></a>' +
+                '<a href="/#configurations/<%=model.configuration%>/<%=model.id%>/create"  class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-plus"></i></a>' +
                 '<a  class="btn btn-inverse btn-mini disabled delete" data-id="<%= model.id%>"><i class="icon-white icon-trash"></i></a>' +
                 '</div>' +
                 '</span>',
             leafTemplate:'<span style="display:inline-block;"><i class="icon-file"></i><a href="#/configurations/<%=model.configuration%>/bundles/<%=model.id%>"><%= model.name%></a>' +
                 '<div class="btn-group pull-right hide" style="margin-left:20px">' +
                 '<a href="#/configurations/<%=model.configuration%>/bundles/<%=model.id%>" class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-pencil"></i></a>' +
-                '<a  class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-plus"></i></a>' +
+                '<a href="/#configurations/<%=model.configuration%>/<%=model.id%>/create" class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-plus"></i></a>' +
                 '<a  class="btn btn-inverse btn-mini disabled delete" data-id="<%= model.id%>"><i class="icon-white icon-trash"></i></a>' +
                 '</div>' +
                 '</span>',

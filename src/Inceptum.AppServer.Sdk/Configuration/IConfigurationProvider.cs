@@ -13,6 +13,7 @@
     public class BundleInfo
     {
         public string id { get; set; } 
+        public string Parent { get; set; } 
         public string Name { get; set; } 
         public string Configuration { get; set; } 
         public string Content { get; set; } 
