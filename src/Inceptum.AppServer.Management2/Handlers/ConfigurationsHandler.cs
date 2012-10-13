@@ -50,7 +50,7 @@ namespace Inceptum.AppServer.Management2.Handlers
 
         public void Delete(string configuration)
         {
-            throw new NotImplementedException();
+            m_Provider.DeleteConfiguration(configuration);
         }
 
         public object GetBundle(string configuration, string bundle)

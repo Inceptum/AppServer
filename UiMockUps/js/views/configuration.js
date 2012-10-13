@@ -181,10 +181,16 @@ define([
                     .done(function(){
                         self.model.destroy({
                             wait: true,
+                            success:function(){
+                                alerts.show({
+                                    type:"info",
+                                    text:"Configuration '"+self.model.id+"' deleted."});
+                                self.navigate('#/configurations', true);
+                            },
                             error:function(model,response){
                                 alerts.show({
                                     type:"error",
-                                    text:"Failed to delete instance '"+self.model.id+"'. "+JSON.parse(response.responseText).Error});
+                                    text:"Failed to delete configuration '"+self.model.id+"'. "+JSON.parse(response.responseText).Error});
                             }
                         });
                     });
