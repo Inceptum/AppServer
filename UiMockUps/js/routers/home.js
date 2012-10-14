@@ -35,6 +35,7 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
             this.headerView.render();
             this.hostModel = new HostModel();
             this.hostModel.fetch({async:false});
+            Configurations.fetch({async:false});
 			Backbone.history.start();
         },
         showViews:function(views){
@@ -116,7 +117,7 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
             this.headerView.selectMenuItem("applications");
 		},
         'configurations': function(config){
-            Configurations.fetch({async:false,update:true});
+          //  Configurations.fetch({async:false,update:true});
 
             var views = [
                 new ConfigurationsSideBarView({active:config})
@@ -129,14 +130,13 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
             this.showViews(views);
             this.headerView.selectMenuItem("configurations");
         },
-        'bundle': function(config,bundle,parent){
-            Configurations.fetch({async:false,update:true});
-            var b = new BundleModel({configuration:config,id:bundle});
-            b.fetch({async:false});
+        'bundle': function(config,bundle){
             var views = [
                 new ConfigurationsSideBarView({active:config})
             ];
-            if(Configurations.get(config)){
+            var c = Configurations.get(config);
+            if(c){
+                var b=c.getBundle(bundle);
                 views.push(
                     new BundleView({model:b})
                 );
@@ -145,14 +145,15 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
             this.headerView.selectMenuItem("configurations");
         },
         'createBundle': function(config,parent){
-            Configurations.fetch({async:false,update:true});
+           // Configurations.fetch({async:false,update:true});
             var b = new BundleModel({configuration:config,Parent:parent});
             var views = [
                 new ConfigurationsSideBarView({active:config})
             ];
-            if(Configurations.get(config)){
+            var c = Configurations.get(config);
+            if(c){
                 views.push(
-                    new BundleView({model:b})
+                    new BundleView({model:b,configuration:c})
                 );
             }
             this.showViews(views);

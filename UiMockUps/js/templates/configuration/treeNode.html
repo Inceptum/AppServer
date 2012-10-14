@@ -2,15 +2,15 @@
     <span>
     <%if(model.isFolder){%>
         <a href="#" data-toggle="collapse" data-target="#<%= model.uiid%>"><i class="<%=model.imgClass%>"></i></a>
-        <a href="#/configurations/<%=model.configuration%>/bundles/<%=model.id%>"><%= model.name%></a>
+        <a href="#/configurations/<%=model.Configuration%>/bundles/<%=model.id%>"><%= model.Name%></a>
     <%} else {%>
-        <i class="icon-file"></i><a href="#/configurations/<%=model.configuration%>/bundles/<%=model.id%>"><%= model.name%></a>
+        <i class="icon-file"></i><a href="#/configurations/<%=model.Configuration%>/bundles/<%=model.id%>"><%= model.Name%></a>
     <%} %>
         </span>
     <span style="margin-left:20px;">
         <span class="btn-group hide " >
-            <a href="#/configurations/<%=model.configuration%>/bundles/<%=model.id%>" class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-pencil"></i></a>
-            <a href="/#configurations/<%=model.configuration%>/<%=model.id%>/create" class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-plus"></i></a>
+            <a href="#/configurations/<%=model.Configuration%>/bundles/<%=model.id%>" class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-pencil"></i></a>
+            <a href="/#configurations/<%=model.Configuration%>/<%=model.id%>/create" class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-plus"></i></a>
             <a class="btn btn-inverse btn-mini disabled delete" data-id="<%= model.id%>"><i class="icon-white icon-trash"></i></a>
         </span>
     </span>

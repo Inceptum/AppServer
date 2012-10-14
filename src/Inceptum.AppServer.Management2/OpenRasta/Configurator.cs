@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Management2.Handlers;
 using Inceptum.AppServer.Management2.Resources;
 using Inceptum.AppServer.Model;
@@ -57,10 +58,20 @@ namespace Inceptum.AppServer.Management2.OpenRasta
                     .TranscodedBy<NewtonsoftJsonCodec>();
 
                 ResourceSpace.Has
-                    .ResourcesOfType<object>()
+                    .ResourcesOfType<ConfigurationInfo[]>()
                     .AtUri("api/configurations")
-                    .And.AtUri("api/configurations/{configuration}/{bundle}")
-                    .And.AtUri("api/configurations/{configuration}")
+                    .HandledBy<ConfigurationsHandler>()
+                    .TranscodedBy<NewtonsoftJsonCodec>();
+
+                ResourceSpace.Has
+                    .ResourcesOfType<ConfigurationInfo>()
+                    .AtUri("api/configurations/{configuration}")
+                    .HandledBy<ConfigurationsHandler>()
+                    .TranscodedBy<NewtonsoftJsonCodec>();
+
+                ResourceSpace.Has
+                    .ResourcesOfType<BundleInfo>()
+                    .AtUri("api/configurations/{configuration}/{bundle}")
                     .HandledBy<ConfigurationsHandler>()
                     .TranscodedBy<NewtonsoftJsonCodec>();
 

@@ -1,17 +1,17 @@
 <div class="page-header">
     <h3>
-        <%=model.id%>        
+        <%=model.Name%>        
         <span class="pull-right">
-            <a href="/#configurations/<%=model.id%>/create" id="createBundle" class="btn btn-mini"><i
+            <a href="/#configurations/<%=model.Name%>/create" id="createBundle" class="btn btn-mini"><i
                     class="icon-file"></i> <strong>Create root bundle</strong></a>
-            <a href="/api/configurations/<%=model.id%>/export" id="export" class="btn btn-mini"><i
+            <a href="/api/configurations/<%=model.Name%>/export" id="export" class="btn btn-mini"><i
                     class="icon-download"></i> <strong>Export</strong></a>
             <a id="import" class="btn btn-mini"><i class="icon-upload"></i> <strong>Import</strong></a>
             <a id="delete" class="btn btn-mini btn-danger"><i class="icon-trash"></i> <strong>Delete</strong></a>
         </span>
     </h3>
 </div>
-<%if(model.id=="appserver"){%>
+<%if(model.Name=="appserver"){%>
 <div class="alert">
 
     <strong>Warning!</strong> It is application server configuration. Do not edit it if you are not sure.
@@ -47,7 +47,7 @@
     </div>
     <div class="modal-body">
         <form class="form-horizontal">
-            <input id="inputFile" type="file" style="display:none" data-url="/api/configurations/<%=model.id%>/import">
+            <input id="inputFile" type="file" style="display:none" data-url="/api/configurations/<%=model.Name%>/import">
 
             <div class="control-group">
                 <label class="control-label" for="fakeInputFile">Choose file:</label>

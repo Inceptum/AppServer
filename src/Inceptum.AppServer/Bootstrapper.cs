@@ -132,7 +132,7 @@ namespace Inceptum.AppServer
 
                 //If remote configuration source is provided in app.config use it by default
                 if (setup.ConfSvcUrl != null)
-                    container.Register(Component.For<IConfigurationProvider>().ImplementedBy<LegacyRemoteConfigurationProvider>()
+                    container.Register(Component.For<IConfigurationProvider>().ImplementedBy<CachingRemoteConfigurationProvider>()
                         .DependsOn(new { serviceUrl = setup.ConfSvcUrl, path = "." })
                         .IsDefault());
 

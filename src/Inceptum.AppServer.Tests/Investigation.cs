@@ -119,7 +119,7 @@ WWkCICCW4uD/IFcWFvfkpqYvgj4/FQoaqTi5O6fu8NE6HVXl
             AutoResetEvent ev=new AutoResetEvent(false);
             var sw = Stopwatch.StartNew();
 
-            HttpWebRequest webRequest;
+            //HttpWebRequest webRequest;
 
             var currentProcess = Process.GetCurrentProcess();
             Console.WriteLine(currentProcess.Threads.Count);

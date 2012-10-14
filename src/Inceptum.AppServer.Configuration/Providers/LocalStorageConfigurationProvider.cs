@@ -28,14 +28,27 @@ namespace Inceptum.AppServer.Configuration.Providers
 
         #region IManageableConfigurationProvider Members
 
-        public IEnumerable<Config> GetConfigurations()
+        public ConfigurationInfo[] GetConfigurations()
         {
-            return m_Persister.GetAvailableConfigurations().Select(getConfiguration);
+            return m_Persister.GetAvailableConfigurations().Select(GetConfiguration).ToArray();
         }
 
-        public Config GetConfiguration(string configuration)
+        private BundleInfo[] getBundlesInfo(IEnumerable<Bundle> collection,string configuration)
         {
-           return  getConfiguration(configuration);
+            return collection.Select(b => new BundleInfo(getBundlesInfo(b, configuration))
+                                       {
+                                           id = b.Name,
+                                           Name = b.ShortName,
+                                           Content = b.Content,
+                                           Parent = string.Join(".",b.Name.Split(new[] {'.'}).Reverse().Skip(1).Reverse()),
+                                           Configuration = configuration
+                                       }).ToArray();
+        }
+
+        public ConfigurationInfo GetConfiguration(string configuration)
+        {
+            var config = getConfiguration(configuration);
+            return new ConfigurationInfo(getBundlesInfo(config, configuration)){Name = configuration};
         }
 
 

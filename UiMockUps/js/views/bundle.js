@@ -9,6 +9,7 @@ define([
         var View = Backbone.View.extend({
             el:'#content',
             initialize:function () {
+                this.configuration=this.options.configuration;
                 _.bindAll(this, "verify", "jumpToLine", "save");
             }, events:{
                 "click #verify":"verify",
@@ -30,7 +31,7 @@ define([
                     var self = this;
                     var action=this.model.isNew()?"create":"update";
                     this.model.set("Content",this.codeMirror.getValue());
-                    this.model.save(null, {
+                    var options = {
                         success: function (model) {
                             alerts.show({type:"info",text:"Bundle '"+model.get("Name")+"' "+action+"d"});
                             self.navigate('#/configurations/'+model.get("Configuration")+"/bundles/"+model.id, true);
@@ -38,8 +39,14 @@ define([
                         error: function (model,response) {
                             var bundleId=action==="update"?"'"+model.id+"'":"";
                             alerts.show({type:"error",text:"Failed to "+action+" bundle "+bundleId+". "+JSON.parse(response.responseText).Error});
-                        }
-                    });
+                        },
+                        wait:true
+                    };
+
+                    if(this.model.isNew())
+                        this.configuration.createBundle(this.model,options);
+                    else
+                        this.model.save(null, options);
                 }
             },
             verify:function () {
