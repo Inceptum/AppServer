@@ -41,7 +41,7 @@ namespace Inceptum.AppServer.Management2.Handlers
 
         public BundleInfo PutBundle(string configuration, string bundle, BundleInfo info)
         {
-            m_Provider.CreateOrUpdateBundle(configuration, info.Name, info.Content);
+            m_Provider.CreateOrUpdateBundle(configuration, info.id, info.Content);
             info.Content = m_Provider.GetBundle(configuration, bundle);
             return info;
         }
