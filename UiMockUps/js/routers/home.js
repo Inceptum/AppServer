@@ -146,7 +146,7 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
         },
         'createBundle': function(config,parent){
            // Configurations.fetch({async:false,update:true});
-            var b = new BundleModel({configuration:config,Parent:parent});
+            var b = new BundleModel({Configuration:config,Parent:parent});
             var views = [
                 new ConfigurationsSideBarView({active:config})
             ];
