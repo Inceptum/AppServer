@@ -14,9 +14,8 @@ namespace Inceptum.AppServer.Notification
     }
     public class UiNotificationHub : Hub, IHostNotificationListener, IDisposable, IConnected
     {
-        private ILogger m_Logger;
         private const int HB_INTERVAL = 3000;
-        private PeriodicalBackgroundWorker m_Worker;
+        private readonly PeriodicalBackgroundWorker m_Worker;
 
         public UiNotificationHub()
         {

@@ -16,7 +16,7 @@ namespace Inceptum.AppServer.Management2.Handlers
     public class ConfigurationsHandler
     {
         private readonly IManageableConfigurationProvider m_Provider;
-        private ILogger m_Logger;
+        private readonly ILogger m_Logger;
 
         public ConfigurationsHandler(IManageableConfigurationProvider provider, ILogger logger)
         {
@@ -24,63 +24,34 @@ namespace Inceptum.AppServer.Management2.Handlers
             m_Provider = provider;
         }
 
-        public object Get()
+        public ConfigurationInfo[] Get()
         {
-            var configurations = m_Provider.GetConfigurations();
-
-            return configurations.Select(c=>new {
-                        id=c.Name,
-                        bundles=getBundles(c,c.Name)}
-                        ).ToArray();
+            return  m_Provider.GetConfigurations();
         }
 
-        public object Get(string configuration)
+        public ConfigurationInfo Get(string configuration)
         {
-            Config c = m_Provider.GetConfiguration(configuration);
-
-            return new
-                       {
-                           id = c.Name,
-                           bundles = getBundles(c, c.Name)
-                       };
+            return  m_Provider.GetConfiguration(configuration);
         }
-
-   
- 
 
         public void Delete(string configuration)
         {
             m_Provider.DeleteConfiguration(configuration);
         }
 
-        public object GetBundle(string configuration, string bundle)
-        {
-            var configurations = m_Provider.GetConfiguration(configuration);
-            var b = configurations.Bundles.FirstOrDefault(x => x.Name == bundle);
-            if (b == null)
-                return new OperationResult.NotFound();
-
-            return new BundleInfo()
-                       {
-                           id = b.Name,
-                           Parent = b.Name,
-                           Name = b.ShortName,
-                           Content= b.Content,
-                           Configuration=configuration
-                       };
-        }
-
-        public object PutBundle(string configuration, string bundle, BundleInfo info)
+        public BundleInfo PutBundle(string configuration, string bundle, BundleInfo info)
         {
             m_Provider.CreateOrUpdateBundle(configuration, info.Name, info.Content);
-            return GetBundle(configuration, info.Name);
+            info.Content = m_Provider.GetBundle(configuration, bundle);
+            return info;
         }
 
         public object PostBundle(string configuration, BundleInfo info)
         {
-            string id = string.IsNullOrEmpty(info.Parent) ? info.Name : info.Parent + "." + info.Name;
-            m_Provider.CreateOrUpdateBundle(configuration, id, info.Content);
-            return GetBundle(configuration, id);
+            info.id = string.IsNullOrEmpty(info.Parent) ? info.Name : info.Parent + "." + info.Name;
+            m_Provider.CreateOrUpdateBundle(configuration, info.id, info.Content);
+            info.Content = m_Provider.GetBundle(configuration, info.id);
+            return info;
         }
 
         public void DeleteBundle(string configuration, string bundle)
@@ -92,7 +63,6 @@ namespace Inceptum.AppServer.Management2.Handlers
         {
             var memoryStream = new MemoryStream();
             file.OpenStream().CopyTo(memoryStream);
-            Config config = m_Provider.GetConfiguration(configuration);
             var zipFile = new ZipFile(memoryStream);
 
             m_Provider.DeleteConfiguration(configuration);

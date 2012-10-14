@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace Inceptum.AppServer.Configuration.Providers
 {
@@ -8,6 +9,7 @@ namespace Inceptum.AppServer.Configuration.Providers
 
         public FileSystemConfigurationProvider(string configFolder)
         {
+            if (configFolder == null) throw new ArgumentNullException("configFolder");
             m_ConfigFolder = configFolder;
             if (!Directory.Exists(configFolder))
                 Directory.CreateDirectory(configFolder);

@@ -15,7 +15,7 @@ namespace Inceptum.Configuration.Tests.Client
             var extProvider = MockRepository.GenerateMock<IConfigurationProvider>();
             extProvider.Expect(p => p.GetBundle(null, null, null)).IgnoreArguments().Return("a=b");
             var fsProvider = MockRepository.GenerateMock<FileSystemConfigurationProvider>(".");
-            var provider = new LegacyRemoteConfigurationProvider(fsProvider, extProvider, NullLogger.Instance);
+            var provider = new CachingRemoteConfigurationProvider(fsProvider, extProvider, NullLogger.Instance);
             var bundle = provider.GetBundle("testConfiguration", "test", "param1", "param2");
             extProvider.AssertWasCalled((p => p.GetBundle("testConfiguration", "test", "param1", "param2")));
             fsProvider.AssertWasNotCalled((p => p.GetBundle("testConfiguration", "test", "param1", "param2")));
@@ -30,7 +30,7 @@ namespace Inceptum.Configuration.Tests.Client
             extProvider.Expect(p => p.GetBundle(null, null, null)).IgnoreArguments().Return(null);
             var fsProvider = MockRepository.GenerateMock<FileSystemConfigurationProvider>(".");
             fsProvider.Expect(p => p.GetBundle(null, null, null)).IgnoreArguments().Return("a=b");
-            var provider = new LegacyRemoteConfigurationProvider(fsProvider, extProvider, NullLogger.Instance);
+            var provider = new CachingRemoteConfigurationProvider(fsProvider, extProvider, NullLogger.Instance);
 
             var bundle = provider.GetBundle("testConfiguration","test", "param1", "param2");
 

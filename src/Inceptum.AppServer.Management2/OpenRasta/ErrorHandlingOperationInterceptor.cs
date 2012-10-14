@@ -41,7 +41,7 @@ namespace Inceptum.AppServer.Management2.OpenRasta
                     var errors = new List<Error> { error }; 
 
 
-                    var response = new OperationResult.BadRequest{ ResponseResource = new ServerError(){Error = ex.Message},Errors = errors};
+                    var response = new OperationResult.BadRequest{ ResponseResource = new ServerError{Error = ex.Message},Errors = errors};
                     m_Context.OperationResult = response;
 
                     var outputMember = new OutputMember
@@ -49,21 +49,9 @@ namespace Inceptum.AppServer.Management2.OpenRasta
                                                         Value = response,
                                                         Member = new ReflectionBasedType(TypeSystems.Default, response.GetType())
                                                     };
-                    return new[] { outputMember }; ;
+                    return new[] { outputMember }; 
                 }
             };
-
-            try
-            {
-                return base.RewriteOperation(operationBuilder);
-            }
-            catch (Exception e)
-            {
-                m_Context.OperationResult = new OperationResult.InternalServerError
-                                                {
-                                                    ResponseResource = new ServerError {Error = e.Message}
-                                                };
-            }
         }
     }
 }
