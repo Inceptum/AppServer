@@ -19,9 +19,16 @@
 
 </style>
 
+<div class="page-header">
+    <h3>
+        <%= model.Name %>
+        <span class="pull-right">
+            <a href="#/applications/<%=model.Name%>/instances/create"  class="btn btn-mini" type="button">Create instance</a>
+        </span>
+    </h3>
+</div>
+
 <dl>
-    <dt>Name</dt>
-    <dd><%= model.Name %></dd>
     <dt>Vendor</dt>
     <dd><a href="http://inceptumsoft.com"><%= model.Vendor %></a></dd>
     <dt>Available versions</dt>
@@ -47,5 +54,4 @@
     <dd class="instances">
 
     </dd>
-    <a href="#/applications/<%=model.Name%>/instances/create"  class="btn btn-small btn-primary" type="button">Create instance</a>
 </dl>
