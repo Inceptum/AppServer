@@ -4,26 +4,12 @@ define([
     'underscore',
     'views/confirm',
     'views/alerts',
-    'text!templates/configuration.html','fileupload'],
-    function($, Backbone, _, confirmView,alerts, template){
-        var TreeView = Backbone.View.extend({
+    'text!templates/configuration/configuration.html',
+    'text!templates/configuration/treeNode.html',
+    'fileupload'],
+    function($, Backbone, _, confirmView,alerts, template,treeNodeTemplate){
+        var TreeNodeView = Backbone.View.extend({
             tagName: "li",
-            folderTemplate:'<span style="display:inline-block;">' +
-                '<a href="#" data-toggle="collapse" data-target="#<%= model.uiid%>"><i class="<%=model.imgClass%>"></i></a>' +
-                '<a href="#/configurations/<%=model.configuration%>/bundles/<%=model.id%>"><%= model.name%></a>' +
-                '<div class="btn-group pull-right hide" style="margin-left:20px">' +
-                '<a href="#/configurations/<%=model.configuration%>/bundles/<%=model.id%>" class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-pencil"></i></a>' +
-                '<a href="/#configurations/<%=model.configuration%>/<%=model.id%>/create"  class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-plus"></i></a>' +
-                '<a  class="btn btn-inverse btn-mini disabled delete" data-id="<%= model.id%>"><i class="icon-white icon-trash"></i></a>' +
-                '</div>' +
-                '</span>',
-            leafTemplate:'<span style="display:inline-block;"><i class="icon-file"></i><a href="#/configurations/<%=model.configuration%>/bundles/<%=model.id%>"><%= model.name%></a>' +
-                '<div class="btn-group pull-right hide" style="margin-left:20px">' +
-                '<a href="#/configurations/<%=model.configuration%>/bundles/<%=model.id%>" class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-pencil"></i></a>' +
-                '<a href="/#configurations/<%=model.configuration%>/<%=model.id%>/create" class="btn btn-inverse btn-mini disabled"><i class="icon-white icon-plus"></i></a>' +
-                '<a  class="btn btn-inverse btn-mini disabled delete" data-id="<%= model.id%>"><i class="icon-white icon-trash"></i></a>' +
-                '</div>' +
-                '</span>',
             initialize: function(){
                 _(this).bindAll("deleteBundle","dispose");
                 this.collection = this.model.bundles;
@@ -35,16 +21,22 @@ define([
             },
             render:function(){
                 var escapedId=this.model.id.split(".").join("\\.");
+                var isFolder=this.model.bundles.length>0;
+                var imgClass;
+                var extraProperties={};
 
-                if(this.model.bundles.length>0){
+                if(isFolder){
                     if(this.model.expanded=== undefined || !this.model.expanded)
                         this.model.expanded=this.model.bundles.length<2;//expand bundles with single child
-                    var imgClass=this.model.expanded?"icon-chevron-down":"icon-chevron-right";
+                    imgClass=this.model.expanded?"icon-chevron-down":"icon-chevron-right";
+                    extraProperties = {uiid:escapedId,imgClass:imgClass,isFolder:isFolder};
+                }
 
-                    this.template = _.template( this.folderTemplate, { model:_.extend(this.model.toJSON(),{uiid:escapedId,imgClass:imgClass}) } );
-                    $(this.el).html(this.template).find("span").first().hover(function(){$(this).find(".btn-group").toggleClass("hide")});
+                this.template = _.template( treeNodeTemplate, { model:_.extend(this.model.toJSON(),extraProperties) } );
+                $(this.el).html(this.template).find("div").first().hover(function(){$(this).find(".btn-group").toggleClass("hide")});
 
-                    this.subview = new TreeRoot({model:this.model,visible:this.model.expanded}).render();
+                if(isFolder){
+                    this.subview = new TreeView({model:this.model,visible:this.model.expanded}).render();
                     this.subview.bind("delete", this.deleteBundle);
                     $(this.el).append(this.subview.el);
                     var model=this.model;
@@ -53,10 +45,6 @@ define([
                         model.expanded=!model.expanded;
                         e.preventDefault();
                     });
-                }
-                else{
-                    this.template = _.template( this.leafTemplate, { model: this.model.toJSON() } );
-                    $(this.el).html(this.template).find("span").first().hover(function(){$(this).find(".btn-group").toggleClass("hide")});
                 }
                 return this;
             },
@@ -68,7 +56,7 @@ define([
             }
         });
 
-        var TreeRoot = Backbone.View.extend({
+        var TreeView = Backbone.View.extend({
             tagName: "ul",
             className:"collapse nav nav-list",
             initialize: function(){
@@ -80,7 +68,7 @@ define([
                 el.attr("id",this.model.id);
                 var self = this;
                 this.model.bundles.each(function(node){
-                    var treeView = new TreeView({model:node});
+                    var treeView = new TreeNodeView({model:node});
                     el.append(treeView.render().el);
                     treeView.bind("delete", self.deleteBundle);
                     self.subviews.push(treeView);
@@ -203,7 +191,7 @@ define([
                 }
                 this.template = _.template( template, {model: this.model.toJSON() } );
                 $(this.el).html(this.template);
-                this.treeView = new TreeRoot({model:this.model,visible:true});
+                this.treeView = new TreeView({model:this.model,visible:true});
                 $(this.el).find("#confTree").append(this.treeView.render().el);
                 this.importDialog=$("#importDialog");
                 $('#fakeInputFile').val("").next().click(function(){$('#inputFile').click();});

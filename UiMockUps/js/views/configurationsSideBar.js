@@ -2,7 +2,7 @@ define([
     'jquery',
     'backbone',
     'underscore',
-    'text!templates/configurationsSideBar.html',
+    'text!templates/configuration/configurationsSideBar.html',
     'collections/configurations'],
     function($, Backbone, _, template,Configurations){
         var View = Backbone.View.extend({
