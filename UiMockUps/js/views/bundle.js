@@ -33,7 +33,9 @@ define([
                     this.model.set("Content",this.codeMirror.getValue());
                     var options = {
                         success: function (model) {
+                            self.codeMirror.setValue(model.get("Content"));
                             alerts.show({type:"info",text:"Bundle '"+model.get("Name")+"' "+action+"d"});
+
                             self.navigate('#/configurations/'+model.get("Configuration")+"/bundles/"+model.id, true);
                         },
                         error: function (model,response) {

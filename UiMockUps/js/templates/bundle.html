@@ -1,6 +1,5 @@
 <style>
     .CodeMirror{
-        //padding: 3px!important;
         border: 1px solid #E1E1E8;
         -webkit-border-radius: 4px;
         -moz-border-radius: 4px;
@@ -42,6 +41,13 @@
         </span>
     </h3>
 </div>
+<%if(model.Parent){%>
+<div class="alert alert-info">
+    <strong>Note:</strong> This bundle is child of <a href="#/configurations/testapp/bundles/<%=model.Parent%>"><%=model.Parent%></a>. Child bundles are treated as overrides. That means consumer would receive content of child bundle merged to parent content.
+    <a  data-toggle="modal" href="#example">Example</a>
+</div>
+
+<%}%>
 
 <div id="verificationErrors" class="alert alert-error">
 
@@ -53,3 +59,32 @@
 
 <textarea id="code" name="Content"><%=model.Content%></textarea>
         <br>
+
+
+<div class="modal hide fade"  id="example">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Example</h3>
+    </div>
+    <div class="modal-body" style="max-height: 500px;">
+        If parent content is:
+        <pre >            {
+              "someValue":1,
+              "someOtherValue":true
+            }</pre>
+        and child content is:
+        <pre>            {
+              "someValue":2,
+              "someExtraValue":"value"
+            }</pre>
+        consumer would get
+            <pre>            {
+              "someValue":2,
+              "someOtherValue":true,
+              "someExtraValue":"value"
+            }</pre>
+    </div>
+    <div class="modal-footer">
+        <a  class="btn" class="close" data-dismiss="modal" aria-hidden="true">Close</a>
+    </div>
+</div>

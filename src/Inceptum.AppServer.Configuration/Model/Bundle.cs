@@ -55,9 +55,11 @@ namespace Inceptum.AppServer.Configuration.Model
             }
             set
             {
-                PureContent=Parent != null
+              /*  PureContent=Parent != null
                               ? ContentProcessor.Diff(Parent.Content, value)
-                              : value;
+                              : value;*/
+                PureContent = value;
+
             }
         }
 
