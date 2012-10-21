@@ -1,30 +1,34 @@
 ﻿using System;
+using System.Linq;
 
 namespace Inceptum.AppServer.Configuration.Model
 {
     public class Bundle : BundleCollectionBase
     {
-      
-        private readonly IBundleObserver m_Observer;
-
-        internal Bundle(IContentProcessor contentProcessor, IBundleObserver observer, string name, string content = null)
-            : base(contentProcessor, name)
+        internal Bundle(IContentProcessor contentProcessor, IBundleEventTracker eventTracker, string name, string content = null)
+            : base(contentProcessor, eventTracker,  name)
         {
-            if (observer == null) throw new ArgumentNullException("observer");
-            m_Observer = observer;
-            PureContent = content ?? contentProcessor.GetEmptyContent();
+            if (eventTracker == null) throw new ArgumentNullException("eventTracker");
+          
+            m_PureContent = content ?? contentProcessor.GetEmptyContent();
         }
 
 
-        private Bundle(IContentProcessor contentProcessor,IBundleObserver observer,Bundle parent,  string name)
-            : this(contentProcessor, observer, name, null)
+        internal Bundle(BundleCollectionBase parent, string name)
+            : base(parent.ContentProcessor, parent.EventTracker,name)
         {
-            Parent = parent;
+            if (parent == null) throw new ArgumentNullException("parent");
+            Parent = parent as Bundle;
+            m_PureContent=ContentProcessor.GetEmptyContent();
         }
 
         public Bundle Parent { get; private set; }
 
-        public string PureContent { get; private set; }
+        private string m_PureContent;
+        public string PureContent
+        {
+            get { return m_PureContent; }
+        }
 
         public override string Name
         {
@@ -50,16 +54,13 @@ namespace Inceptum.AppServer.Configuration.Model
             get
             {
                 return Parent != null
-                           ? ContentProcessor.Merge(Parent.Content, PureContent)
+                           ? ContentProcessor.Merge(Parent.Content ?? ContentProcessor.GetEmptyContent(), PureContent ?? ContentProcessor.GetEmptyContent())
                            : PureContent;
             }
             set
             {
-              /*  PureContent=Parent != null
-                              ? ContentProcessor.Diff(Parent.Content, value)
-                              : value;*/
-                PureContent = value;
-
+                m_PureContent = value ?? ContentProcessor.GetEmptyContent();
+                EventTracker.UpdateBundle(this);
             }
         }
 
@@ -67,21 +68,15 @@ namespace Inceptum.AppServer.Configuration.Model
         {
             get { return ContentProcessor.IsEmptyContent(PureContent); }
         }
-
-        protected override Bundle CreateSubBundle(string name)
-        {
-            var bundle = new Bundle(ContentProcessor, m_Observer, this, name);
-            m_Observer.OnChildCreated(this,bundle);
-            return bundle;
-        }
+ 
 
         public void Clear()
         {
-            foreach (var child in this)
+            foreach (var child in this.ToArray())
             {
                 child.Clear();
+                EventTracker.DeleteBundle(child);
             }
-            Content = ContentProcessor.GetEmptyContent();
         }
     }
 }

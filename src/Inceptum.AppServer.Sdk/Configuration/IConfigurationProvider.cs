@@ -27,6 +27,7 @@
         public string Name { get; set; } 
         public string Configuration { get; set; } 
         public string Content { get; set; }
+        public string PureContent { get; set; }
         public BundleInfo[] Bundles { get; private set; }
 
         public BundleInfo()
