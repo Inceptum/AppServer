@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Threading;
 using Inceptum.AppServer.Configuration.Json;
 using Inceptum.AppServer.Configuration.Model;
 using Inceptum.AppServer.Configuration.Persistence;
@@ -13,6 +14,8 @@ namespace Inceptum.AppServer.Configuration.Providers
     {
         private readonly IContentProcessor m_ContentProcessor;
         private readonly IConfigurationPersister m_Persister;
+        private readonly List<Config> m_Configurations;
+        readonly ReaderWriterLockSlim m_ConfigurationsLock = new ReaderWriterLockSlim();
 
 
         public LocalStorageConfigurationProvider(string configFolder) :
@@ -24,13 +27,26 @@ namespace Inceptum.AppServer.Configuration.Providers
         {
             m_Persister = persister;
             m_ContentProcessor = contentProcessor;
+            var query = from data in m_Persister.Load()
+                        group data by data.Configuration
+                            into config
+                            select new Config(m_Persister,m_ContentProcessor, config.Key, config.ToDictionary(data => data.Name, data => data.Content));
+            m_Configurations = new List<Config>(query.ToArray());
         }
 
         #region IManageableConfigurationProvider Members
 
         public ConfigurationInfo[] GetConfigurations()
         {
-            return m_Persister.GetAvailableConfigurations().Select(GetConfiguration).ToArray();
+            m_ConfigurationsLock.EnterReadLock();
+            try
+            {
+                return m_Configurations.Select(config => new ConfigurationInfo(getBundlesInfo(config, config.Name)) { Name = config.Name }).ToArray();
+            }
+            finally
+            {
+                m_ConfigurationsLock.ExitReadLock();
+            }
         }
 
         private BundleInfo[] getBundlesInfo(IEnumerable<Bundle> collection,string configuration)
@@ -40,40 +56,82 @@ namespace Inceptum.AppServer.Configuration.Providers
                                            id = b.Name,
                                            Name = b.ShortName,
                                            Content = b.Content,
-                                           Parent = string.Join(".",b.Name.Split(new[] {'.'}).Reverse().Skip(1).Reverse()),
+                                           PureContent = b.PureContent,
+                                           Parent = b.Parent != null?b.Parent.Name:null,
                                            Configuration = configuration
                                        }).ToArray();
         }
 
         public ConfigurationInfo GetConfiguration(string configuration)
         {
-            var config = getConfiguration(configuration);
-            return new ConfigurationInfo(getBundlesInfo(config, configuration)){Name = configuration};
+            var config = findConfig(configuration);
+            if (config == null)
+            {
+                throw new ConfigurationErrorsException(string.Format("Configuration {0} not found", configuration));
+            }
+            lock (config)
+            {
+                return new ConfigurationInfo(getBundlesInfo(config, config.Name)) { Name = config.Name };
+            }
         }
 
 
-        public string CreateConfiguration(string configuration)
+
+        public void CreateConfiguration(string configuration)
         {
-            return m_Persister.Create(configuration);
+            m_ConfigurationsLock.EnterUpgradeableReadLock();
+            try
+            {
+                Config config = m_Configurations.FirstOrDefault(c => c.Name == configuration);
+                if (config != null)
+                {
+                    throw new InvalidOperationException(string.Format("Configuration with name {0} already exists",configuration));
+                }
+
+                config = new Config(m_Persister,m_ContentProcessor,configuration);
+                m_ConfigurationsLock.EnterWriteLock();
+                try
+                {
+                    m_Persister.Create(configuration);
+                    m_Configurations.Add(config);
+                }
+                finally
+                {
+                    m_ConfigurationsLock.ExitWriteLock();
+                }
+            }
+            finally
+            {
+                m_ConfigurationsLock.ExitUpgradeableReadLock();
+            }
         }
 
         public bool DeleteConfiguration(string configuration)
         {
-            return m_Persister.Delete(configuration);
-        }
-
-        public IEnumerable<BundleInfo> GetBundles(string configuration)
-        {
-            Config c = getConfiguration(configuration);
-            return c.Bundles.Select(
-                bundle => new BundleInfo
-                              {
-                                  id = bundle.Name,
-                                  Name = bundle.ShortName,
-                                  Content = bundle.Content,
-                                  Configuration = c.Name
-                              }
-                ).ToArray();
+            m_ConfigurationsLock.EnterUpgradeableReadLock();
+            try
+            {
+                var config = m_Configurations.FirstOrDefault(c => c.Name == configuration);
+                if (config == null)
+                {
+                    return false;
+                }
+                m_ConfigurationsLock.EnterWriteLock();
+                try
+                {
+                    m_Persister.Delete(configuration);
+                    m_Configurations.Remove(config);
+                    return true;
+                }
+                finally
+                {
+                    m_ConfigurationsLock.ExitWriteLock();
+                }
+            }
+            finally
+            {
+                m_ConfigurationsLock.ExitUpgradeableReadLock();
+            }
         }
 
         public string GetBundle(string configuration, string bundleName, params string[] extraParams)
@@ -81,83 +139,62 @@ namespace Inceptum.AppServer.Configuration.Providers
             string[] param = new[] { bundleName }.Concat(extraParams).ToArray();
             int paramLen = param.Length;
 
-            Bundle bundle = null;
-            //TODO: cache loaded configuratons
-            Config config = getConfiguration(configuration);
-            while (bundle == null && paramLen != 0)
+            string bundleContent = null;
+
+            var config = findConfig(configuration);
+            while (bundleContent == null && paramLen != 0)
             {
                 string name = string.Join(".", param.Take(paramLen));
-                bundle = config[name];
+                bundleContent = config[name];
                 paramLen--;
             }
 
-            if (bundle == null)
+            if (bundleContent == null)
                 throw new BundleNotFoundException(String.Format("Bundle not found, configuration '{0}', bundle '{1}', params '{2}'", configuration, bundleName,
                                                                 String.Join(",", extraParams ?? new string[0])));
-            return bundle.Content;
-        }
- 
-        public void CreateOrUpdateBundle(string configuration, string name, string content)
-        {
-            var config = getConfiguration(configuration);
-            var parts = name.Split(new[] { '.' });
-
-            BundleCollectionBase parentBundle = null;
-            int i;
-            for (i = parts.Length; i > 0 && parentBundle == null; i--)
-            {
-                var parent = string.Join(".", Enumerable.Range(0, i).Select(n => parts[n]));
-                parentBundle = config.Bundles.FirstOrDefault(b => b.Name.ToLower() == parent.ToLower());
-            }
-
-            if (parentBundle == null)
-            {
-                parentBundle = config;
-                for (int j = 0; j < parts.Length; j++)
-                {
-                    parentBundle = parentBundle.CreateBundle(parts[j]);
-                }
-            }
-            else
-            {
-                for (int j = i + 1; j < parts.Length; j++)
-                {
-                    parentBundle = parentBundle.CreateBundle(parts[j]);
-                }
-            }          
-
-            (parentBundle as Bundle).Content = content;
-            m_Persister.Save(config);
+            return bundleContent;
         }
 
-        public void DeleteBundle(string configuration, string name)
-        {
-            var config = getConfiguration(configuration);
-            var bundle = config.Bundles.FirstOrDefault(b => b.Name.ToLower() == name.ToLower());
-            if (bundle != null)
-                bundle.Clear();
-            m_Persister.Save(config);
-        }
-
-        #endregion
-
-        private Config getConfiguration(string configuration)
+        private Config findConfig(string configuration)
         {
             Config config;
+            m_ConfigurationsLock.EnterReadLock();
             try
             {
-                config = m_Persister.Load(configuration, m_ContentProcessor);
+                config = m_Configurations.FirstOrDefault(c => c.Name == configuration.ToLower());
             }
-            catch (Exception e)
+            finally
             {
-                throw new ConfigurationErrorsException(string.Format("Failed to load configuration '{0}'", configuration), e);
+                m_ConfigurationsLock.ExitReadLock();
+            }
+            if (config == null)
+            {
+                throw new ConfigurationErrorsException(string.Format("Configuration {0} not found", configuration));
             }
             return config;
         }
 
-        private static object serializeBundle(Bundle bundle)
+ 
+        public void CreateOrUpdateBundle(string configuration, string name, string content)
         {
-            return new { id = bundle.Name, name = bundle.ShortName, children = bundle.Select(serializeBundle).ToArray() };
+            var config = findConfig(configuration);
+            lock (config)
+            {
+                config[name]=content;
+                config.Commit();
+            }
+            
         }
+
+        public void DeleteBundle(string configuration, string name)
+        {
+            var config = findConfig(configuration);
+            lock (config)
+            {
+                config.Delete(name);
+                config.Commit();
+            }
+        }
+        #endregion
     }
 }

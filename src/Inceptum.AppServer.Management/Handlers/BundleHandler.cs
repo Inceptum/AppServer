@@ -34,8 +34,8 @@ namespace Inceptum.AppServer.Management.Handlers
         {
             try
             {
-                var cfgName = m_Provider.CreateConfiguration(configuration.Name);
-                return new OperationResult.OK { ResponseResource = new { name = cfgName, id = cfgName } };
+                m_Provider.CreateConfiguration(configuration.Name);
+                return new OperationResult.OK { ResponseResource = new { name = configuration.Name, id = configuration.Name } };
             }
             catch (Exception e)
             {
@@ -82,7 +82,7 @@ namespace Inceptum.AppServer.Management.Handlers
         {
             try
             {
-                return new OperationResult.OK { ResponseResource = m_Provider.GetBundles(configuration) };
+                return new OperationResult.OK { ResponseResource = null/*m_Provider.GetBundles(configuration) */};
             }
             catch (Exception e)
             {

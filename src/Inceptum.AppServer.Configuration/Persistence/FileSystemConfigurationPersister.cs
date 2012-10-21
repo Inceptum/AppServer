@@ -13,7 +13,7 @@ namespace Inceptum.AppServer.Configuration.Persistence
     {
         public FileSystemConfigurationPersister(string configFolder)
         {
-            if (configFolder == null) 
+            if (configFolder == null)
                 throw new ArgumentNullException("configFolder");
             ConfigFolder = Path.GetFullPath(configFolder);
             if (!Directory.Exists(ConfigFolder))
@@ -22,53 +22,37 @@ namespace Inceptum.AppServer.Configuration.Persistence
 
         public string ConfigFolder { get; private set; }
 
-
-        public Config Load(string name, IContentProcessor contentProcessor)
+        public BundleData[] Load()
         {
-            if(!ValidationHelper.IsValidBundleName(name))
-            {
-                throw new ArgumentException(ValidationHelper.INVALID_NAME_MESSAGE, "name");
-            }
-            name = name.ToLower();
-            var confDir = Path.Combine(ConfigFolder,name);
-            if(!Directory.Exists(confDir))
-            {
-                Directory.CreateDirectory(confDir);
-            }
-
-            var conf = new Config(contentProcessor, name);
-            var files = Directory.EnumerateFiles(confDir).Select(f => new { path = f, name = Path.GetFileName(f).ToLower() }).OrderBy(x => x.name);
-            var enumerator = files.GetEnumerator();
-            if (enumerator.MoveNext()) 
-                createBundles(conf, enumerator,true);
-            return conf;
+            var query = from config in Directory.GetDirectories(ConfigFolder)
+                        let configName = Path.GetFileName(config)
+                        from file in Directory.GetFiles(config)
+                        let bundleName = Path.GetFileName(file)
+                        orderby bundleName
+                        select new BundleData {Configuration = configName, Name = bundleName, Content = File.ReadAllText(file)};
+            return query.ToArray();
         }
 
-        public IEnumerable<string> GetAvailableConfigurations()
-        {
-            return Directory.GetDirectories(ConfigFolder).Select(Path.GetFileName).ToArray();
-        }
 
-        public void Save(Config config)
-        {
-            var confDir = Path.Combine(ConfigFolder, config.Name);
-            if (!Directory.Exists(confDir))
-            {
-                Directory.CreateDirectory(confDir);
-            }
 
-            foreach (var bundle in config.Bundles)
+        public void Save(IEnumerable<BundleData> data)
+        {
+            foreach (var bundleData in data)
             {
-                var bundleFile = Path.Combine(confDir, bundle.Name);
-                if (!bundle.IsEmpty)
+                if (bundleData.Action == BundleAction.None)
+                    continue;
+
+                var confDir = Path.Combine(ConfigFolder, bundleData.Configuration);
+                if (!Directory.Exists(confDir))
                 {
-                    File.WriteAllText(bundleFile, bundle.PureContent);
+                    Directory.CreateDirectory(confDir);
                 }
-                else if (File.Exists(bundleFile))
-                {
+
+                var bundleFile = Path.Combine(confDir, bundleData.Name);
+                if (File.Exists(bundleFile))
                     File.Delete(bundleFile);
-                }
-
+                if (bundleData.Action == BundleAction.Create || bundleData.Action == BundleAction.Save)
+                    File.WriteAllText(bundleFile, bundleData.Content);
             }
         }
 
@@ -78,10 +62,10 @@ namespace Inceptum.AppServer.Configuration.Persistence
             {
                 throw new ArgumentException(ValidationHelper.INVALID_NAME_MESSAGE, "name");
             }
-            
+
             name = name.ToLower();
-            var confDir = Path.Combine(ConfigFolder,name);
-                        
+            var confDir = Path.Combine(ConfigFolder, name);
+
             if (Directory.Exists(confDir))
             {
                 throw new ArgumentException("Configuration named " + name + " already exists");
@@ -107,46 +91,7 @@ namespace Inceptum.AppServer.Configuration.Persistence
             return true;
         }
 
-        private static bool createBundles(BundleCollectionBase collection,IEnumerator enumerator,bool isRootLevel=false)
-        {
-            while (true)
-            {
-                var file = enumerator.Current.CastByExample(new {path = "", name = ""});
-                if (!isRootLevel && !file.name.StartsWith(collection.Name+'.'))
-                    return true;
-
-
-                var name = isRootLevel ? file.name : file.name.Substring(collection.Name.Length+1);
-                if (name.Contains('.'))
-                {
-                    //Implicitly defined bundle. e.g. bundl1.bundle2 file exists but bundle1 file does not. bundle1 should be created but with empty content
-                    var intermidiate = collection.CreateBundle(name.Split('.').First());
-                    if (!createBundles(intermidiate, enumerator))
-                        return false;
-                }
-                else
-                {
-                    
-                    Bundle bundle;
-                    try
-                    {
-                        bundle = collection.CreateBundle(name, File.ReadAllText(file.path));
-                    }
-                    catch (Exception e)
-                    {
-
-                        throw new ConfigurationErrorsException(string.Format("Failed to parse bundle {0}.\r\n File path {1}", file.name, file.path), e);
-                    }
-                    
-                    if (!enumerator.MoveNext())
-                        return false;
-                    if (!createBundles(bundle, enumerator))
-                        return false;
-                }
-            }
-        }
     }
-
 
     static class Utils
     {
