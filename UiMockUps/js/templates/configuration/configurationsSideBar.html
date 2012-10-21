@@ -1,7 +1,7 @@
 <div class="well" style="padding: 8px 0;">
     <ul class="nav nav-list">
         <li class="nav-header">Configurations</li>
-        <li><a href="#"><i class="icon-plus"></i>Create new</a></li>
+        <li><a href="#" class="create"><i class="icon-plus"></i>Create new</a></li>
         <% _.each(model,function(config) { %>
         <li data-id="<%= config.Name %>"><a href="#configurations/<%= config.Name %>"><i class="icon-list-alt"></i> <%= config.Name %></a></li>
         <% }); %>

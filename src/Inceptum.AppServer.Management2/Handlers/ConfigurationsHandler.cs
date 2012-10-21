@@ -54,6 +54,12 @@ namespace Inceptum.AppServer.Management2.Handlers
             return info;
         }
 
+        public object Post(ConfigurationInfo info)
+        {
+            m_Provider.CreateConfiguration(info.Name);
+            return m_Provider.GetConfiguration(info.Name);
+        }
+
         public void DeleteBundle(string configuration, string bundle)
         {
             m_Provider.DeleteBundle(configuration, bundle);

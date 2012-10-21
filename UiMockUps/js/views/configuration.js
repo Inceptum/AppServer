@@ -6,6 +6,7 @@ define([
     'views/alerts',
     'text!templates/configuration/configuration.html',
     'text!templates/configuration/treeNode.html',
+    'bootbox',
     'fileupload'],
     function($, Backbone, _, confirmView,alerts, template,treeNodeTemplate){
         var TreeNodeView = Backbone.View.extend({

@@ -15,12 +15,16 @@ require.config({
         "codemirror": "libs/codemirror/codemirror",
         "codemirrorjs": "libs/codemirror/mode/javascript",
         "fileupload": "libs/jquery.fileupload",
-        "jquery.ui.widget": "libs/jquery.ui.widget"
+        "jquery.ui.widget": "libs/jquery.ui.widget",
+        "bootbox": "libs/bootbox"
     },
     'shim':
     {
         "fileupload":{
             deps: ["jquery","libs/jquery.iframe-transport","jquery.ui.widget"]
+        },
+        "bootbox":{
+            deps: ["bootstrap"]
         },
         "throttle":{
             deps: ["jquery"]

@@ -5,6 +5,8 @@ define(['jquery', 'backbone', 'underscore', 'collections/bundles'], function ($,
             if (bundles) {
                 this.bundles = new BundlesCollection(bundles);
                 this.unset("bundles");
+            }else{
+                this.bundles = new BundlesCollection();
             }
 
             var model = this;
