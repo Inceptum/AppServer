@@ -43,7 +43,7 @@
 </div>
 <%if(model.Parent){%>
 <div class="alert alert-info">
-    <strong>Note:</strong> This bundle is child of <a href="#/configurations/testapp/bundles/<%=model.Parent%>"><%=model.Parent%></a>. Child bundles are treated as overrides. That means consumer would receive content of child bundle merged to parent content.
+    <strong>Note:</strong> This bundle is child of <a href="#/configurations/<%=model.Configuration%>/bundles/<%=model.Parent%>"><%=model.Parent%></a>. Child bundles are treated as overrides. That means consumer would receive content of child bundle merged to parent content.
     <a  data-toggle="modal" href="#example">Example</a>
 </div>
 
