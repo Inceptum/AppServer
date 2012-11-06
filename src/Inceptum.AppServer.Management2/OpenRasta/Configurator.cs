@@ -44,7 +44,7 @@ namespace Inceptum.AppServer.Management2.OpenRasta
 
                 ResourceSpace.
                     Has.ResourcesOfType<ApplicationInstanceInfo>()
-                    .AtUri("api/instance") //For post (as it processec new instance there is no id yet)
+                    .AtUri("api/instance") //For post (as it processes new instance there is no id yet)
                     .And.AtUri("api/instance/{instance}")
                     .And.AtUri("api/instance/{instance}/start").Named("start")
                     .And.AtUri("api/instance/{instance}/stop").Named("stop")
