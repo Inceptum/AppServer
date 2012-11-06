@@ -102,9 +102,14 @@ namespace Inceptum.AppServer.Management2.Handlers
 
                 zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
 
-                foreach (var bundle in config.Bundles)
+
+                Func<BundleInfo, BundleInfo[]> select=null;
+                select = bundle => new[] { bundle }.Concat(bundle.Bundles.SelectMany(b => select(b))).ToArray();
+                IEnumerable<BundleInfo> bundles = config.Bundles.SelectMany(b => @select(b));
+
+                foreach (var bundle in bundles)
                 {
-                    var newEntry = new ZipEntry(bundle.Name);
+                    var newEntry = new ZipEntry(bundle.id);
                     newEntry.DateTime = DateTime.Now;
 
                     zipStream.PutNextEntry(newEntry);
@@ -125,15 +130,5 @@ namespace Inceptum.AppServer.Management2.Handlers
             }
         }
 
-        private IEnumerable<object> getBundles(IEnumerable<Bundle> bundles, string configuration)
-        {
-            return bundles.Select(b => new
-                                    {
-                                        id = b.Name,
-                                        name = b.ShortName,
-                                        bundles = getBundles(b,configuration),
-                                        configuration
-                                    }).ToArray();
-        }
     }
 }
