@@ -23,6 +23,7 @@ using Inceptum.Messaging;
 using Inceptum.Messaging.Castle;
 using NLog;
 using NLog.Config;
+using SignalR;
 
 namespace Inceptum.AppServer
 {
@@ -62,8 +63,7 @@ namespace Inceptum.AppServer
             {
                 container
                     .AddFacility<StartableFacility>()
-                    .AddFacility<TypedFactoryFacility>()
-                    .AddFacility<SignalRFacility>();
+                    .AddFacility<TypedFactoryFacility>();
                 container.Kernel.Resolver.AddSubResolver(new CollectionResolver(container.Kernel));
                 container.Kernel.Resolver.AddSubResolver(new ConventionBasedResolver(container.Kernel));
             }
@@ -94,11 +94,17 @@ namespace Inceptum.AppServer
                                                                                       "server.transports", "{environment}", "{machineName}"))
                     //messaging
                     .AddFacility<MessagingFacility>(f => { })
+                    //Management
+                    .Register(                        
+                        Component.For<IDependencyResolver>().Instance(new WindsorToSignalRAdapter(container.Kernel)),
+                        Component.For<SignalRhost>().DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
+                        Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}")
+                        )
+                    //App hostoing
                     .Register(
                         Component.For<IApplicationInstanceFactory>().AsFactory(),
                         Component.For<ApplicationInstance>().LifestyleTransient(),
                         Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
-                        Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
                         Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
                             new
                             {
