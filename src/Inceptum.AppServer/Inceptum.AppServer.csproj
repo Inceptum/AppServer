@@ -115,6 +115,7 @@
     <Compile Include="Notification\UiNotificationHub.cs" />
     <Compile Include="Windsor\IApplicationInstanceFactory.cs" />
     <Compile Include="Hosting\MarshalableProxy.cs" />
+    <Compile Include="Windsor\SignalRFacility.cs" />
     <Compile Include="Windsor\WindsorToSignalRAdapter.cs" />
     <Compile Include="Windsor\PluginInstallerFactory.cs" />
     <Compile Include="Program.cs" />
