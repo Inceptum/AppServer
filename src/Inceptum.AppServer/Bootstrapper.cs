@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
 using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
-using Castle.Services.Logging.NLogIntegration;
 using Castle.Windsor;
 using Inceptum.AppServer.AppDiscovery.Openwrap;
 using Inceptum.AppServer.Configuration;
@@ -25,26 +23,11 @@ using Inceptum.Messaging;
 using Inceptum.Messaging.Castle;
 using NLog;
 using NLog.Config;
-using SignalR;
 
 namespace Inceptum.AppServer
 {
-    public class Bootstrapper
+    public static class Bootstrapper
     {
-        private readonly IHost m_Host;
-        private readonly string[] m_AppsToStart;
-
-        public Bootstrapper(IHost host,string [] appsToStart)
-        {
-            m_AppsToStart = appsToStart;
-            m_Host = host;
-        }
-
-        private void start()
-        {
-            m_Host.Start();
-        }
-
         private static ILogger initLogging(IWindsorContainer container)
         {
             //nlog app domain resolver e.g. ${app_domain} processing in nlog.config
@@ -115,11 +98,6 @@ namespace Inceptum.AppServer
                         Component.For<IApplicationInstanceFactory>().AsFactory(),
                         Component.For<ApplicationInstance>().LifestyleTransient(),
                         Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
-                    //Applications to be started
-                        setup.AppsToStart == null
-                            ? Component.For<Bootstrapper>().DependsOnBundle("server.host", "", "{environment}", "{machineName}")
-                            : Component.For<Bootstrapper>().DependsOn(new { appsToStart = setup.AppsToStart }),
-
                         Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
                         Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
                             new
@@ -141,7 +119,7 @@ namespace Inceptum.AppServer
              
             logger.Info("Starting application host");
             var sw = Stopwatch.StartNew();
-            container.Resolve<Bootstrapper>().start();
+            container.Resolve<IHost>().Start();
             logger.InfoFormat("Initialization complete in {0}ms",sw.ElapsedMilliseconds);
             return container;
         
