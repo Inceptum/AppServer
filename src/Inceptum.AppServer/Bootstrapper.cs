@@ -1,22 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Threading;
-using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
 using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
-using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
-using Inceptum.AppServer.Model;
-using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.AppDiscovery.Openwrap;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Providers;
@@ -34,20 +28,6 @@ using SignalR;
 
 namespace Inceptum.AppServer
 {
-
-    class AppServerSetup
-    {
-        public string ConfSvcUrl { get; set; }
-        public string[] AppsToStart { get; set; }
-        public string Environment { get; set; }
-        public string Repository { get; set; }
-        public bool SendHb { get; set; }
-        public int HbInterval { get; set; }
-        public string[] DebugWraps { get; set; }
-    }
-
-    
-
     public class Bootstrapper
     {
         private readonly IHost m_Host;
@@ -61,10 +41,6 @@ namespace Inceptum.AppServer
 
         private void start()
         {
-/*
-            m_Host.RediscoverApps();
-            m_Host.StartApps(m_AppsToStart);
-*/
             m_Host.Start();
         }
 
@@ -128,7 +104,7 @@ namespace Inceptum.AppServer
             {
                 container.Register(
                     Component.For<IConfigurationProvider, IManageableConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>().Named("localStorageConfigurationProvider")
-                                  .DependsOn(new { configFolder = Path.Combine(Environment.CurrentDirectory, Path.Combine("Configuration")) }));
+                                  .DependsOn(new { configFolder = Path.Combine(Environment.CurrentDirectory, "Configuration") }));
 
                 //If remote configuration source is provided in app.config use it by default
                 if (setup.ConfSvcUrl != null)
@@ -147,7 +123,6 @@ namespace Inceptum.AppServer
                     .Register(
                         Component.For<IApplicationInstanceFactory>().AsFactory(),
                         Component.For<ApplicationInstance>().LifestyleTransient(),
-                        //Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
                         Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
                     //Applications to be started
                         setup.AppsToStart == null
@@ -162,32 +137,9 @@ namespace Inceptum.AppServer
                                 debugWraps = setup.DebugWraps ?? new string[0]
                             }));
 
-                //HearBeats
+                //HeartBeats
                 if (setup.SendHb)
                     container.Register(Component.For<HbSender>().DependsOn(new { environment = setup.Environment, hbInterval = setup.HbInterval }));
-
-                UiNotificationHub hub = container.Resolve<UiNotificationHub>();
-                Task.Factory.StartNew(() =>
-                                          {
-                                              int i=0;
-                                              while (true)
-                                              {
-/*                                                  if (i % 11 == 0)
-                                                    logger.FatalFormat("message {0}", i);
-                                                  else if (i % 7 == 0)
-                                                    logger.ErrorFormat("message {0}", i);
-                                                  else if (i % 5== 0)
-                                                    logger.WarnFormat("message {0}", i);
-                                                  else if (i % 3 == 0)
-                                                    logger.InfoFormat("message {0}", i);
-                                                  else
-                                                    logger.DebugFormat("message {0}", i);*/
-                                                //  hub.InstancesChanged();
-                                                  //hub.HeartBeat();
-                                                  Thread.Sleep(1000);
-                                                  i++;
-                                              }
-                                          });  
             }
             catch (Exception e)
             {

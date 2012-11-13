@@ -85,6 +85,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppServerSetup.cs" />
     <Compile Include="Hosting\ApplicationInstance.cs" />
     <Compile Include="AppDiscovery\FolderApplicationBrowser.cs" />
     <Compile Include="AppDiscovery\Openwrap\AppConfig.cs" />
