@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Castle.MicroKernel;
 using Castle.Windsor;
 using SignalR;
 
@@ -11,23 +12,23 @@ namespace Inceptum.AppServer.Windsor
     /// </summary>
     public class WindsorToSignalRAdapter : DefaultDependencyResolver
     {
-        private readonly IWindsorContainer m_Container;
+        private readonly IKernel m_Kernel;
 
-        public WindsorToSignalRAdapter(IWindsorContainer container)
+        public WindsorToSignalRAdapter(IKernel kernel)
         {
-            m_Container = container;
+            m_Kernel = kernel;
         }
 
         public override object GetService(Type serviceType)
         {
-            if (m_Container.Kernel.HasComponent(serviceType)) return m_Container.Resolve(serviceType);
+            if (m_Kernel.HasComponent(serviceType)) return m_Kernel.Resolve(serviceType);
 
             return base.GetService(serviceType);
         }
 
         public override IEnumerable<object> GetServices(Type serviceType)
         {
-            if (m_Container.Kernel.HasComponent(serviceType)) return m_Container.ResolveAll(serviceType).Cast<object>();
+            if (m_Kernel.HasComponent(serviceType)) return m_Kernel.ResolveAll(serviceType).Cast<object>();
 
             return base.GetServices(serviceType);
         }

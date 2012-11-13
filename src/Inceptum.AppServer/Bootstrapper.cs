@@ -10,6 +10,7 @@ using Castle.Facilities.Startable;
 using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
+using Castle.Services.Logging.NLogIntegration;
 using Castle.Windsor;
 using Inceptum.AppServer.AppDiscovery.Openwrap;
 using Inceptum.AppServer.Configuration;
@@ -44,62 +45,52 @@ namespace Inceptum.AppServer
             m_Host.Start();
         }
 
-        internal static IDisposable Start(AppServerSetup setup)
+        private static ILogger initLogging(IWindsorContainer container)
         {
-            
+            //nlog app domain resolver e.g. ${app_domain} processing in nlog.config
             AppDomainRenderer.Register();
-                string machineName = Environment.MachineName;
-                
-            IWindsorContainer container = new WindsorContainer();
-
-            ILogger logger;
             var logFolder = new[] { AppDomain.CurrentDomain.BaseDirectory, "logs", "server" }.Aggregate(Path.Combine);
+            //logfolder nlog variable
             GlobalDiagnosticsContext.Set("logfolder", logFolder);
+            //Configuring management console target (forwards log to ui via SignalR)
             ConfigurationItemFactory.Default.Targets.RegisterDefinition("ManagementConsole", typeof(ManagementConsoleTarget));
             container.Register(
                 Component.For<ILogCache>().ImplementedBy<LogCache>().Forward<LogCache>().DependsOn(new { capacity = 2000 }),
                 Component.For<LogConnection>(),
-                Component.For<ManagementConsoleTarget>().DependsOn(new {source="Server"}),
+                Component.For<ManagementConsoleTarget>().DependsOn(new { source = "Server" }),
                 Component.For<UiNotificationHub>().Forward<IHostNotificationListener>()
                 );
-
-            GlobalHost.DependencyResolver = new WindsorToSignalRAdapter(container);
-            //TODO: stop!!!
-            SignalRhost.Start();
-
-
+            //NLog has to resolve components from container
             var createInstanceOriginal = ConfigurationItemFactory.Default.CreateInstance;
             ConfigurationItemFactory.Default.CreateInstance = type => container.Kernel.HasComponent(type) ? container.Resolve(type) : createInstanceOriginal(type);
-
             var nlogConf = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "nlog.config");
-            var loggingConfiguration = new XmlLoggingConfiguration(nlogConf);
+            container.AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig(nlogConf));
+            return  container.Resolve<ILoggerFactory>().Create(typeof(Bootstrapper));
+        }
 
-            using (var logFactory = new LogFactory(loggingConfiguration))
+        internal static IDisposable Start(AppServerSetup setup)
+        {
+            IWindsorContainer container = new WindsorContainer();
+            var logger = initLogging(container);
+            
+            logger.Info("Initializing...");
+            logger.Info("Creating container");
+            try
             {
-                Thread.Sleep(1000);
-                var log = logFactory.GetLogger(typeof (Bootstrapper).Name);
-                log.Info("Initializing...");
-                log.Info("Creating container");
-                try
-                {
-                    container
-                        .AddFacility<StartableFacility>()
-                        .AddFacility<TypedFactoryFacility>()
-                        .AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig(nlogConf));
-
-                    container.Kernel.Resolver.AddSubResolver(new CollectionResolver(container.Kernel));
-                    container.Kernel.Resolver.AddSubResolver(new ConventionBasedResolver(container.Kernel));
-
-                    logger = container.Resolve<ILoggerFactory>().Create(typeof (Bootstrapper));
-                }catch(Exception e)
-                {
-                    log.FatalException("Failed to start\r\n",e);
-                    throw;
-                }
-                log.Info("Registering components");
-                
+                container
+                    .AddFacility<StartableFacility>()
+                    .AddFacility<TypedFactoryFacility>()
+                    .AddFacility<SignalRFacility>();
+                container.Kernel.Resolver.AddSubResolver(new CollectionResolver(container.Kernel));
+                container.Kernel.Resolver.AddSubResolver(new ConventionBasedResolver(container.Kernel));
+            }
+            catch (Exception e)
+            {
+                logger.FatalFormat(e, "Failed to create container\r\n");
+                throw;
             }
 
+            logger.Info("Registering components");
             try
             {
                 container.Register(
@@ -115,7 +106,7 @@ namespace Inceptum.AppServer
                 //Configuration local/remote
                 container
                     .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
-                                                                 .Params(new { environment = setup.Environment, machineName })
+                                                                 .Params(new { environment = setup.Environment, machineName = Environment.MachineName })
                                                                  .ConfigureTransports(new Dictionary<string, JailStrategy> { { "Environment", JailStrategy.Custom(() => setup.Environment) } },
                                                                                       "server.transports", "{environment}", "{machineName}"))
                     //messaging

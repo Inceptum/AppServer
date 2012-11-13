@@ -36,7 +36,7 @@ namespace Inceptum.AppServer.Logging
     public class ManagementConsoleTarget: TargetWithLayout
     {
         private readonly ILogCache m_LogCache;
-        private string m_Source;
+        private readonly string m_Source;
 
 
         public ManagementConsoleTarget(ILogCache logCache,string source)
