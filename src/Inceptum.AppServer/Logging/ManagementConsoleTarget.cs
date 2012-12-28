@@ -21,6 +21,7 @@ namespace Inceptum.AppServer.Logging
         {
             m_Resolver = resolver;
             m_Url= string.Format("http://*:{0}/sr/", port);
+            GlobalHost.DependencyResolver = resolver;
         }
 
         public void Start()
@@ -32,7 +33,7 @@ namespace Inceptum.AppServer.Logging
              m_Server.MapConnection<LogConnection>("/log");
              // Start the server
              m_Server.Start();
-         }
+        }
 
         public void Stop()
         {

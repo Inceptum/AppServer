@@ -6,10 +6,9 @@ define([
     'views/serverSideBar',
     'collections/instances',
     'text!templates/serverLog.html',
-    'context',
     'scrollTo',
     'noext!sr/signalr/hubs'],
-    function($, Backbone, _,context,ServerSideBarView,instances, template,context){
+    function($, Backbone, _,context,ServerSideBarView,instances, template){
         var View = Backbone.View.extend({
             el:'#content',
             levelMap:{
@@ -33,17 +32,17 @@ define([
                         self.connectionStateLabel.show();
                     }
                     if (change.newState === $.signalR.connectionState.reconnecting) {
-                        console.log('Re-connecting');
+                        console.log('logs: re-connecting');
                     }
                     else if (change.newState === $.signalR.connectionState.connected) {
-                        console.log('connected');
+                        console.log('logs: connected');
                         self.connectionStateLabel.hide();
                     }
                     else if (change.newState === $.signalR.connectionState.disconnected) {
-                        console.log('disconnected');
+                        console.log('logs: disconnected');
                     }
                     else if (change.newState === $.signalR.connectionState.connecting) {
-                        console.log('connecting');
+                        console.log('logs: connecting');
                     }
                 });
 
@@ -64,6 +63,8 @@ define([
                 this.log.html("");
             },
             onMessageReceived :function (data) {
+                console.log(data);
+
                 var needToScroll=$(".log p").length>0 && $(".log p").last().offset().top - $(".log").offset().top<=$(".log").height();
                 var p;
                 var self=this;
@@ -107,7 +108,9 @@ define([
                 this.connection.start({
                     //SignalR is loaded via requireJs. In IE window load event is already fired at connection start. Thus signalr would wait forever if waitForPageLoad is true
                     waitForPageLoad: false
-                });
+                }).done(function(){
+                        self.connection.send("aaaa");
+                    });
                 this.connectionStateLabel= $(this.el).find(".connectionState").hide();
             },
             'dispose':function(){
