@@ -63,8 +63,6 @@ define([
                 this.log.html("");
             },
             onMessageReceived :function (data) {
-                console.log(data);
-
                 var needToScroll=$(".log p").length>0 && $(".log p").last().offset().top - $(".log").offset().top<=$(".log").height();
                 var p;
                 var self=this;
@@ -108,9 +106,7 @@ define([
                 this.connection.start({
                     //SignalR is loaded via requireJs. In IE window load event is already fired at connection start. Thus signalr would wait forever if waitForPageLoad is true
                     waitForPageLoad: false
-                }).done(function(){
-                        self.connection.send("aaaa");
-                    });
+                }).done();
                 this.connectionStateLabel= $(this.el).find(".connectionState").hide();
             },
             'dispose':function(){
