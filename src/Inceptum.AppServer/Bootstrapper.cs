@@ -86,6 +86,10 @@ namespace Inceptum.AppServer
                         .DependsOn(new { serviceUrl = setup.ConfSvcUrl, path = "." })
                         .IsDefault());
 
+
+                //SignalR and Castle integraion
+                GlobalHost.DependencyResolver = new WindsorToSignalRAdapter(container.Kernel);
+
                 //Configuration local/remote
                 container
                     .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
@@ -96,7 +100,7 @@ namespace Inceptum.AppServer
                     .AddFacility<MessagingFacility>(f => { })
                     //Management
                     .Register(                        
-                        Component.For<IDependencyResolver>().Instance(new WindsorToSignalRAdapter(container.Kernel)),
+                       // Component.For<IDependencyResolver>().Instance(new WindsorToSignalRAdapter(container.Kernel)),
                         Component.For<SignalRhost>().DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
                         Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}")
                         )

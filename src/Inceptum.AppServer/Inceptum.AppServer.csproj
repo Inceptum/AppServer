@@ -112,6 +112,7 @@
     <Compile Include="Logging\LogConnection.cs" />
     <Compile Include="Logging\LogEvent.cs" />
     <Compile Include="Logging\ManagementConsoleTarget.cs" />
+    <Compile Include="Logging\SignalRhost.cs" />
     <Compile Include="Notification\UiNotificationHub.cs" />
     <Compile Include="Windsor\IApplicationInstanceFactory.cs" />
     <Compile Include="Hosting\MarshalableProxy.cs" />
