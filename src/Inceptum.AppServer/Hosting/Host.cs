@@ -10,7 +10,6 @@ using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Notification;
 using Inceptum.AppServer.Windsor;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Inceptum.AppServer.Hosting
 {
