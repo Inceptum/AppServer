@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.ServiceProcess;
+using Inceptum.AppServer.Bootstrap;
 using OpenWrap.Build;
 using OpenWrap.Commands;
 using OpenWrap.Commands.Wrap;

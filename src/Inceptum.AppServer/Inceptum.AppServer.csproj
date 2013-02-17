@@ -92,6 +92,7 @@
       <Link>Properties\VersionInfo.cs</Link>
     </Compile>
     <Compile Include="AppServerSetup.cs" />
+    <Compile Include="Bootstrap\LoggingInstaller.cs" />
     <Compile Include="Hosting\ApplicationInstance.cs" />
     <Compile Include="AppDiscovery\FolderApplicationBrowser.cs" />
     <Compile Include="AppDiscovery\Openwrap\AppConfig.cs" />
@@ -107,7 +108,7 @@
     <Compile Include="Hosting\AppDomainInitializer.cs" />
     <Compile Include="Hosting\ApplicationsRepository.cs" />
     <Compile Include="Hosting\Host.cs" />
-    <Compile Include="Bootstrapper.cs" />
+    <Compile Include="Bootstrap\Bootstrapper.cs" />
     <Compile Include="Hosting\ApplicationHost.cs" />
     <Compile Include="Hosting\AppServerContext.cs" />
     <Compile Include="HbSender.cs" />
