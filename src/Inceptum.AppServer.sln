@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.TestApp"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.Tests", "Inceptum.AppServer.Tests\Inceptum.AppServer.Tests.csproj", "{36FEFEBB-7E64-4539-8F4D-3FF44ADF92BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.Management", "Inceptum.AppServer.Management2\Inceptum.AppServer.Management.csproj", "{0F7D48A2-BAA8-4FCF-AA11-FFEA5891ED27}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.Management", "Inceptum.AppServer.Management\Inceptum.AppServer.Management.csproj", "{0F7D48A2-BAA8-4FCF-AA11-FFEA5891ED27}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A9C033DF-3BCF-47B5-8419-82332569A40A}"
 	ProjectSection(SolutionItems) = preProject
