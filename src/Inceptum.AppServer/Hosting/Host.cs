@@ -142,7 +142,6 @@ namespace Inceptum.AppServer.Hosting
 
                 foreach (var instanceParam in instanceParams)
                 {
-                    //TODO: it crashes if app configured for instance is not found
                     instanceParam.instance.UpdateApplicationParams(instanceParam.application!=null?instanceParam.application.GetLoadParams(instanceParam.version):null, instanceParam.version);
                 }
                 notefyInstancesChanged();
