@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reactive.Subjects;
+using System.Reflection;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Inceptum.AppServer.Model;
@@ -94,13 +95,10 @@ namespace Inceptum.AppServer.Hosting
             IEnumerable<Task> tasks;
             lock (m_SyncRoot)
             {
-                tasks = m_InstancesConfiguration.Where(c => c.AutoStart).Select(c => c.Name).Select(instance => Task.Factory.StartNew(() => StartInstance(instance)));
-/*
-                foreach (var instance in m_InstancesConfiguration.Where(c => c.AutoStart).Select(c => c.Name))
-                {
-                    StartInstance(instance);
-                }
-*/
+                tasks = m_InstancesConfiguration
+                        .Where(c => c.AutoStart)
+                        .Select(c => c.Name)
+                        .Select(instance => Task.Factory.StartNew(() =>startInstance(instance,true)));
                 Logger.InfoFormat("Starting instances");                
             }
             Task.WaitAll(tasks.ToArray());
@@ -145,7 +143,7 @@ namespace Inceptum.AppServer.Hosting
                 foreach (var instanceParam in instanceParams)
                 {
                     //TODO: it crashes if app configured for instance is not found
-                    instanceParam.instance.UpdateApplicationParams(instanceParam.application.GetLoadParams(instanceParam.version), instanceParam.version);
+                    instanceParam.instance.UpdateApplicationParams(instanceParam.application!=null?instanceParam.application.GetLoadParams(instanceParam.version):null, instanceParam.version);
                 }
                 notefyInstancesChanged();
             }
@@ -285,6 +283,11 @@ namespace Inceptum.AppServer.Hosting
 
         public void StartInstance(string name)
         {
+            startInstance(name,false);
+        }
+
+        private void startInstance(string name,bool safe)
+        {
             try
             {
                 ApplicationInstance instance;
@@ -294,13 +297,14 @@ namespace Inceptum.AppServer.Hosting
                 }
 
                 if (instance == null)
-                    throw new ConfigurationErrorsException(string.Format("Instance '{0}' not found",name));
+                    throw new ConfigurationErrorsException(string.Format("Instance '{0}' not found", name));
                 instance.Start();
             }
             catch (Exception e)
             {
-                Logger.WarnFormat(e, "Failed to start instance {0}",name);                
-                throw;
+                Logger.WarnFormat(e, "Failed to start instance {0}", name);
+                if(!safe)
+                    throw;
             }
         }
 
