@@ -3,13 +3,13 @@ using Castle.Core;
 using Castle.Core.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
-using Inceptum.AppServer.Management2.Handlers;
-using Inceptum.AppServer.Management2.OpenRasta;
+using Inceptum.AppServer.Management.OpenRasta;
+using Inceptum.AppServer.Management.Handlers;
 using OpenRasta.Configuration;
 using OpenRasta.DI;
 using OpenRasta.Pipeline;
 
-namespace Inceptum.AppServer.Management2
+namespace Inceptum.AppServer.Management
 {
     internal class Accessor : IDependencyResolverAccessor
     {

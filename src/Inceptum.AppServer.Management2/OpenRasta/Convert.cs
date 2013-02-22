@@ -2,7 +2,7 @@
 using Castle.Core;
 using OpenRasta.DI;
 
-namespace Inceptum.AppServer.Management2.OpenRasta
+namespace Inceptum.AppServer.Management.OpenRasta
 {
     public static class ConvertLifestyles
     {

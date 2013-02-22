@@ -87,12 +87,10 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
 
             var packages = m_ProjectRepository.PackagesByName.SelectMany(x => x);
 
-            List<HostedAppInfo> releaseApps = new List<HostedAppInfo>();
+            var releaseApps = new List<HostedAppInfo>();
             foreach (var package in packages)
             {
-                PackageDescriptor descriptor = new PackageDescriptor();
-                descriptor.Name = "tester";
-                descriptor.Version = new Version(0,0,1,1);
+                var descriptor = new PackageDescriptor {Name = "tester", Version = new Version(0, 0, 1, 1)};
                 descriptor.Dependencies.Add(new PackageDependency(package.Name, new[] { new EqualVersionVertex(package.Version) }));
                 releaseApps.AddRange(m_PackageManager.GetProjectExports<IHostedApplicationExport>(descriptor, m_ProjectRepository, m_Environment)
                     .SelectMany(x => x).Where(x => !debugApps.Any(p => p.Name == x.Name)).Select(getAppLoadParams));

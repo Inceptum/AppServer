@@ -1,7 +1,7 @@
 ﻿using OpenRasta.Pipeline;
 using OpenRasta.Web;
 
-namespace Inceptum.AppServer.Management2.OpenRasta
+namespace Inceptum.AppServer.Management.OpenRasta
 {
     public class CrossDomainPipelineContributor : IPipelineContributor 
     {

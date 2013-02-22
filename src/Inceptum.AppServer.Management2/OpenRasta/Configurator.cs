@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Reflection;
 using Inceptum.AppServer.Configuration;
-using Inceptum.AppServer.Management2.Handlers;
-using Inceptum.AppServer.Management2.Resources;
+using Inceptum.AppServer.Management.Handlers;
+using Inceptum.AppServer.Management.Resources;
 using Inceptum.AppServer.Model;
 using OpenRasta.Codecs;
 using OpenRasta.Codecs.Razor;
 using OpenRasta.Configuration;
 using OpenRasta.IO;
 
-namespace Inceptum.AppServer.Management2.OpenRasta
+namespace Inceptum.AppServer.Management.OpenRasta
 {
     public class Configurator : IConfigurationSource
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Reactive.Disposables;
-using Inceptum.AppServer.Management2.OpenRasta;
+using Inceptum.AppServer.Management.OpenRasta;
 using NLog;
 using NLog.Targets;
 using SignalR;

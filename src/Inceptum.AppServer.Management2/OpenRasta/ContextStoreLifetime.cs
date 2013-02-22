@@ -6,7 +6,7 @@ using OpenRasta.DI;
 using OpenRasta.DI.Internal;
 using OpenRasta.Pipeline;
 
-namespace Inceptum.AppServer.Management2.OpenRasta
+namespace Inceptum.AppServer.Management.OpenRasta
 {
     public class ContextStoreLifetime : AbstractLifestyleManager, IContextStoreDependencyCleaner
     {

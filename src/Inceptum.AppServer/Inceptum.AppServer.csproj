@@ -106,7 +106,6 @@
     <Compile Include="AppDiscovery\Openwrap\OpenWrapApplicationBrowser.cs" />
     <Compile Include="AppDiscovery\Openwrap\HostedApplicationExporter.cs" />
     <Compile Include="Hosting\AppDomainInitializer.cs" />
-    <Compile Include="Hosting\ApplicationsRepository.cs" />
     <Compile Include="Hosting\Host.cs" />
     <Compile Include="Bootstrap\Bootstrapper.cs" />
     <Compile Include="Hosting\ApplicationHost.cs" />
@@ -158,12 +157,8 @@
       <Project>{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}</Project>
       <Name>Inceptum.AppServer.Configuration</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Inceptum.AppServer.Management2\Inceptum.AppServer.Management2.csproj">
+    <ProjectReference Include="..\Inceptum.AppServer.Management2\Inceptum.AppServer.Management.csproj">
       <Project>{0F7D48A2-BAA8-4FCF-AA11-FFEA5891ED27}</Project>
-      <Name>Inceptum.AppServer.Management2</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Inceptum.AppServer.Management\Inceptum.AppServer.Management.csproj">
-      <Project>{7BC75E31-2A09-4E4B-8D3A-17828BCC8CC7}</Project>
       <Name>Inceptum.AppServer.Management</Name>
     </ProjectReference>
     <ProjectReference Include="..\Inceptum.AppServer.Sdk\Inceptum.AppServer.Sdk.csproj">

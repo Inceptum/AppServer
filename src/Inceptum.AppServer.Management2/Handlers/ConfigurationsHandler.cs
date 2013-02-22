@@ -11,7 +11,7 @@ using Inceptum.AppServer.Configuration.Model;
 using OpenRasta.IO;
 using OpenRasta.Web;
 
-namespace Inceptum.AppServer.Management2.Handlers
+namespace Inceptum.AppServer.Management.Handlers
 {
     public class ConfigurationsHandler
     {

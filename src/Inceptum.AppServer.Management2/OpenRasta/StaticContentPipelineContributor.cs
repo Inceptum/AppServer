@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Inceptum.AppServer.Management2.Resources;
+using Inceptum.AppServer.Management.Resources;
 using OpenRasta.Pipeline;
 using OpenRasta.Web;
 
-namespace Inceptum.AppServer.Management2.OpenRasta
+namespace Inceptum.AppServer.Management.OpenRasta
 {
     public class StaticContentPipelineContributor : IPipelineContributor 
     {

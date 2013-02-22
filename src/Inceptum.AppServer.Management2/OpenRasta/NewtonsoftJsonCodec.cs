@@ -4,7 +4,7 @@ using OpenRasta.Codecs;
 using OpenRasta.TypeSystem;
 using OpenRasta.Web;
 
-namespace Inceptum.AppServer.Management2.OpenRasta
+namespace Inceptum.AppServer.Management.OpenRasta
 {
     [MediaType("application/json;q=0.5", "json")]
     public class NewtonsoftJsonCodec : IMediaTypeReader, IMediaTypeWriter

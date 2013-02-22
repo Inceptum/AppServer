@@ -4,7 +4,7 @@ using System.Linq;
 using OpenRasta.IO;
 using OpenRasta.Web;
 
-namespace Inceptum.AppServer.Management2.Resources
+namespace Inceptum.AppServer.Management.Resources
 {
     public class ContentFile : IFile
     {

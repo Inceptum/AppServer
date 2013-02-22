@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Inceptum.AppServer.Management2.Resources;
+using Inceptum.AppServer.Management.Resources;
 using OpenRasta;
 using OpenRasta.OperationModel;
 using OpenRasta.OperationModel.Interceptors;
@@ -8,7 +8,7 @@ using OpenRasta.TypeSystem;
 using OpenRasta.TypeSystem.ReflectionBased;
 using OpenRasta.Web;
 
-namespace Inceptum.AppServer.Management2.OpenRasta
+namespace Inceptum.AppServer.Management.OpenRasta
 {
     public class ErrorHandlingOperationInterceptor : OperationInterceptor
     {

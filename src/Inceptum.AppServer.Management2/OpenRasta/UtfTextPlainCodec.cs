@@ -5,7 +5,7 @@ using OpenRasta.Codecs;
 using OpenRasta.TypeSystem;
 using OpenRasta.Web;
 
-namespace Inceptum.AppServer.Management2.OpenRasta
+namespace Inceptum.AppServer.Management.OpenRasta
 {
     [SupportedType(typeof(string))]
     [MediaType("text/plain;q=1.0")]

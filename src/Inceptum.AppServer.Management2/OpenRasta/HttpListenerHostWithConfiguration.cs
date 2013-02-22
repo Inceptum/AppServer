@@ -2,7 +2,7 @@
 using OpenRasta.DI;
 using OpenRasta.Hosting.HttpListener;
 
-namespace Inceptum.AppServer.Management2.OpenRasta
+namespace Inceptum.AppServer.Management.OpenRasta
 {
     public class HttpListenerHostWithConfiguration : HttpListenerHost
     {
