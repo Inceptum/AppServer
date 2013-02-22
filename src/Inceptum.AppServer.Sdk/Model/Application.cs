@@ -19,6 +19,22 @@ namespace Inceptum.AppServer.Model
             m_Versions = new SortedDictionary<ApplicationVersion, ApplicationParams>(this);
         }
 
+        public Application(string id, string vendor, IEnumerable<HostedAppInfo> versions)
+        {
+            Name = id;
+            Vendor = vendor;
+            m_Versions = new SortedDictionary<ApplicationVersion, ApplicationParams>(this);
+            foreach (var appInfo in versions)
+            {
+                var appVersion = m_Versions.Where(v => v.Key.Version == appInfo.Version).Select(p => p.Key).FirstOrDefault();
+                if (appVersion != null) m_Versions.Remove(appVersion);
+                m_Versions.Add(
+                        new ApplicationVersion { Description = appInfo.Description, Version = appInfo.Version },
+                        new ApplicationParams(appInfo.AppType, appInfo.ConfigFile, appInfo.NativeDllToLoad, appInfo.AssembliesToLoad)
+                        );
+            }
+        }
+
 
         public ApplicationVersion[] Versions
         {
@@ -35,16 +51,6 @@ namespace Inceptum.AppServer.Model
             ApplicationParams loadParams = m_Versions.Where(v => v.Key.Version == version).Select(p => p.Value).FirstOrDefault();
             return loadParams;
         }
-
-
-        internal void RegisterOrUpdateVersion(HostedAppInfo appInfo)
-        {
-            var appVersion = m_Versions.Where(v => v.Key.Version == appInfo.Version).Select(p => p.Key).FirstOrDefault();
-            if (appVersion != null) m_Versions.Remove(appVersion);
-            m_Versions.Add(
-                    new ApplicationVersion{Description = appInfo.Description,Version = appInfo.Version},
-                    new ApplicationParams(appInfo.AppType,appInfo.ConfigFile, appInfo.NativeDllToLoad,appInfo.AssembliesToLoad)
-                    );
-        }
+ 
     }
 }

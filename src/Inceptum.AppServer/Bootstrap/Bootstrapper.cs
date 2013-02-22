@@ -15,7 +15,7 @@ using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Providers;
 using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Logging;
-using Inceptum.AppServer.Management2;
+using Inceptum.AppServer.Management;
 using Inceptum.AppServer.Windsor;
 using Inceptum.Messaging;
 using Inceptum.Messaging.Castle;

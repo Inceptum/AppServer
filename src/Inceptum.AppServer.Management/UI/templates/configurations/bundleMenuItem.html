@@ -1,9 +1,0 @@
-<li><a href="#/configurations/ibank/<%=bundle.get("name") %>"><%=bundle.get("name") %></a>
-<% if (bundle.get("subbundles") != "undefined" && bundle.get("subbundles").models.length>0 ) { %>
-    <ul>
-        <% _.each(bundle.get("subbundles").models, function(bundle) {%>
-            <%= _.template(template,{bundle:bundle,_:_,template:template})%>
-        <%});%>
-    </ul>
-<% } %>
-</li>

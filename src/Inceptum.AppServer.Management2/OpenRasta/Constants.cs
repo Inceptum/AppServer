@@ -1,4 +1,4 @@
-﻿namespace Inceptum.AppServer.Management2.OpenRasta
+﻿namespace Inceptum.AppServer.Management.OpenRasta
 {
     internal static class Constants
     {

@@ -28,7 +28,7 @@ using IDependencyResolver = OpenRasta.DI.IDependencyResolver;
 using Castle.MicroKernel.Registration;
 #endif
 
-namespace Inceptum.AppServer.Management2.OpenRasta
+namespace Inceptum.AppServer.Management.OpenRasta
 {
     public class WindsorDependencyResolver : DependencyResolverCore, IDependencyResolver
     {

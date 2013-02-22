@@ -2,7 +2,7 @@
 using Inceptum.AppServer.Model;
 using OpenRasta.Web;
 
-namespace Inceptum.AppServer.Management2.Handlers
+namespace Inceptum.AppServer.Management.Handlers
 {
     public class ApplicationsHandler
     {

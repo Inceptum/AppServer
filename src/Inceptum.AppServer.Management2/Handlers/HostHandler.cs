@@ -1,7 +1,7 @@
-﻿using Inceptum.AppServer.Management2.Resources;
+﻿using Inceptum.AppServer.Management.Resources;
 using Inceptum.AppServer.Model;
 
-namespace Inceptum.AppServer.Management2.Handlers
+namespace Inceptum.AppServer.Management.Handlers
 {
     public class HostHandler
     {
