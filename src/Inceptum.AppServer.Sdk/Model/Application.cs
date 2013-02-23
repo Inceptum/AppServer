@@ -43,7 +43,7 @@ namespace Inceptum.AppServer.Model
 
         int IComparer<ApplicationVersion>.Compare(ApplicationVersion x, ApplicationVersion y)
         {
-            return Comparer<Version>.Default.Compare(x.Version, y.Version);
+            return -1 * Comparer<Version>.Default.Compare(x.Version, y.Version);
         }
 
         public ApplicationParams GetLoadParams(Version version)
@@ -51,6 +51,10 @@ namespace Inceptum.AppServer.Model
             ApplicationParams loadParams = m_Versions.Where(v => v.Key.Version == version).Select(p => p.Value).FirstOrDefault();
             return loadParams;
         }
- 
+
+        public override string ToString()
+        {
+            return string.Format("{0}(c) {1} {2}", Vendor, Name, string.Join(", ",Versions.Select(v=>"v"+v.Version)));
+        }
     }
 }
