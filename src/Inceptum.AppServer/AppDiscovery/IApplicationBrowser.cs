@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Inceptum.AppServer
+namespace Inceptum.AppServer.AppDiscovery
 {
     public interface IApplicationBrowser
     {

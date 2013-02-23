@@ -7,6 +7,7 @@ using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.Model;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Notification;
@@ -19,25 +20,24 @@ namespace Inceptum.AppServer.Hosting
     {
         private ILogger Logger { get; set; }
         public string Name { get; set; }
-        private List<Application> m_Applications = new List<Application>();
         private readonly List<ApplicationInstance> m_Instances = new List<ApplicationInstance>();
         private InstanceConfig[] m_InstancesConfiguration =new InstanceConfig[0];
 
-        private readonly IApplicationBrowser m_ApplicationBrowser;
         private readonly IApplicationInstanceFactory m_InstanceFactory;
         private readonly AppServerContext m_Context;
         private readonly IEnumerable<IHostNotificationListener> m_Listeners;
         private readonly IManageableConfigurationProvider m_ConfigurationProvider;
         private readonly object m_SyncRoot = new object();
+        private readonly ApplicationRepositary m_ApplicationRepositary;
 
-        public Host(IManageableConfigurationProvider configurationProvider,IApplicationBrowser applicationBrowser, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ILogger logger = null, string name = null)
+        public Host(IManageableConfigurationProvider configurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepositary applicationRepositary, ILogger logger = null, string name = null)
         {
+            m_ApplicationRepositary = applicationRepositary;
             m_ConfigurationProvider = configurationProvider;
             m_Listeners = listeners;
             m_InstanceFactory = instanceFactory;
             Logger = logger;
             Name = name??Environment.MachineName;
-            m_ApplicationBrowser = applicationBrowser;
             m_Context = new AppServerContext
             {
                 Name = Name,
@@ -56,10 +56,7 @@ namespace Inceptum.AppServer.Hosting
         public Application[] Applications
         {
             get {
-                lock (m_SyncRoot)
-                {
-                    return m_Applications.ToArray();
-                }
+                return m_ApplicationRepositary.Applications;
             }
         }
 
@@ -89,7 +86,7 @@ namespace Inceptum.AppServer.Hosting
 
         public void Start()
         {
-            RediscoverApps();
+            m_ApplicationRepositary.RediscoverApps();
             Logger.InfoFormat("Reading instances config");
             updateInstances();
             IEnumerable<Task> tasks;
@@ -104,25 +101,6 @@ namespace Inceptum.AppServer.Hosting
             Task.WaitAll(tasks.ToArray());
         }
 
-        public void RediscoverApps()
-        {
-            Logger.InfoFormat("Applications discovery");
-
-            var appInfos = m_ApplicationBrowser.GetAvailabelApps();
-            var applications = new List<Application>(
-                                                    from info in appInfos
-                                                    group info by new { vendor = info.Vendor, name = info.Name }
-                                                        into app
-                                                        select new Application(app.Key.name, app.Key.vendor, app)
-                                                    );
-
-            lock(m_SyncRoot)
-            {
-                m_Applications = applications;
-            }
-
-        }
-
 
         private  void updateInstances()
         {
@@ -133,7 +111,7 @@ namespace Inceptum.AppServer.Hosting
             {
                 m_InstancesConfiguration = configs.ToArray();
                 var instanceParams = from config in m_InstancesConfiguration
-                                     join app in m_Applications on config.ApplicationId equals app.Name into matchedApp
+                                     join app in m_ApplicationRepositary.Applications on config.ApplicationId equals app.Name into matchedApp
                                      from application in matchedApp.DefaultIfEmpty()
                                      let version = config.Version ?? application.Versions.Select(v => v.Version).OrderByDescending(v => v).FirstOrDefault()
                                      join instance in m_Instances on config.Name equals instance.Name into matchedInstance
@@ -162,7 +140,7 @@ namespace Inceptum.AppServer.Hosting
                 throw new ArgumentException("Instance name should be not empty string");
             if (string.IsNullOrEmpty(config.ApplicationId))
                 throw new ArgumentException("Instance application is not provided");
-            if (m_Applications.All(x => x.Name != config.ApplicationId))
+            if (m_ApplicationRepositary.Applications.All(x => x.Name != config.ApplicationId))
                 throw new ArgumentException("Application '" + config.ApplicationId + "' not found");
 
         }
