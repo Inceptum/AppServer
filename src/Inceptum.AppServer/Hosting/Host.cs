@@ -288,6 +288,7 @@ namespace Inceptum.AppServer.Hosting
 
         public Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged
         {
+            //TODO: fake!!!
             get {return new Subject<Tuple<HostedAppInfo, HostedAppStatus>[]>();}
         }
 
