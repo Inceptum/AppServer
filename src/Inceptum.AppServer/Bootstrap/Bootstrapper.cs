@@ -11,6 +11,7 @@ using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.Windsor;
 using Inceptum.AppServer.AppDiscovery;
+using Inceptum.AppServer.AppDiscovery.Nuget;
 using Inceptum.AppServer.AppDiscovery.Openwrap;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Providers;
@@ -85,6 +86,7 @@ namespace Inceptum.AppServer.Bootstrap
                         Component.For<ApplicationInstance>().LifestyleTransient(),
                         Component.For<ApplicationRepositary>(),
                         Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
+                        Component.For<IApplicationBrowser>().ImplementedBy<NugetApplicationBrowser>(),
                         Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
                             new
                             {

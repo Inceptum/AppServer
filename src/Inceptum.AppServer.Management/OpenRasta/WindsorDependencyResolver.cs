@@ -170,7 +170,7 @@ namespace Inceptum.AppServer.Management.OpenRasta
     {
         string storeKey;
 
-        public ContextStoreInstanceActivator(ComponentModel model, IKernel kernel, ComponentInstanceDelegate onCreation, ComponentInstanceDelegate onDestruction)
+        public ContextStoreInstanceActivator(ComponentModel model, IKernelInternal kernel, ComponentInstanceDelegate onCreation, ComponentInstanceDelegate onDestruction)
             : base(model, kernel, onCreation, onDestruction)
         {
             storeKey = model.Name;

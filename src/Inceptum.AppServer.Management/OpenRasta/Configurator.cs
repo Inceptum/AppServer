@@ -5,7 +5,7 @@ using Inceptum.AppServer.Management.Handlers;
 using Inceptum.AppServer.Management.Resources;
 using Inceptum.AppServer.Model;
 using OpenRasta.Codecs;
-using OpenRasta.Codecs.Razor;
+//using OpenRasta.Codecs.Razor;
 using OpenRasta.Configuration;
 using OpenRasta.IO;
 
@@ -19,7 +19,7 @@ namespace Inceptum.AppServer.Management.OpenRasta
         {
             using (OpenRastaConfiguration.Manual)
             {
-                ResourceSpace.Uses.ViewsEmbeddedInTheAssembly(Assembly.GetExecutingAssembly(), "Inceptum.AppServer.Management2.Views");
+                //ResourceSpace.Uses.ViewsEmbeddedInTheAssembly(Assembly.GetExecutingAssembly(), "Inceptum.AppServer.Management2.Views");
                 ResourceSpace.Has.ResourcesOfType<string>().WithoutUri.TranscodedBy<UtfTextPlainCodec>();
                 ResourceSpace.Has.ResourcesOfType<ServerError>().WithoutUri.TranscodedBy<NewtonsoftJsonCodec>();
 

@@ -32,9 +32,10 @@ namespace Inceptum.AppServer.Hosting
                                                         select new Application(app.Key.name, app.Key.vendor, app)
                                                     );
             var apps = String.Join(
-                            Environment.NewLine+"\t",  
-                            applications.Select(a =>a.ToString()).ToArray()
-                                  );
+                            Environment.NewLine + "\t",
+                            applications.Select(a => a.ToString()).ToArray()
+                            );
+            
             lock (m_SyncRoot)
             {
                 m_Applications = applications;
