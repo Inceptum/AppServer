@@ -104,12 +104,13 @@ WWkCICCW4uD/IFcWFvfkpqYvgj4/FQoaqTi5O6fu8NE6HVXl
         }
 
         [Test]
+        [Ignore]
         public void HttpRequestTest()
         {
             ThreadPool.SetMinThreads(100, 100); 
             var client=new WebClient();
             var phone = 9265603326;
-            var pass = 5998;
+            var pass = 1234;
             var address = string.Format("https://www.serviceguide.megafonmoscow.ru/ROBOTS/SC_TRAY_INFO?X_Username={0}&X_Password={1}", phone, pass);
             Console.WriteLine(address);
             ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
