@@ -35,6 +35,8 @@ _ReSharper*/
 _UpgradeReport_Files*/
 *.ReSharper.*
 *.dotCover
+NugetLoaclRepo
+packages
 
 _cache
 _cache\*
