@@ -5,8 +5,8 @@ using Castle.MicroKernel;
 using Castle.MicroKernel.ModelBuilder;
 using Castle.MicroKernel.ModelBuilder.Descriptors;
 using Castle.MicroKernel.Registration;
-using Inceptum.Core.Messaging;
 using Inceptum.Messaging;
+using Inceptum.Messaging.Contract;
 
 namespace Inceptum.AppServer.Configuration
 {

@@ -4,8 +4,9 @@ using Castle.Core;
 using Castle.Core.Logging;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Monitoring;
-using Inceptum.Core.Messaging;
+using Inceptum.AppServer.Utils;
 using Inceptum.Core.Utils;
+using Inceptum.Messaging.Contract;
 
 namespace Inceptum.AppServer
 {

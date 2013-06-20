@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using Inceptum.AppServer.Utils;
 using Inceptum.Core.Utils;
 using SignalR;
 using SignalR.Hubs;

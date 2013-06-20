@@ -1,6 +1,6 @@
-using Inceptum.Core.Messaging;
 using Inceptum.DataBus;
 using Inceptum.DataBus.Messaging;
+using Inceptum.Messaging.Contract;
 
 namespace Inceptum.AppServer.Monitoring
 {

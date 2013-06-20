@@ -6,7 +6,7 @@ using Castle.Core;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Context;
 using Castle.MicroKernel.Resolvers;
-using Inceptum.Core.Messaging;
+using Inceptum.Messaging.Contract;
 
 namespace Inceptum.AppServer.Configuration
 {
