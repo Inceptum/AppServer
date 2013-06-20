@@ -8,6 +8,7 @@ using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Notification;
+using Inceptum.AppServer.Utils;
 using Inceptum.Core.Utils;
 using NLog;
 using NLog.Config;

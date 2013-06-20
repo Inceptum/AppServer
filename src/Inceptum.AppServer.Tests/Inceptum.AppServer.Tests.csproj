@@ -44,18 +44,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Castle.Windsor.3.2.0\lib\net40\Castle.Windsor.dll</HintPath>
     </Reference>
-    <Reference Include="Inceptum.Core">
-      <HintPath>..\packages\Inceptum.Core.1.0.5.18\lib\net40\Inceptum.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Inceptum.DataBus">
-      <HintPath>..\packages\Inceptum.DataBus.1.0.5.18\lib\net40\Inceptum.DataBus.dll</HintPath>
+      <HintPath>..\packages\Inceptum.DataBus.1.0.5.68\lib\net40\Inceptum.DataBus.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Inceptum.Messaging">
-      <HintPath>..\packages\Inceptum.Messaging.1.0.5.18\lib\net40\Inceptum.Messaging.dll</HintPath>
+      <HintPath>..\packages\Inceptum.Messaging.1.0.5.68\lib\net40\Inceptum.Messaging.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
@@ -78,6 +76,10 @@
     </Reference>
     <Reference Include="Org.Mentalis.Security">
       <HintPath>..\packages\Inceptum.Messaging.1.0.5.18\lib\net40\Org.Mentalis.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>..\packages\protobuf-net.2.0.0.640\lib\net40\protobuf-net.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Rhino.Mocks, Version=3.6.0.0, Culture=neutral, PublicKeyToken=0b3305902db7183f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
