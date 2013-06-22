@@ -100,7 +100,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Content\js\build.bat" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -119,7 +118,6 @@
     <EmbeddedResource Include="Content\index.htm" />
     <EmbeddedResource Include="Content\js\app.build.js" />
     <EmbeddedResource Include="Content\js\app.js" />
-    <EmbeddedResource Include="Content\js\build.bat" />
     <EmbeddedResource Include="Content\js\collections\applications.js" />
     <EmbeddedResource Include="Content\js\collections\applicationVersions.js" />
     <EmbeddedResource Include="Content\js\collections\bundles.js" />
