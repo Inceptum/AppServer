@@ -47,7 +47,6 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             IPackageRepository appsRepo =new RepositoryWrapper(PackageRepositoryFactory.Default.CreateRepository(m_ApplicationRepository));
             IPackageRepository[] dependencyRepositories = m_DependenciesRepositories.Select(r => PackageRepositoryFactory.Default.CreateRepository(r)).ToArray();
             var dependencyRepo = new AggregateRepository(
-//                    new[] { appsRepo }.Concat(dependencyRepositories)
                     dependencyRepositories
                 );
 
@@ -57,7 +56,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             IPackage[] packages = appsRepoManager.SourceRepository.GetPackages().OrderBy(p => p.Id).ToArray();
 
 
-            List<HostedAppInfo> res = new List<HostedAppInfo>();
+            var res = new List<HostedAppInfo>();
 
             foreach (var package in packages)
             {
