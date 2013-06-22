@@ -1,13 +1,11 @@
 {
-  "appsToStart": [
-    "Backend",
-    "Orchestrator",
-    "DiasoftAdapter",
-    "CyberplatAdapter",
-    "Messenger"
-  ],
+  "appsToStart": [],
   "ManagementConsole": {
     "port": 9223,
     "enabled": true
+  },
+  "nuget":{
+		"applicationRepository":"..\\..\\..\\..\\TestData\\NugetRepo",
+		"dependenciesRepositories":["https://nuget.org/api/v2/"]
   }
 }

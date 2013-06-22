@@ -13,7 +13,15 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
     public class NugetApplicationBrowser : IApplicationBrowser
     {
         private readonly FrameworkName NET40= new FrameworkName(".NETFramework,Version=v4.5");
+        private readonly string m_ApplicationRepository;
+        private readonly string[] m_DependenciesRepositories;
 
+        public NugetApplicationBrowser(string applicationRepository, string[] dependenciesRepositories)
+        {
+            m_DependenciesRepositories = dependenciesRepositories.Select(
+                r => Directory.Exists(r)?Path.GetFullPath(r):r).ToArray();
+            m_ApplicationRepository = Directory.Exists(applicationRepository) ? Path.GetFullPath(applicationRepository) : applicationRepository;
+        }
 
         private IEnumerable<IPackage> getDependencies(IPackage package, IPackageRepository repository)
         {
@@ -36,18 +44,14 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
 
         public IEnumerable<HostedAppInfo> GetAvailabelApps()
         {
+            IPackageRepository appsRepo = PackageRepositoryFactory.Default.CreateRepository(m_ApplicationRepository);
+            var dependencyRepo = new AggregateRepository(
+                    new[] {m_ApplicationRepository}.Concat(m_DependenciesRepositories)
+                    .Select(r => PackageRepositoryFactory.Default.CreateRepository(r)).ToArray()
+                );
 
-             string repoPath =Path.GetFullPath(@"..\..\..\..\TestData\NugetRepo") ;
-            IPackageRepository appsRepo = PackageRepositoryFactory.Default.CreateRepository(repoPath);
-            IPackageRepository dependenciesRepo = PackageRepositoryFactory.Default.CreateRepository("https://nuget.org/api/v2/");
-            IPackageRepository repository =
-                new AggregateRepository(new[]
-                    {
-                        appsRepo,
-                        dependenciesRepo
-                    });
             var appsRepoManager = new PackageManager(appsRepo,  @".\NugetLoaclRepo");
-            var manager = new PackageManager(repository,  @".\NugetLoaclRepo");
+            var manager = new PackageManager(dependencyRepo, @".\NugetLoaclRepo");
 
             IPackage[] packages = appsRepoManager.SourceRepository.GetPackages().OrderBy(p => p.Id).ToArray();
 
