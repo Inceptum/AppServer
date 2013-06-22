@@ -37,7 +37,7 @@ define([
                 $(this.el).html(this.template).find("div").first().hover(function(){$(this).find(".btn-group").toggleClass("hide")});
 
                 if(isFolder){
-                    this.subview = new TreeView({model:this.model,visible:this.model.expanded}).render();
+                    this.subview = new TreeView({model:this.model,visible:this.model.expanded,isLeaf:true}).render();
                     this.subview.bind("delete", this.deleteBundle);
                     $(this.el).append(this.subview.el);
                     var model=this.model;
@@ -66,7 +66,8 @@ define([
             },
             render:function(){
                 var el=$(this.el);
-                el.attr("id",this.model.id);
+                if(this.options.isLeaf)
+                    el.attr("id",this.model.id);
                 var self = this;
                 this.model.bundles.each(function(node){
                     var treeView = new TreeNodeView({model:node});
