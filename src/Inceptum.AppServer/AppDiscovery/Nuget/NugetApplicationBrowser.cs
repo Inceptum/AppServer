@@ -16,7 +16,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
         private readonly string m_ApplicationRepository;
         private readonly string[] m_DependenciesRepositories;
 
-        public NugetApplicationBrowser(string applicationRepository, string[] dependenciesRepositories)
+        public NugetApplicationBrowser(string applicationRepository, params string[] dependenciesRepositories)
         {
             m_DependenciesRepositories = dependenciesRepositories.Select(
                 r => Directory.Exists(r)?Path.GetFullPath(r):r).ToArray();
