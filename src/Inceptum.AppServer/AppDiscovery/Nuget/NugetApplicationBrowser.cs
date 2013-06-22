@@ -44,10 +44,11 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
 
         public IEnumerable<HostedAppInfo> GetAvailabelApps()
         {
-            IPackageRepository appsRepo = PackageRepositoryFactory.Default.CreateRepository(m_ApplicationRepository);
+            IPackageRepository appsRepo =new RepositoryWrapper(PackageRepositoryFactory.Default.CreateRepository(m_ApplicationRepository));
+            IPackageRepository[] dependencyRepositories = m_DependenciesRepositories.Select(r => PackageRepositoryFactory.Default.CreateRepository(r)).ToArray();
             var dependencyRepo = new AggregateRepository(
-                    new[] {m_ApplicationRepository}.Concat(m_DependenciesRepositories)
-                    .Select(r => PackageRepositoryFactory.Default.CreateRepository(r)).ToArray()
+//                    new[] { appsRepo }.Concat(dependencyRepositories)
+                    dependencyRepositories
                 );
 
             var appsRepoManager = new PackageManager(appsRepo,  @".\NugetLoaclRepo");
@@ -60,7 +61,8 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
 
             foreach (var package in packages)
             {
-                manager.InstallPackage(package.Id, package.Version, false, true);
+                //manager.InstallPackage(package.Id, package.Version, false, true);
+                manager.InstallPackage(package, false, true);
                 var assembliesToLoad =
                     from p in getDependencies(package, manager.LocalRepository).Distinct()
                     from a in getAssemblies(p)
@@ -69,6 +71,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
 
                 IEnumerable<string> packageAssemblies = getAssemblies(package)
                     .Select(a => Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(package), a.Path));
+                string appConfig = package.GetFiles().Where(f => f.Path.ToLower() == @"config\app.config").Select(a=>Path.Combine(manager.LocalRepository.Source ,manager.PathResolver.GetPackageDirectory(package), a.Path)).FirstOrDefault();
 
                 res.Add(
                     new HostedAppInfo(
@@ -82,7 +85,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                                 return new AssemblyName(assembly.Name.Name);
                             },a=>a.path)
                 
-                        )
+                        ){ConfigFile = Path.GetFullPath(appConfig)}
                     );
             }
 
@@ -128,6 +131,211 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             }
         
             throw new ConfigurationErrorsException("Application class not found");
+        }
+    }
+
+
+    class RepositoryWrapper : IPackageRepository
+    {
+        private readonly IPackageRepository m_Repository;
+
+        public RepositoryWrapper(IPackageRepository repository)
+        {
+            m_Repository = repository;
+        }
+
+        public IQueryable<IPackage> GetPackages()
+        {
+/*
+            var retur= (from file in FileSystem.GetFiles("", "*" + Constants.PackageExtension)
+                    let packageName = Path.GetFileNameWithoutExtension(file)
+                    where FileSystem.DirectoryExists(packageName)
+                    select new UnzippedPackage(FileSystem, packageName)).AsQueryable();
+*/
+
+
+            return m_Repository.GetPackages().Select(package => new PackageWrapper(package));
+           // return packageWrappers.AsQueryable<IPackage>();
+/*
+            return (from package in m_Repository.GetPackages()
+                    select new PackageWrapper(package) as IPackage).AsQueryable();
+*/
+
+            //return m_Repository.GetPackages().Select<IPackage,IPackage>(package => new PackageWrapper(package));
+        }
+
+        public void AddPackage(IPackage package)
+        {
+            m_Repository.AddPackage(package);
+        }
+
+        public void RemovePackage(IPackage package)
+        {
+            m_Repository.RemovePackage(package);
+        }
+
+        public string Source
+        {
+            get { return m_Repository.Source; }
+        }
+
+        public bool SupportsPrereleasePackages
+        {
+            get { return m_Repository.SupportsPrereleasePackages; }
+        }
+    }
+
+    class PackageWrapper:IPackage
+    {
+        private readonly IPackage m_Package;
+
+        public PackageWrapper(IPackage package)
+        {
+            m_Package = package;
+        }
+
+        public string Id
+        {
+            get { return m_Package.Id; }
+        }
+
+        public SemanticVersion Version
+        {
+            get { return m_Package.Version; }
+        }
+
+        public string Title
+        {
+            get { return m_Package.Title; }
+        }
+
+        public IEnumerable<string> Authors
+        {
+            get { return m_Package.Authors; }
+        }
+
+        public IEnumerable<string> Owners
+        {
+            get { return m_Package.Owners; }
+        }
+
+        public Uri IconUrl
+        {
+            get { return m_Package.IconUrl; }
+        }
+
+        public Uri LicenseUrl
+        {
+            get { return m_Package.LicenseUrl; }
+        }
+
+        public Uri ProjectUrl
+        {
+            get { return m_Package.ProjectUrl; }
+        }
+
+        public bool RequireLicenseAcceptance
+        {
+            get { return m_Package.RequireLicenseAcceptance; }
+        }
+
+        public string Description
+        {
+            get { return m_Package.Description; }
+        }
+
+        public string Summary
+        {
+            get { return m_Package.Summary; }
+        }
+
+        public string ReleaseNotes
+        {
+            get { return m_Package.ReleaseNotes; }
+        }
+
+        public string Language
+        {
+            get { return m_Package.Language; }
+        }
+
+        public string Tags
+        {
+            get { return m_Package.Tags; }
+        }
+
+        public string Copyright
+        {
+            get { return m_Package.Copyright; }
+        }
+
+        public IEnumerable<FrameworkAssemblyReference> FrameworkAssemblies
+        {
+            get { return m_Package.FrameworkAssemblies; }
+        }
+
+        public IEnumerable<PackageDependencySet> DependencySets
+        {
+            get
+            {
+                return m_Package.DependencySets
+                                .Select(ds => new PackageDependencySet(
+                                                  ds.TargetFramework,
+                                                  ds.Dependencies
+                                                    .Where(dependency => dependency.Id != "Inceptum.AppServer.Sdk")
+                                                  )
+                    ).Where(ds=>ds.Dependencies.Any());
+            }
+        }
+
+        public Uri ReportAbuseUrl
+        {
+            get { return m_Package.ReportAbuseUrl; }
+        }
+
+        public int DownloadCount
+        {
+            get { return m_Package.DownloadCount; }
+        }
+
+        public IEnumerable<IPackageFile> GetFiles()
+        {
+            return m_Package.GetFiles();
+        }
+
+        public IEnumerable<FrameworkName> GetSupportedFrameworks()
+        {
+            return m_Package.GetSupportedFrameworks();
+        }
+
+        public Stream GetStream()
+        {
+            return m_Package.GetStream();
+        }
+
+        public bool IsAbsoluteLatestVersion
+        {
+            get { return m_Package.IsAbsoluteLatestVersion; }
+        }
+
+        public bool IsLatestVersion
+        {
+            get { return m_Package.IsLatestVersion; }
+        }
+
+        public bool Listed
+        {
+            get { return m_Package.Listed; }
+        }
+
+        public DateTimeOffset? Published
+        {
+            get { return m_Package.Published; }
+        }
+
+        public IEnumerable<IPackageAssemblyReference> AssemblyReferences
+        {
+            get { return m_Package.AssemblyReferences; }
         }
     }
 }
