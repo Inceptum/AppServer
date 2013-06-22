@@ -12,7 +12,7 @@ define([
                 this.template = _.template( template, { } );
                 this.notifications = $.connection.uiNotificationHub;
                 $.connection.hub.url = context.signalRUrl('/signalr');
-                this.notifications.HeartBeat=this.onHeartBeat;
+                this.notifications.client.HeartBeat=this.onHeartBeat;
                 this.blinking=false;
             },
             onHeartBeat:function(){
@@ -28,6 +28,7 @@ define([
             render: function () {
                 $(this.el).html(this.template);
                 this.led=$(this.el).find('.led').fadeTo(10,.25);
+
                 $.connection.hub.start({
                     //SignalR is loaded via requireJs. In IE window load event is already fired at connection start. Thus signalr would wait forever if waitForPageLoad is true
                     waitForPageLoad: false

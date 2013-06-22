@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SignalR;
-using SignalR.Hosting;
+using Microsoft.AspNet.SignalR;
 
 namespace Inceptum.AppServer.Logging
 {
@@ -15,17 +14,18 @@ namespace Inceptum.AppServer.Logging
         }
 
  
-        protected override Task OnConnectedAsync(IRequest request, string connectionId)
+        protected override Task OnConnected(IRequest request, string connectionId)
         {
 
             m_LogCache.RepeatFor(connectionId);
-            return base.OnConnectedAsync(request, connectionId);
+            return base.OnConnected(request, connectionId);
         }
 
-        protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+
+        protected override Task OnReconnected(IRequest request, string connectionId)
         {
             m_LogCache.RepeatFor(connectionId);
-            return base.OnReconnectedAsync(request, groups, connectionId);
+            return base.OnReconnected(request, connectionId);
         }
  
     }

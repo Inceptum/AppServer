@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Castle.MicroKernel;
 using Castle.Windsor;
-using SignalR;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Inceptum.AppServer.Windsor
 {
@@ -30,9 +31,19 @@ namespace Inceptum.AppServer.Windsor
         {
             if (m_Kernel.HasComponent(serviceType)) return m_Kernel.ResolveAll(serviceType).Cast<object>();
 
-            return base.GetServices(serviceType);
+            var enumerable = base.GetServices(serviceType);
+            return enumerable;
         }
 
+        public override void Register(Type serviceType, Func<object> activator)
+        {
+            base.Register(serviceType, activator);
+        }
+
+        public override void Register(Type serviceType, IEnumerable<Func<object>> activators)
+        {
+            base.Register(serviceType, activators);
+        }
 
     }
 

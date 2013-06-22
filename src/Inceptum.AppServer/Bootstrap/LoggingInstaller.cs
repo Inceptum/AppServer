@@ -10,6 +10,8 @@ using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Notification;
 using Inceptum.AppServer.Utils;
 using Inceptum.Core.Utils;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
 using NLog;
 using NLog.Config;
 
@@ -31,7 +33,7 @@ namespace Inceptum.AppServer.Bootstrap
                 Component.For<ILogCache>().ImplementedBy<LogCache>().Forward<LogCache>().DependsOn(new { capacity = 2000 }),
                 Component.For<LogConnection>(),
                 Component.For<ManagementConsoleTarget>().DependsOn(new { source = "Server" }),
-                Component.For<UiNotificationHub>().Forward<IHostNotificationListener>()
+                Component.For<UiNotificationHub>().Forward<IHub>()//.Forward<IHostNotificationListener>()
                 );
             //NLog has to resolve components from container
             var createInstanceOriginal = ConfigurationItemFactory.Default.CreateInstance;

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SignalR;
+using Microsoft.AspNet.SignalR;
 
 namespace Inceptum.AppServer.Logging
 {

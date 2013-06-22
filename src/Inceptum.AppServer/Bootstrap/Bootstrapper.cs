@@ -18,10 +18,11 @@ using Inceptum.AppServer.Configuration.Providers;
 using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Management;
+using Inceptum.AppServer.Notification;
 using Inceptum.AppServer.Windsor;
 using Inceptum.Messaging;
 using Inceptum.Messaging.Castle;
-using SignalR;
+using Microsoft.AspNet.SignalR;
 
 namespace Inceptum.AppServer.Bootstrap
 {
@@ -65,7 +66,6 @@ namespace Inceptum.AppServer.Bootstrap
 
                 //SignalR and Castle integraion
                 GlobalHost.DependencyResolver = new WindsorToSignalRAdapter(container.Kernel);
-
                 //Configuration local/remote
                 container
                     .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
@@ -78,7 +78,8 @@ namespace Inceptum.AppServer.Bootstrap
                     .Register(                        
                        // Component.For<IDependencyResolver>().Instance(new WindsorToSignalRAdapter(container.Kernel)),
                         Component.For<SignalRhost>().DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
-                        Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}")
+                        Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
+                        Component.For<IHostNotificationListener>().ImplementedBy<UiNotifier>()
                         )
                     //App hostoing
                     .Register(
@@ -109,8 +110,12 @@ namespace Inceptum.AppServer.Bootstrap
             var sw = Stopwatch.StartNew();
             container.Resolve<IHost>().Start();
             logger.InfoFormat("Initialization complete in {0}ms",sw.ElapsedMilliseconds);
+#if DEBUG            
+    //        container.Resolve<UiNotificationHub>();
+#endif
+
             return container;
         
         }
-    }
+    } 
 }

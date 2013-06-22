@@ -10,7 +10,7 @@ require.config({
         "bootstrap":"libs/bootstrap.min",
         "scrollTo":"libs/jquery.scrollTo-min",
         "throttle":"libs/jquery.ba-throttle-debounce.min",
-        "signalr": "libs/jquery.signalR-0.5.3",
+        "signalr": "libs/jquery.signalR-1.1.2",
         "json2": "libs/json2.min",
         "codemirror": "libs/codemirror/codemirror",
         "codemirrorjs": "libs/codemirror/mode/javascript",

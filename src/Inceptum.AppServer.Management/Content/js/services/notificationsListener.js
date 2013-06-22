@@ -11,7 +11,7 @@ define(['jquery','underscore','collections/instances','context','noext!sr/signal
             this.notifications = $.connection.uiNotificationHub;
             $.connection.hub.url = context.signalRUrl('/signalr');
             var self=this;
-            this.notifications.InstancesChanged=function(comment){
+            this.notifications.client.InstancesChanged=function(comment){
                 console.log("Scheduling fetch due to "+comment);
                 self.fetch(comment);
             }
