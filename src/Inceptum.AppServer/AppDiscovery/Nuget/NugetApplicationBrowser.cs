@@ -12,7 +12,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
 {
     public class NugetApplicationBrowser : IApplicationBrowser
     {
-        private readonly FrameworkName NET40= new FrameworkName(".NETFramework,Version=v4.5");
+        internal static readonly FrameworkName NET40= new FrameworkName(".NETFramework,Version=v4.5");
         private readonly string m_ApplicationRepository;
         private readonly string[] m_DependenciesRepositories;
 
@@ -44,23 +44,21 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
 
         public IEnumerable<HostedAppInfo> GetAvailabelApps()
         {
-            IPackageRepository appsRepo =new RepositoryWrapper(PackageRepositoryFactory.Default.CreateRepository(m_ApplicationRepository));
+            IPackageRepository appsRepo =PackageRepositoryFactory.Default.CreateRepository(m_ApplicationRepository);
             IPackageRepository[] dependencyRepositories = m_DependenciesRepositories.Select(r => PackageRepositoryFactory.Default.CreateRepository(r)).ToArray();
             var dependencyRepo = new AggregateRepository(
-                    dependencyRepositories
+                    new []{appsRepo}.Concat(dependencyRepositories)
                 );
 
             var appsRepoManager = new PackageManager(appsRepo,  @".\NugetLoaclRepo");
             var manager = new PackageManager(dependencyRepo, @".\NugetLoaclRepo");
-
-            IPackage[] packages = appsRepoManager.SourceRepository.GetPackages().OrderBy(p => p.Id).ToArray();
-
+            var packages = from p in appsRepoManager.SourceRepository.GetPackages() where p.Tags!=null && p.Tags.Contains("Inceptum.AppServer.Applicaton") orderby p.Id select new PackageWrapper(p);
 
             var res = new List<HostedAppInfo>();
 
             foreach (var package in packages)
             {
-                //manager.InstallPackage(package.Id, package.Version, false, true);
+                //TODO: check compartability of AppServer version and package.SdkVersion
                 manager.InstallPackage(package, false, true);
                 var assembliesToLoad =
                     from p in getDependencies(package, manager.LocalRepository).Distinct()
@@ -70,7 +68,9 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
 
                 IEnumerable<string> packageAssemblies = getAssemblies(package)
                     .Select(a => Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(package), a.Path));
-                string appConfig = package.GetFiles().Where(f => f.Path.ToLower() == @"config\app.config").Select(a=>Path.Combine(manager.LocalRepository.Source ,manager.PathResolver.GetPackageDirectory(package), a.Path)).FirstOrDefault();
+                string appConfig = package.GetFiles().Where(f => f.Path.ToLower() == @"config\app.config")
+                    .Select(c=>Path.Combine(manager.LocalRepository.Source ,manager.PathResolver.GetPackageDirectory(package), c.Path))
+                    .Select(Path.GetFullPath).FirstOrDefault();
 
                 res.Add(
                     new HostedAppInfo(
@@ -84,28 +84,12 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                                 return new AssemblyName(assembly.Name.Name);
                             },a=>a.path)
                 
-                        ){ConfigFile = Path.GetFullPath(appConfig)}
+                        ){ConfigFile = appConfig,Description = package.Description}
                     );
             }
 
 
             return res;
-
-            var first = manager.LocalRepository.GetPackages().First(p => p.Id == packages.First().Id);
-            var ids = first.DependencySets.SelectMany(s => s.Dependencies.Select(d => d.Id)).ToArray();
-
-
-//            manager.InstallPackage("NugetTestApp", new SemanticVersion(1,0,0,0), false, true);
-           return manager.LocalRepository.GetPackages()
-                .Select(p=>
-                    new HostedAppInfo(
-                        p.Id,
-                        string.Join(", ",p.Authors),
-                        p.Version.Version,
-                        null,
-                        p.AssemblyReferences.ToDictionary(a=>new AssemblyName(a.Name),a=>a.Path),
-                        null)
-                        );
         }
 
         private string getAppType(IEnumerable<string> packageAssemblies)
@@ -121,11 +105,6 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                 var appType = assembly.MainModule.Types.FirstOrDefault(t => t.Interfaces.Any(i => i.FullName == typeof(IHostedApplication).FullName));
                 if (appType == null)
                     continue;
-
-
-                /*var name = attribute.ConstructorArguments.First().Value.ToString();
-                var vendor = attribute.ConstructorArguments.Count == 2 ? attribute.ConstructorArguments[1].Value.ToString() : HostedApplicationAttribute.DEFAULT_VENDOR;
-*/
                 return appType.FullName + ", " + assembly.FullName;
             }
         
@@ -134,56 +113,9 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
     }
 
 
-    class RepositoryWrapper : IPackageRepository
-    {
-        private readonly IPackageRepository m_Repository;
-
-        public RepositoryWrapper(IPackageRepository repository)
-        {
-            m_Repository = repository;
-        }
-
-        public IQueryable<IPackage> GetPackages()
-        {
-/*
-            var retur= (from file in FileSystem.GetFiles("", "*" + Constants.PackageExtension)
-                    let packageName = Path.GetFileNameWithoutExtension(file)
-                    where FileSystem.DirectoryExists(packageName)
-                    select new UnzippedPackage(FileSystem, packageName)).AsQueryable();
-*/
-
-
-            return m_Repository.GetPackages().Select(package => new PackageWrapper(package));
-           // return packageWrappers.AsQueryable<IPackage>();
-/*
-            return (from package in m_Repository.GetPackages()
-                    select new PackageWrapper(package) as IPackage).AsQueryable();
-*/
-
-            //return m_Repository.GetPackages().Select<IPackage,IPackage>(package => new PackageWrapper(package));
-        }
-
-        public void AddPackage(IPackage package)
-        {
-            m_Repository.AddPackage(package);
-        }
-
-        public void RemovePackage(IPackage package)
-        {
-            m_Repository.RemovePackage(package);
-        }
-
-        public string Source
-        {
-            get { return m_Repository.Source; }
-        }
-
-        public bool SupportsPrereleasePackages
-        {
-            get { return m_Repository.SupportsPrereleasePackages; }
-        }
-    }
-
+    /// <summary>
+    /// Filters out Inceptum.AppServer.Sdk dependency
+    /// </summary>
     class PackageWrapper:IPackage
     {
         private readonly IPackage m_Package;
@@ -271,6 +203,18 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
         public IEnumerable<FrameworkAssemblyReference> FrameworkAssemblies
         {
             get { return m_Package.FrameworkAssemblies; }
+        }
+
+        public IVersionSpec SdkVersion
+        {
+            get
+            {
+                return (from dependencySet in m_Package.DependencySets
+                        where dependencySet.TargetFramework == NugetApplicationBrowser.NET40
+                        from packageDependency in dependencySet.Dependencies
+                        where packageDependency.Id == "Inceptum.AppServer.Sdk"
+                        select packageDependency.VersionSpec).FirstOrDefault();
+            }
         }
 
         public IEnumerable<PackageDependencySet> DependencySets
