@@ -75,9 +75,6 @@
     <ApplicationIcon>inceptumsoft.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="antlr.runtime">
-      <HintPath>..\packages\Inceptum.Messaging.1.0.5.18\lib\net40\antlr.runtime.dll</HintPath>
-    </Reference>
     <Reference Include="Castle.Core, Version=3.2.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Castle.Core.3.2.0\lib\net40-client\Castle.Core.dll</HintPath>
@@ -98,11 +95,22 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="Inceptum.DataBus">
-      <HintPath>..\packages\Inceptum.DataBus.1.0.5.18\lib\net40\Inceptum.DataBus.dll</HintPath>
-    </Reference>
     <Reference Include="Inceptum.Messaging">
       <HintPath>..\packages\Inceptum.Messaging.1.0.5.68\lib\net40\Inceptum.Messaging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.1.1.2\lib\net40\Microsoft.AspNet.SignalR.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.SignalR.Owin, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.SignalR.Owin.1.1.2\lib\net40\Microsoft.AspNet.SignalR.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Host.HttpListener">
+      <HintPath>..\packages\Microsoft.Owin.Host.HttpListener.0.21.0-pre\lib\net40\Microsoft.Owin.Host.HttpListener.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Hosting">
+      <HintPath>..\packages\Microsoft.Owin.Hosting.0.21.0-pre\lib\net40\Microsoft.Owin.Hosting.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -140,39 +148,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\openwrap\OpenWrap.dll</HintPath>
     </Reference>
-    <Reference Include="Org.Mentalis.Security">
-      <HintPath>..\packages\Inceptum.Messaging.1.0.5.18\lib\net40\Org.Mentalis.Security.dll</HintPath>
+    <Reference Include="Owin">
+      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="protobuf-net">
       <HintPath>..\packages\protobuf-net.2.0.0.640\lib\net40\protobuf-net.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="SignalR, Version=0.5.84.10501, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SignalR.Server.0.5.84-rc\lib\net40\SignalR.dll</HintPath>
-    </Reference>
-    <Reference Include="SignalR.Hosting.Common, Version=0.5.84.10501, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SignalR.Hosting.Common.0.5.84-rc\lib\net40\SignalR.Hosting.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="SignalR.Hosting.Self, Version=0.5.84.10501, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SignalR.Hosting.Self.0.5.84-rc\lib\net40\SignalR.Hosting.Self.dll</HintPath>
-    </Reference>
-    <Reference Include="Sonic.Client">
-      <HintPath>..\packages\Inceptum.Messaging.1.0.5.18\lib\net40\Sonic.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="Sonic.Client.Jms.Impl">
-      <HintPath>..\packages\Inceptum.Messaging.1.0.5.18\lib\net40\Sonic.Client.Jms.Impl.dll</HintPath>
-    </Reference>
-    <Reference Include="Sonic.Jms">
-      <HintPath>..\packages\Inceptum.Messaging.1.0.5.18\lib\net40\Sonic.Jms.dll</HintPath>
-    </Reference>
-    <Reference Include="Sonic.Jms.Cf.Impl">
-      <HintPath>..\packages\Inceptum.Messaging.1.0.5.18\lib\net40\Sonic.Jms.Cf.Impl.dll</HintPath>
-    </Reference>
-    <Reference Include="Sonic.Security">
-      <HintPath>..\packages\Inceptum.Messaging.1.0.5.18\lib\net40\Sonic.Security.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />

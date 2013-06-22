@@ -1,29 +1,37 @@
 using System;
 using Castle.Core;
-using SignalR.Hosting.Self;
+using Microsoft.AspNet.SignalR;
+using Microsoft.Owin.Hosting;
+using Owin;
 
 namespace Inceptum.AppServer.Logging
 {
+    class Startup
+    {
+        public void Configuration(IAppBuilder app)
+        {
+            // Turn cross domain on 
+            var config = new HubConfiguration { EnableCrossDomain = true, Resolver = GlobalHost.DependencyResolver,EnableJavaScriptProxies = true};
+            
+            // This will map out to http://localhost:8080/signalr by default
+            app.MapHubs(config).MapConnection<LogConnection>("/log"); 
+            
+        }
+    }
+
     class SignalRhost:IDisposable,IStartable
     {
         private readonly string m_Url;
-        private Server m_Server;
+        private IDisposable m_Server;
         
         public SignalRhost(int port)
         {
             m_Url= string.Format("http://*:{0}/sr/", port);
-           
         }
 
         public void Start()
         {
-            m_Server = new Server(m_Url);
-
-            // Map the default hub url (/signalr)
-            m_Server.MapHubs();
-            m_Server.MapConnection<LogConnection>("/log");
-            // Start the server
-            m_Server.Start();
+            m_Server = WebApplication.Start<Startup>(m_Url);
         }
 
         public void Stop()
@@ -32,7 +40,7 @@ namespace Inceptum.AppServer.Logging
 
         public void Dispose()
         {
-            m_Server.Stop();
+            m_Server.Dispose();
         }
     }
 }

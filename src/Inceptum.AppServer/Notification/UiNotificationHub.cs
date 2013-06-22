@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Inceptum.AppServer.Utils;
 using Inceptum.Core.Utils;
-using SignalR;
-using SignalR.Hubs;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Inceptum.AppServer.Notification
 {
@@ -13,44 +13,38 @@ namespace Inceptum.AppServer.Notification
     {
         void InstancesChanged(string comment = null);
     }
-    public class UiNotificationHub : Hub, IHostNotificationListener, IDisposable, IConnected
+
+    public class UiNotifier : IHostNotificationListener,IDisposable
     {
-        private const int HB_INTERVAL = 3000;
+         private const int HB_INTERVAL = 3000;
         private readonly PeriodicalBackgroundWorker m_Worker;
 
-        public UiNotificationHub()
+        public UiNotifier()
         {
             m_Worker = new PeriodicalBackgroundWorker("Server HB sender", HB_INTERVAL, HeartBeat);
         }
 
         public void HeartBeat()
         {
-            if (Clients != null)
-                Clients.HeartBeat();
+            var context = GlobalHost.ConnectionManager.GetHubContext<UiNotificationHub>();
+            context.Clients.All.HeartBeat();
         }
-
-
+ 
         public void InstancesChanged(string comment = null)
         {
-            if (Clients!=null)
-                Clients.InstancesChanged(comment);
+            var context = GlobalHost.ConnectionManager.GetHubContext<UiNotificationHub>();
+            context.Clients.All.InstancesChanged(comment);
         }
-
 
 
         public void Dispose()
         {
             m_Worker.Dispose();
         }
-
-        public Task Connect()
-        {
-            return new Task(() => { });
-        }
-
-        public Task Reconnect(IEnumerable<string> groups)
-        {
-            return new Task(() => { });
-        }
+         
+    }
+    public class UiNotificationHub : Hub
+    {
+       
     }
 }

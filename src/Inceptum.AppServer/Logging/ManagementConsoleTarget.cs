@@ -3,8 +3,7 @@ using System.Reactive.Disposables;
 using Inceptum.AppServer.Management.OpenRasta;
 using NLog;
 using NLog.Targets;
-using SignalR;
-using SignalR.Hubs;
+using Microsoft.AspNet.SignalR;
 
 namespace Inceptum.AppServer.Logging
 {
