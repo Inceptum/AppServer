@@ -5,11 +5,11 @@
     }
 
 
-    .app-versions  .tab-pane {
+    /*.app-versions  .tab-pane {
         padding: 20px; margin-bottom: 30px; border: 1px solid #ddd;
         -webkit-border-radius:0 0 4px 4px;
         -moz-border-radius: 0 0 4px 4px;
-        border-radius: 0 0 4px 4px; }
+        border-radius: 0 0 4px 4px; }*/
     .app-versions  ul.nav-tabs { margin-bottom: 0;}
 
     .app-versions .tab-content > .active, .pill-content > .active {
@@ -34,20 +34,23 @@
     <dt>Available versions</dt>
     <dd class="app-versions">
         <div class="tabbable">
-        <ul class="nav nav-tabs ">
-            <% _.each(model.Versions,function(ver) { %>
-            <li class="<%= ver.Version.split('.').join('_')%>"><a  data-toggle="tab" data-version="<%=ver.Version%>"  href="#<%= ver.Version.split('.').join('_')%>"><%= ver.Version%></a></li>
-            <% }); %>
-        </ul>
-        <div class="tab-content"  >
-            <% _.each(model.Versions,function(ver) { %>
-            <div class="tab-pane active" id="<%= ver.Version.split('.').join('_')%>">
-                <p><%=ver.Description%>.</p>
-            </div>
-            <% }); %>
+            <ul class="nav nav-pills">
+                <% _.each(model.Versions,function(ver) { %>
+                <li class="<%= ver.Version.split('.').join('_')%>"><a  data-toggle="tab" data-version="<%=ver.Version%>"  href="#<%= ver.Version.split('.').join('_')%>"><%= ver.Version%></a></li>
+                <% }); %>
+            </ul>
+
+            <dt>Description</dt>
+            <dd>
+                <div class="tab-content"  >
+                    <% _.each(model.Versions,function(ver) { %>
+                    <div class="tab-pane active" id="<%= ver.Version.split('.').join('_')%>">
+                        <p><%=ver.Description%>.</p>
+                    </div>
+                    <% }); %>
+                </div>
+            </dd>
         </div>
-        </div>
-        <span class="description"></span>
     </dd>
 
     <dt >Instances</dt>
