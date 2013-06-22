@@ -24,7 +24,11 @@ namespace Inceptum.AppServer.Hosting
         {
             Logger.InfoFormat("Applications discovery");
 
-            var appInfos = m_ApplicationBrowsers.SelectMany(x=>x.GetAvailabelApps());
+            var appInfos = m_ApplicationBrowsers.SelectMany(x =>
+                {
+                    Logger.InfoFormat("Loading apps from {0}",x.Name);
+                    return x.GetAvailabelApps();
+                });
             var applications = new List<Application>(
                                                     from info in appInfos
                                                     group info by new { vendor = info.Vendor, name = info.Name }

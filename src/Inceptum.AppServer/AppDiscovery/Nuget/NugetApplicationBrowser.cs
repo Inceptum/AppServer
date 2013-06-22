@@ -42,6 +42,11 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             return refs;
         }
 
+        public string Name
+        {
+            get { return "Nuget"; }
+        }
+
         public IEnumerable<HostedAppInfo> GetAvailabelApps()
         {
             IPackageRepository appsRepo =PackageRepositoryFactory.Default.CreateRepository(m_ApplicationRepository);

@@ -28,7 +28,10 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
         private readonly ServiceRegistry m_ServiceRegistry;
         private readonly IPackageRepository m_DebugRepo;
         private ILogger m_Logger;
-
+        public string Name
+        {
+            get { return "OpenWrap"; }
+        }
 
         public OpenWrapApplicationBrowser(string repository, string[] debugWraps, ILogger logger = null)
         {

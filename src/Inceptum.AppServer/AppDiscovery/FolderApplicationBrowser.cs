@@ -39,6 +39,11 @@ namespace Inceptum.AppServer.AppDiscovery
         private readonly string m_Folder;
         private ILogger m_Logger = NullLogger.Instance;
 
+        public string Name
+        {
+            get { return "FileSystem"; }
+        }
+
         public FolderApplicationBrowser(string folder)
         {
             if (folder == null) throw new ArgumentNullException("folder");
