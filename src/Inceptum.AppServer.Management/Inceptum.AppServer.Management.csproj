@@ -90,22 +90,6 @@
     <Compile Include="Resources\ServerError.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Content\css\bootstrap-responsive.css" />
-    <EmbeddedResource Include="Content\css\bootstrap-responsive.min.css" />
-    <EmbeddedResource Include="Content\css\bootstrap.css" />
-    <EmbeddedResource Include="Content\css\bootstrap.min.css" />
-    <EmbeddedResource Include="Content\css\docs.css" />
-    <EmbeddedResource Include="Content\img\glyphicons-halflings-white.png" />
-    <EmbeddedResource Include="Content\img\glyphicons-halflings.png" />
-    <EmbeddedResource Include="Content\index.html" />
-    <EmbeddedResource Include="Content\js\bootstrap.js" />
-    <EmbeddedResource Include="Content\js\bootstrap.min.js" />
-    <EmbeddedResource Include="Content\server.html" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Content\favicon.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Inceptum.AppServer.Configuration\Inceptum.AppServer.Configuration.csproj">
       <Project>{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}</Project>
       <Name>Inceptum.AppServer.Configuration</Name>
@@ -116,7 +100,100 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Content\js\build.bat" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Content\css\bootstrap-notify.css" />
+    <EmbeddedResource Include="Content\css\bootstrap-responsive.css" />
+    <EmbeddedResource Include="Content\css\bootstrap-responsive.min.css" />
+    <EmbeddedResource Include="Content\css\bootstrap.css" />
+    <EmbeddedResource Include="Content\css\bootstrap.min.css" />
+    <EmbeddedResource Include="Content\css\codemirror.css" />
+    <EmbeddedResource Include="Content\css\docs.css" />
+    <EmbeddedResource Include="Content\css\prettify.css" />
+    <EmbeddedResource Include="Content\favicon.ico" />
+    <EmbeddedResource Include="Content\img\glyphicons-halflings-white.png" />
+    <EmbeddedResource Include="Content\img\glyphicons-halflings.png" />
+    <EmbeddedResource Include="Content\img\led.png" />
+    <EmbeddedResource Include="Content\index.htm" />
+    <EmbeddedResource Include="Content\js\app.build.js" />
+    <EmbeddedResource Include="Content\js\app.js" />
+    <EmbeddedResource Include="Content\js\build.bat" />
+    <EmbeddedResource Include="Content\js\collections\applications.js" />
+    <EmbeddedResource Include="Content\js\collections\applicationVersions.js" />
+    <EmbeddedResource Include="Content\js\collections\bundles.js" />
+    <EmbeddedResource Include="Content\js\collections\configurations.js" />
+    <EmbeddedResource Include="Content\js\collections\instances.js" />
+    <EmbeddedResource Include="Content\js\context.js" />
+    <EmbeddedResource Include="Content\js\libs\backbone-localstorage.js" />
+    <EmbeddedResource Include="Content\js\libs\backbone-min.js" />
+    <EmbeddedResource Include="Content\js\libs\backbone.js" />
+    <EmbeddedResource Include="Content\js\libs\bootbox.js" />
+    <EmbeddedResource Include="Content\js\libs\bootbox.min.js" />
+    <EmbeddedResource Include="Content\js\libs\bootstrap-notify.js" />
+    <EmbeddedResource Include="Content\js\libs\bootstrap.js" />
+    <EmbeddedResource Include="Content\js\libs\bootstrap.min.js" />
+    <EmbeddedResource Include="Content\js\libs\codemirror\codemirror.js" />
+    <EmbeddedResource Include="Content\js\libs\codemirror\mode\javascript.js" />
+    <EmbeddedResource Include="Content\js\libs\console-log-wrapper.js" />
+    <EmbeddedResource Include="Content\js\libs\jquery.ba-throttle-debounce.min.js" />
+    <EmbeddedResource Include="Content\js\libs\jquery.fileupload.js" />
+    <EmbeddedResource Include="Content\js\libs\jquery.iframe-transport.js" />
+    <EmbeddedResource Include="Content\js\libs\jquery.scrollTo-min.js" />
+    <EmbeddedResource Include="Content\js\libs\jquery.signalR-0.5.3.js" />
+    <EmbeddedResource Include="Content\js\libs\jquery.signalR-0.5.3.min.js" />
+    <EmbeddedResource Include="Content\js\libs\jquery.ui.widget.js" />
+    <EmbeddedResource Include="Content\js\libs\json2.js" />
+    <EmbeddedResource Include="Content\js\libs\json2.min.js" />
+    <EmbeddedResource Include="Content\js\libs\jsonlint.js" />
+    <EmbeddedResource Include="Content\js\libs\modernizr-latest.js" />
+    <EmbeddedResource Include="Content\js\libs\noext.js" />
+    <EmbeddedResource Include="Content\js\libs\prettify.js" />
+    <EmbeddedResource Include="Content\js\libs\underscore-min.js" />
+    <EmbeddedResource Include="Content\js\libs\underscore.js" />
+    <EmbeddedResource Include="Content\js\main.js" />
+    <EmbeddedResource Include="Content\js\models\application.js" />
+    <EmbeddedResource Include="Content\js\models\applicationVersion.js" />
+    <EmbeddedResource Include="Content\js\models\bundle.js" />
+    <EmbeddedResource Include="Content\js\models\configuration.js" />
+    <EmbeddedResource Include="Content\js\models\host.js" />
+    <EmbeddedResource Include="Content\js\models\instance.js" />
+    <EmbeddedResource Include="Content\js\require-jquery.js" />
+    <EmbeddedResource Include="Content\js\routers\home.js" />
+    <EmbeddedResource Include="Content\js\services\notificationsListener.js" />
+    <EmbeddedResource Include="Content\js\templates\application.html" />
+    <EmbeddedResource Include="Content\js\templates\appsSideBar.html" />
+    <EmbeddedResource Include="Content\js\templates\bundle.html" />
+    <EmbeddedResource Include="Content\js\templates\configuration\configuration.html" />
+    <EmbeddedResource Include="Content\js\templates\configuration\configurationsSideBar.html" />
+    <EmbeddedResource Include="Content\js\templates\configuration\treeNode.html" />
+    <EmbeddedResource Include="Content\js\templates\confirm.html" />
+    <EmbeddedResource Include="Content\js\templates\header.html" />
+    <EmbeddedResource Include="Content\js\templates\instance.html" />
+    <EmbeddedResource Include="Content\js\templates\instanceEdit.html" />
+    <EmbeddedResource Include="Content\js\templates\instanceRow.html" />
+    <EmbeddedResource Include="Content\js\templates\instancesList.html" />
+    <EmbeddedResource Include="Content\js\templates\serverLog.html" />
+    <EmbeddedResource Include="Content\js\templates\serverSideBar.html" />
+    <EmbeddedResource Include="Content\js\templates\serverStatus.html" />
+    <EmbeddedResource Include="Content\js\text.js" />
+    <EmbeddedResource Include="Content\js\views\alerts.js" />
+    <EmbeddedResource Include="Content\js\views\application.js" />
+    <EmbeddedResource Include="Content\js\views\appsSideBar.js" />
+    <EmbeddedResource Include="Content\js\views\bundle.js" />
+    <EmbeddedResource Include="Content\js\views\configuration.js" />
+    <EmbeddedResource Include="Content\js\views\configurationsSideBar.js" />
+    <EmbeddedResource Include="Content\js\views\confirm.js" />
+    <EmbeddedResource Include="Content\js\views\header.js" />
+    <EmbeddedResource Include="Content\js\views\instance.js" />
+    <EmbeddedResource Include="Content\js\views\instanceEdit.js" />
+    <EmbeddedResource Include="Content\js\views\instanceRow.js" />
+    <EmbeddedResource Include="Content\js\views\instancesList.js" />
+    <EmbeddedResource Include="Content\js\views\serverLog.js" />
+    <EmbeddedResource Include="Content\js\views\serverSideBar.js" />
+    <EmbeddedResource Include="Content\js\views\serverStatus.js" />
+    <EmbeddedResource Include="Content\robots.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

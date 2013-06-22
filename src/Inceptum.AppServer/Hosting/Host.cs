@@ -113,6 +113,7 @@ namespace Inceptum.AppServer.Hosting
                 var instanceParams = from config in m_InstancesConfiguration
                                      join app in m_ApplicationRepositary.Applications on config.ApplicationId equals app.Name into matchedApp
                                      from application in matchedApp.DefaultIfEmpty()
+                                     where application!=null
                                      let version = config.Version ?? application.Versions.Select(v => v.Version).OrderByDescending(v => v).FirstOrDefault()
                                      join instance in m_Instances on config.Name equals instance.Name into matchedInstance
                                      from instance in matchedInstance.DefaultIfEmpty()

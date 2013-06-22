@@ -9,7 +9,7 @@ namespace Inceptum.AppServer.Management.OpenRasta
 {
     public class StaticContentPipelineContributor : IPipelineContributor 
     {
-        private const string FOLDER = @"..\..\..\..\UiMockUps";
+        private const string FOLDER = @"..\..\..\Inceptum.AppServer.Management\Content";
 
         public void Initialize(IPipeline pipelineRunner)
         {
@@ -40,7 +40,7 @@ namespace Inceptum.AppServer.Management.OpenRasta
                 }
                 else
                 {
-                    responseResource = new ContentFile("Inceptum.AppServer.Management2.Content." + resource);
+                    responseResource = new ContentFile("Inceptum.AppServer.Management.Content." + resource);
                 }
                 context.Response.Headers["Cache-Control"] = debug ? "no-cache" : "public, must-revalidate, max-age=2592000";
 
