@@ -255,6 +255,12 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Configuration\AppServer\instances">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Configuration\AppServer\server">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Configuration\AppServer\server.host">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
