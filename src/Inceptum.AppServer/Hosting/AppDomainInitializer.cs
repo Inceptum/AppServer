@@ -25,7 +25,7 @@ namespace Inceptum.AppServer.Hosting
 
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
 
-            m_LoadedAssemblies = assembliesToLoad.Where(asm => !loadedAssemblies.Any(a => a.Name == asm.Key.Name))
+            m_LoadedAssemblies = assembliesToLoad.Where(asm => loadedAssemblies.All(a => a.Name != asm.Key.Name))
                 .ToDictionary(asm => asm.Key, asm => new Lazy<Assembly>(() => Assembly.LoadFrom(asm.Value)));
 
             foreach (var dll in nativeDllToLoad)

@@ -6,18 +6,21 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
 using NuGet;
-using OpenWrap.Configuration;
+using Castle.Core.Logging;
+using ILogger = Castle.Core.Logging.ILogger;
 
 namespace Inceptum.AppServer.AppDiscovery.Nuget
 {
     public class NugetApplicationBrowser : IApplicationBrowser
     {
+        private ILogger Logger { get; set; }
         internal static readonly FrameworkName NET40= new FrameworkName(".NETFramework,Version=v4.5");
         private readonly string m_ApplicationRepository;
         private readonly string[] m_DependenciesRepositories;
 
-        public NugetApplicationBrowser(string applicationRepository, params string[] dependenciesRepositories)
+        public NugetApplicationBrowser(ILogger logger,string applicationRepository, params string[] dependenciesRepositories)
         {
+            Logger = logger;
             m_DependenciesRepositories = dependenciesRepositories.Select(
                 r => Directory.Exists(r)?Path.GetFullPath(r):r).ToArray();
             m_ApplicationRepository = Directory.Exists(applicationRepository) ? Path.GetFullPath(applicationRepository) : applicationRepository;
@@ -57,12 +60,13 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
 
             var appsRepoManager = new PackageManager(appsRepo,  @".\NugetLoaclRepo");
             var manager = new PackageManager(dependencyRepo, @".\NugetLoaclRepo");
-            var packages = from p in appsRepoManager.SourceRepository.GetPackages() where p.Tags!=null && p.Tags.Contains("Inceptum.AppServer.Applicaton") orderby p.Id select new PackageWrapper(p);
+            var packages = from p in appsRepoManager.SourceRepository.GetPackages() where p.Tags!=null && p.Tags.Contains("Inceptum.AppServer.Applicaton") orderby p.Id select p;
 
             var res = new List<HostedAppInfo>();
-
-            foreach (var package in packages)
+            foreach (var pkg in packages)
             {
+                Logger.InfoFormat("Installing application {0} v{1}",pkg.Id,pkg.Version);
+                var package = new PackageWrapper(pkg,dependencyRepo);
                 //TODO: check compartability of AppServer version and package.SdkVersion
                 manager.InstallPackage(package, false, true);
                 var assembliesToLoad =
@@ -124,10 +128,29 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
     class PackageWrapper:IPackage
     {
         private readonly IPackage m_Package;
+        private readonly IEnumerable<PackageDependencySet> m_PackageDependencySets;
 
-        public PackageWrapper(IPackage package)
+        public PackageWrapper(IPackage package, AggregateRepository sdkRepo)
         {
             m_Package = package;
+            PackageDependency sdkDependency = package.FindDependency("Inceptum.AppServer.Sdk", NugetApplicationBrowser.NET40);
+            if (sdkDependency == null)
+            {
+                m_PackageDependencySets = m_Package.DependencySets;
+                return;
+            }
+            IPackage sdkPackage = sdkRepo.FindPackage(sdkDependency.Id, sdkDependency.VersionSpec, true, false);
+            if(sdkPackage==null)
+                throw new InvalidOperationException(string.Format("Package {0} references unresolvable SDk version {1}",package,sdkDependency));
+            SdkVersion = sdkDependency.VersionSpec;
+            m_PackageDependencySets = m_Package.DependencySets.Select(ds => new PackageDependencySet(
+                                                                                ds.TargetFramework,
+                                                                                ds.Dependencies
+                                                                                  .Where(dependency => dependency.Id != "Inceptum.AppServer.Sdk")
+                                                                                  .Concat(sdkPackage.DependencySets
+                                                                                                    .Where(sds => sds.TargetFramework == ds.TargetFramework)
+                                                                                                    .SelectMany(sds => sds.Dependencies.Where(dep => ds.Dependencies.All(d => d.Id != dep.Id))))
+                                                                                )).Where(ds => ds.Dependencies.Any()).ToArray();
         }
 
         public string Id
@@ -212,27 +235,14 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
 
         public IVersionSpec SdkVersion
         {
-            get
-            {
-                return (from dependencySet in m_Package.DependencySets
-                        where dependencySet.TargetFramework == NugetApplicationBrowser.NET40
-                        from packageDependency in dependencySet.Dependencies
-                        where packageDependency.Id == "Inceptum.AppServer.Sdk"
-                        select packageDependency.VersionSpec).FirstOrDefault();
-            }
+            get;private set;
         }
 
         public IEnumerable<PackageDependencySet> DependencySets
         {
             get
             {
-                return m_Package.DependencySets
-                                .Select(ds => new PackageDependencySet(
-                                                  ds.TargetFramework,
-                                                  ds.Dependencies
-                                                    .Where(dependency => dependency.Id != "Inceptum.AppServer.Sdk")
-                                                  )
-                    ).Where(ds=>ds.Dependencies.Any());
+                return m_PackageDependencySets;
             }
         }
 
