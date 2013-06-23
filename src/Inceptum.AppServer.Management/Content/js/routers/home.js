@@ -29,8 +29,10 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
             this.currentViews=[];
 			this.headerView = HeaderView;
             this.apps = Applications;
-            this.apps.fetch({async:false});
+          //  this.apps.fetch({async:false});
             this.instances=Instances;
+            this.instances.bind('reset', function(){alert("instances");});
+            this.apps.bind('reset', function(){alert("apps");});
             //this.instances.fetch({async:false});
             this.headerView.render();
             this.hostModel = new HostModel();
@@ -89,13 +91,13 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
                 application = this.apps.get(model.get("ApplicationId"));
             }
             this.showViews([
-                new AppsSideBarView({collection:this.apps, active:active}),
+                new AppsSideBarView({applications:this.apps, active:active}),
                 new InstanceEditView({application:application,model:model})
             ]);
             this.headerView.selectMenuItem("applications");
 		},
 		'applications': function(app){
-            var views=[new AppsSideBarView({collection:this.apps, active:app})];
+            var views=[new AppsSideBarView({applications:this.apps, active:app})];
             var application;
             if(app)
                application = this.apps.get(app);
@@ -110,7 +112,7 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
             if (app)
                 application = this.apps.get(app);
             var views=[
-                new AppsSideBarView({collection:this.apps, active:app}),
+                new AppsSideBarView({applications:this.apps,  active:app}),
                 new InstanceEditView({application:application})
             ];
             this.showViews(views);

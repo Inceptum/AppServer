@@ -1,12 +1,30 @@
 <div class="well" style="padding: 8px 0;">
+    <style>
+        .appsMenu a.item i{
+            vertical-align: top;
+            margin-top: 3px;
+        }
+        .appsMenu a span{
+            word-wrap: break-word;
+            width: 170px;
+            display: inline-block;
+        }
+    </style>
     <ul class="nav nav-list appsMenu">
         <!--                <li class="nav-header">System</li>
        <li><a href="#">Configuration <span class="badge">1</span></a></li>
        <li><a href="#">Management <span class="badge">1</span></a></li>
        <li class="nav-header">Hosted</li>-->
-        <li class="nav-header">Applications</li>
+        <li class="nav-header">Applications <span class="pull-right">
+            <a class="btn btn-mini rediscover" type="button" title="Rediscover"><i class="icon-refresh"></i></a>
+        </span></li>
         <% _.each(model,function(app) { %>
-        <li data-id="<%= app.Name %>"><a href="#applications/<%= app.Name %>"><i class="icon-cog"></i> <%= app.Name %></a></li>
+<!--
+        <li data-id="<%= app.Name %>"><a style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: block;width:190px" href="#applications/<%= app.Name %>"><i class="icon-cog"></i> <%= app.Name %></a></li>
+-->
+        <li data-id="<%= app.Name %>">
+            <a href="#applications/<%= app.Name %>" class="item"><i class="icon-cog"></i><span><%= app.Name %></span></a>
+        </li>
         <% }); %>
         <!--
                     <li class="active"><a href="#">TestApp <span class="badge">2</span></a></li>

@@ -3,12 +3,22 @@ define([
     'backbone',
     'underscore',
     'views/instancesList',
+    'views/alerts',
     'text!templates/application.html'],
-    function($, Backbone, _,InstancesListView, template){
+    function($, Backbone, _,InstancesListView,alerts, template){
         var View = Backbone.View.extend({
             el:'#content',
             initialize: function(){
                 this.instances=this.options.instances;
+                _(this).bindAll('remove');
+                this.model.bind('remove', this.remove);
+            },
+            remove:function(model){
+                alerts.show({
+                    type:"warning",
+                    text:"Application '"+model.id+"' was removed"
+                });
+                this.navigate("#applications");
             },
             render: function(){
                 this.template = _.template( template, { model: this.model.toJSON() } );

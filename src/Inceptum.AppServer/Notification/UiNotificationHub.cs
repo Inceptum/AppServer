@@ -12,6 +12,7 @@ namespace Inceptum.AppServer.Notification
     interface IHostNotificationListener
     {
         void InstancesChanged(string comment = null);
+        void ApplicationsChanged(string comment = null);
     }
 
     public class UiNotifier : IHostNotificationListener,IDisposable
@@ -34,6 +35,12 @@ namespace Inceptum.AppServer.Notification
         {
             var context = GlobalHost.ConnectionManager.GetHubContext<UiNotificationHub>();
             context.Clients.All.InstancesChanged(comment);
+        }
+
+        public void ApplicationsChanged(string comment = null)
+        {
+            var context = GlobalHost.ConnectionManager.GetHubContext<UiNotificationHub>();
+            context.Clients.All.ApplicationsChanged(comment);
         }
 
 
