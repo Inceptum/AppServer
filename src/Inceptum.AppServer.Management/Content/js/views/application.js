@@ -22,7 +22,9 @@ define([
                 this.navigate("#applications");
             },
             change:function(model){
-                this.navigate("#applications/"+model.id);
+                this.instancesList.dispose();
+                this.render();
+                //this.navigate("#applications/"+model.id);
             },
             render: function(){
                 this.template = _.template( template, { model: this.model.toJSON() } );
