@@ -134,6 +134,38 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
+        public void Stop()
+        {
+            lock (m_SyncRoot)
+            {
+                if (m_IsDisposing)
+                    throw new ObjectDisposedException("Instance is being disposed");
+                if (Status == HostedAppStatus.Starting || Status == HostedAppStatus.Stopping)
+                    throw new InvalidOperationException("Instance is " + Status);
+                if (Status == HostedAppStatus.Stopped)
+                    throw new InvalidOperationException("Instance is not started");
+                Status = HostedAppStatus.Stopping;
+                Logger.InfoFormat("Stopping instance '{0}'", Name);
+                m_CurrentTask = Task.Factory.StartNew(() =>
+                    {
+                        try
+                        {
+                            m_ApplicationHost.Stop();
+                            AppDomain.Unload(m_AppDomain);
+                            Logger.InfoFormat("Instance '{0}' stopped",  Name);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.ErrorFormat(e, "Instance '{0}' failed to stop",  Name);
+                        }
+                        lock (m_SyncRoot)
+                        {
+                            Status = HostedAppStatus.Stopped;
+                        }
+                    });
+            }
+        }
+
         private void createHost()
         {
             string path = Path.GetFullPath(new[] {m_Context.AppsDirectory, Name}.Aggregate(Path.Combine));
@@ -163,39 +195,6 @@ namespace Inceptum.AppServer.Hosting
 
             appDomainInitializer.Initialize(path, applicationParams.AssembliesToLoad, applicationParams.NativeDllToLoad.ToArray());
             m_ApplicationHost = appDomainInitializer.CreateHost(applicationParams.AppType);
-        }
-
-
-        public void Stop()
-        {
-            lock (m_SyncRoot)
-            {
-                if (m_IsDisposing)
-                    throw new ObjectDisposedException("Instance is being disposed");
-                if (Status == HostedAppStatus.Starting || Status == HostedAppStatus.Stopping)
-                    throw new InvalidOperationException("Instance is " + Status);
-                if (Status == HostedAppStatus.Stopped)
-                    throw new InvalidOperationException("Instance is not started");
-                Status = HostedAppStatus.Stopping;
-                Logger.InfoFormat("Stopping instance '{0}'", Name);
-                m_CurrentTask = Task.Factory.StartNew(() =>
-                                                          {
-                                                              try
-                                                              {
-                                                                  m_ApplicationHost.Stop();
-                                                                  AppDomain.Unload(m_AppDomain);
-                                                                  Logger.InfoFormat("Instance '{0}' stopped",  Name);
-                                                              }
-                                                              catch (Exception e)
-                                                              {
-                                                                  Logger.ErrorFormat(e, "Instance '{0}' failed to stop",  Name);
-                                                              }
-                                                              lock (m_SyncRoot)
-                                                              {
-                                                                  Status = HostedAppStatus.Stopped;
-                                                              }
-                                                          });
-            }
         }
 
         #region IObservable<HostedAppStatus> Members

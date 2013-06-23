@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading;
 using Inceptum.AppServer.Model;
 using OpenRasta.Web;
 
@@ -58,6 +59,27 @@ namespace Inceptum.AppServer.Management.Handlers
         public void Stop(string instance)
         {
             m_Host.StopInstance(instance);
+        }
+
+
+        [HttpOperation(HttpMethod.POST, ForUriName = "restart")]
+        public void Restart(string instance)
+        {
+            //TODO: refactore this ugly crap
+            while (m_Host.Instances.FirstOrDefault(i => i.Name == instance).Status == HostedAppStatus.Starting || m_Host.Instances.FirstOrDefault(i => i.Name == instance).Status == HostedAppStatus.Stopping)
+            {
+                Thread.Sleep(300);
+            }
+
+            if (m_Host.Instances.FirstOrDefault(i => i.Name == instance).Status == HostedAppStatus.Started)
+            {
+                m_Host.StopInstance(instance);
+                while (m_Host.Instances.FirstOrDefault(i => i.Name == instance).Status == HostedAppStatus.Starting || m_Host.Instances.FirstOrDefault(i => i.Name == instance).Status == HostedAppStatus.Stopping)
+                {
+                    Thread.Sleep(300);
+                }
+            }
+            m_Host.StartInstance(instance);
         }
     }
 }

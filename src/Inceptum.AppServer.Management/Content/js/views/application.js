@@ -10,8 +10,9 @@ define([
             el:'#content',
             initialize: function(){
                 this.instances=this.options.instances;
-                _(this).bindAll('remove');
+                _(this).bindAll('remove','change');
                 this.model.bind('remove', this.remove);
+                this.model.bind('change', this.change);
             },
             remove:function(model){
                 alerts.show({
@@ -19,6 +20,9 @@ define([
                     text:"Application '"+model.id+"' was removed"
                 });
                 this.navigate("#applications");
+            },
+            change:function(model){
+                this.navigate("#applications/"+model.id);
             },
             render: function(){
                 this.template = _.template( template, { model: this.model.toJSON() } );
