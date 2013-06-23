@@ -115,7 +115,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
         {
             IPackageRepository appsRepo = PackageRepositoryFactory.Default.CreateRepository(m_ApplicationRepository);
             var packages = from p in appsRepo.GetPackages() where p.Tags != null && p.Tags.Contains("Inceptum.AppServer.Applicaton") orderby p.Id select p;
-            return packages.Select(package => new HostedAppInfo(
+            return packages.ToArray().Select(package => new HostedAppInfo(
                                                   package.Id,
                                                   string.Join(", ", package.Authors),
                                                   package.Version.Version
