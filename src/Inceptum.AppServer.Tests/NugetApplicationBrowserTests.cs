@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Castle.Core.Logging;
 using Inceptum.AppServer.AppDiscovery.Nuget;
 using NUnit.Framework;
 
@@ -18,7 +19,7 @@ namespace Inceptum.AppServer.Tests
             var baseDir = Path.GetDirectoryName(codebase);
             Directory.SetCurrentDirectory(baseDir);
 
-            var browser = new NugetApplicationBrowser("..\\..\\..\\..\\TestData\\NugetRepo", "https://nuget.org/api/v2/");
+            var browser = new NugetApplicationBrowser(NullLogger.Instance,"..\\..\\..\\..\\TestData\\NugetRepo", "https://nuget.org/api/v2/");
             var hostedAppInfos = browser.GetAvailabelApps().ToArray();
             Console.WriteLine("");
         }
