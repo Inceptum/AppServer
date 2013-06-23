@@ -121,6 +121,7 @@ namespace Inceptum.AppServer.Hosting
 
                 foreach (var instanceParam in instanceParams)
                 {
+                    m_ApplicationRepositary.EnsureLoadParams(instanceParam.application.Name,instanceParam.version);
                     instanceParam.instance.UpdateApplicationParams(instanceParam.application!=null?instanceParam.application.GetLoadParams(instanceParam.version):null, instanceParam.version);
                 }
                 notefyInstancesChanged();

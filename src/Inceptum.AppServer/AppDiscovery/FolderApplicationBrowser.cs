@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Castle.Core.Logging;
+using Inceptum.AppServer.Model;
 using Mono.Cecil;
 
 namespace Inceptum.AppServer.AppDiscovery
@@ -87,6 +88,11 @@ namespace Inceptum.AppServer.AppDiscovery
 
                 yield return new HostedAppInfo(app.name,app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, new Dictionary<AssemblyName, string> { { new AssemblyName(app.assembly.FullName), app.file } }, new string[0]);
             }
+        }
+
+        public ApplicationParams GetApplicationParams(string application, Version version)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

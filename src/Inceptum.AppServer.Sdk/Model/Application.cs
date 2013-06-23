@@ -29,8 +29,10 @@ namespace Inceptum.AppServer.Model
                 var appVersion = m_Versions.Where(v => v.Key.Version == appInfo.Version).Select(p => p.Key).FirstOrDefault();
                 if (appVersion != null) m_Versions.Remove(appVersion);
                 m_Versions.Add(
-                        new ApplicationVersion { Description = appInfo.Description, Version = appInfo.Version },
-                        new ApplicationParams(appInfo.AppType, appInfo.ConfigFile, appInfo.NativeDllToLoad, appInfo.AssembliesToLoad)
+                        new ApplicationVersion { Description = appInfo.Description, Version = appInfo.Version,Browser=appInfo.Browser },
+                        appInfo.AssembliesToLoad==null
+                                ?null
+                                :new ApplicationParams(appInfo.AppType, appInfo.ConfigFile, appInfo.NativeDllToLoad, appInfo.AssembliesToLoad)
                         );
             }
         }
@@ -50,6 +52,22 @@ namespace Inceptum.AppServer.Model
         {
             ApplicationParams loadParams = m_Versions.Where(v => v.Key.Version == version).Select(p => p.Value).FirstOrDefault();
             return loadParams;
+        }
+        
+        public ApplicationParams EnsureLoadParams(Version version,Func<string,ApplicationParams> loader )
+        {
+            if (m_Versions.All(v => v.Key.Version != version))
+                return null;
+
+            ApplicationParams applicationParams = m_Versions.First(v => v.Key.Version == version).Value;
+            ApplicationVersion applicationVersion = m_Versions.First(v => v.Key.Version == version).Key;
+            if (applicationParams == null)
+            {
+                applicationParams = loader(applicationVersion.Browser);
+                m_Versions[applicationVersion] = applicationParams;
+            }
+            return applicationParams;
+ 
         }
 
         public override string ToString()
