@@ -85,6 +85,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                 manager.InstallPackage(remotePackage, false, true);
                 package = new PackageWrapper(manager.LocalRepository.FindPackage(application, new SemanticVersion(version)), dependencyRepo);
                 dependencies = getDependencies(package, manager.LocalRepository).Distinct().ToArray();
+                Logger.WarnFormat("Installed {0}", string.Join(",",dependencies.Select(p=>p.Id)));
             }
 
             var assembliesToLoad =
