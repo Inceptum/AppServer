@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Castle.Components.DictionaryAdapter;
 using Castle.Core.Logging;
+using Inceptum.AppServer.Model;
 using OpenFileSystem.IO.FileSystems.InMemory;
 using OpenFileSystem.IO.FileSystems.Local.Win32;
 using OpenWrap.PackageManagement;
@@ -104,6 +105,11 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
                                             .SelectMany(x => x).Where(x => !debugApps.Any(p => p.Name == x.Name)).Select(getAppLoadParams).ToArray();
     */
             return debugApps.Concat(releaseApps.GroupBy(a => a.Version).Select(g => g.First())).ToArray();
+        }
+
+        public ApplicationParams GetApplicationParams(string application, Version version)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

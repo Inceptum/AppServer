@@ -27,7 +27,11 @@ namespace Inceptum.AppServer.Hosting
             var appInfos = m_ApplicationBrowsers.SelectMany(x =>
                 {
                     Logger.InfoFormat("Loading apps from {0}",x.Name);
-                    return x.GetAvailabelApps();
+                    return x.GetAvailabelApps().Select(i =>
+                        {
+                            i.Browser = x.Name;
+                            return i;
+                        });
                 });
             var applications = new List<Application>(
                                                     from info in appInfos
@@ -54,6 +58,15 @@ namespace Inceptum.AppServer.Hosting
                 lock(m_SyncRoot)
                     return m_Applications.ToArray();
             }
+        }
+
+        public void EnsureLoadParams(string application, Version version)
+        {
+            var app = Applications.FirstOrDefault(a => a.Name == application);
+            if(app==null)
+                throw new InvalidOperationException(string.Format("Application {0}  not found",application));
+            app.EnsureLoadParams(version, browser =>
+                { return m_ApplicationBrowsers.FirstOrDefault(x => x.Name == browser).GetApplicationParams(application, version); });
         }
     }
 }

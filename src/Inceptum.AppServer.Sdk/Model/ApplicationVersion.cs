@@ -9,5 +9,8 @@ namespace Inceptum.AppServer.Model
                 
         [JsonConverter(typeof(StringVersionJsonConverter))]
         public Version Version { get; set; }
+
+        [JsonIgnore]
+        public string Browser { get; set; }
     }
 }

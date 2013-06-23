@@ -16,15 +16,22 @@ namespace Inceptum.AppServer
         {
             AssembliesToLoad = new Dictionary<AssemblyName, string>(assembliesToLoad);
             NativeDllToLoad = (nativeDllToLoad??new string[0]).ToArray();
-            Name = name;
             AppType = appType;
-            
+
+            Name = name;
+            Version = version;
+            Vendor = vendor;
+        }
+
+        public HostedAppInfo(string name, string vendor, Version version)
+        {
+            Name = name;
             Version = version;
             Vendor = vendor;
         }
 
         public Dictionary<AssemblyName, string> AssembliesToLoad { get; private set; }
-
+        public string Browser { get; set; }
         public string Name { get; set; }
         public string Vendor { get; set; }
         public string Description { get; set; }

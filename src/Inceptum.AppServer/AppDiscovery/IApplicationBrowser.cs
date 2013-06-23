@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Inceptum.AppServer.Model;
 
 namespace Inceptum.AppServer.AppDiscovery
 {
@@ -6,5 +8,6 @@ namespace Inceptum.AppServer.AppDiscovery
     {
         string Name { get;  }
         IEnumerable<HostedAppInfo> GetAvailabelApps();
+        ApplicationParams GetApplicationParams(string application, Version version);
     }
 }
