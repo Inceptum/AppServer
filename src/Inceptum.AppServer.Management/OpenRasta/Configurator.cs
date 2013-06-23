@@ -26,6 +26,7 @@ namespace Inceptum.AppServer.Management.OpenRasta
                 ResourceSpace.Has
                     .ResourcesOfType<Application[]>()
                     .AtUri("api/applications")
+                    .And.AtUri("api/applications/rediscover").Named("rediscover")
                     .HandledBy<ApplicationsHandler>()
                     .TranscodedBy<NewtonsoftJsonCodec>();       
                 
@@ -41,6 +42,8 @@ namespace Inceptum.AppServer.Management.OpenRasta
                     .And.AtUri("api/instances")
                     .HandledBy<InstancesHandler>()
                     .TranscodedBy<NewtonsoftJsonCodec>();
+                
+
 
                 ResourceSpace.
                     Has.ResourcesOfType<ApplicationInstanceInfo>()

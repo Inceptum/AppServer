@@ -28,15 +28,6 @@ define([
                 this.instances.bind('reset', this.reset);
                 this.rendered=false;
             },
-            events:{
-                "click .reload":"reload"
-            },
-            reload:function(){
-                if(this.instances.length >0)
-                    this.instances.remove(this.instances.models[0]);
-                else
-                    this.instances.fetch();
-            },
             add : function(instance) {
                 if(this.filter && instance.get("ApplicationId")!=this.filter)
                     return;
@@ -68,7 +59,7 @@ define([
                     $(viewToRemove.el).remove();
                     this.removeViews(viewToRemove);
                 }
-
+                console.log('remove');
             },
             removeViews:function(views){
                 if(!( Object.prototype.toString.call( views ) === '[object Array]' )){
@@ -89,6 +80,7 @@ define([
                 });
                 this.subViews=[];
                 this.instances.each(this.add);
+                console.log('reset');
             },
             render: function(){
                 this.template = _.template( template, {  } );

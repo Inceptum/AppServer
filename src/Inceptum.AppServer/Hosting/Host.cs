@@ -86,7 +86,7 @@ namespace Inceptum.AppServer.Hosting
 
         public void Start()
         {
-            m_ApplicationRepositary.RediscoverApps();
+            RediscoverApps();
             Logger.InfoFormat("Reading instances config");
             updateInstances();
             IEnumerable<Task> tasks;
@@ -99,6 +99,12 @@ namespace Inceptum.AppServer.Hosting
                 Logger.InfoFormat("Starting instances");                
             }
             Task.WaitAll(tasks.ToArray());
+        }
+
+        public void RediscoverApps()
+        {
+            m_ApplicationRepositary.RediscoverApps();
+            notefyApplicationsChanged();
         }
 
 
@@ -155,6 +161,20 @@ namespace Inceptum.AppServer.Hosting
                 try
                 {
                     listener.InstancesChanged(comment);
+                }catch(Exception e)
+                {
+                    Logger.WarnFormat(e, "Failed to deliver instances changed notification");
+                }
+            }
+        }
+
+        private void notefyApplicationsChanged(string comment = null)
+        {
+            foreach (var listener in m_Listeners)
+            {
+                try
+                {
+                    listener.ApplicationsChanged(comment);
                 }catch(Exception e)
                 {
                     Logger.WarnFormat(e, "Failed to deliver instances changed notification");

@@ -14,7 +14,7 @@ namespace Inceptum.AppServer
         Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged { get;  }
 
 
-      /*  void RediscoverApps();*/
+        void RediscoverApps();
         void Start();
         void StartInstance(string name);
         void StopInstance(string name);

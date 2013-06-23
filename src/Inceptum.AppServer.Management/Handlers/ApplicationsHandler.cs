@@ -26,7 +26,13 @@ namespace Inceptum.AppServer.Management.Handlers
             if (app == null)
                 return new OperationResult.NotFound() {Description = "Application not found"};
             return new OperationResult.OK { ResponseResource = app };
-            
+        }
+
+        [HttpOperation(HttpMethod.POST, ForUriName = "rediscover")]
+        public OperationResult Rediscover()
+        {
+            m_Host.RediscoverApps();
+            return new OperationResult.OK { ResponseResource = new Application[0]};
         }
 
     }
