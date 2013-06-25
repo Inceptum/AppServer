@@ -52,7 +52,7 @@ namespace Inceptum.AppServer.AppDiscovery
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
-            m_Folder = folder;
+            m_Folder = Path.GetFullPath(folder);
         }
 
         public ILogger Logger
@@ -65,7 +65,7 @@ namespace Inceptum.AppServer.AppDiscovery
 
         public IEnumerable<HostedAppInfo> GetAvailabelApps()
         {
-            var apps = (from file in Directory.GetFiles(m_Folder, "*.dll")
+            var apps = (from file in Directory.GetFiles(Path.GetFullPath(m_Folder), "*.dll").Concat(Directory.GetFiles(Path.GetFullPath(m_Folder), "*.exe"))
                         let asm = CeceilExtencions.TryReadAssembly(file)
                         where asm != null
                         let attribute = asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof(HostedApplicationAttribute).FullName)
@@ -73,6 +73,13 @@ namespace Inceptum.AppServer.AppDiscovery
                         let name = attribute.ConstructorArguments.First().Value.ToString()
                         let  vendor = attribute.ConstructorArguments.Count==2?attribute.ConstructorArguments[1].Value.ToString():HostedApplicationAttribute.DEFAULT_VENDOR
                         select new { assembly = asm, file, name, vendor });
+
+            var assemblies =
+                from file in Directory.GetFiles(Path.GetFullPath(m_Folder), "*.dll").Concat(Directory.GetFiles(Path.GetFullPath(m_Folder), "*.exe"))
+                let asm = CeceilExtencions.TryReadAssembly(file)
+                where asm != null
+                select new {assemblyName = asm.FullName, file};
+            var assembliesToLoad  = assemblies.ToDictionary(a => new AssemblyName(a.assemblyName), a => a.file);
             foreach (var app in apps)
             {
 
@@ -86,7 +93,15 @@ namespace Inceptum.AppServer.AppDiscovery
                 if (appTypes.Length > 1)
                     Logger.InfoFormat("Assembly {0} contains several types implementing IHostedApplication, using {1}", app.file, appType.Name);
 
-                yield return new HostedAppInfo(app.name,app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, new Dictionary<AssemblyName, string> { { new AssemblyName(app.assembly.FullName), app.file } }, new string[0]);
+                string config=null;
+                if (File.Exists(app.file + ".config"))
+                    config =app.file+".config";
+                if(File.Exists(Path.Combine(m_Folder,"app.config")))
+                    config =app.file+".config";
+                yield return new HostedAppInfo(app.name, app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, assembliesToLoad, new string[0])
+                    {
+                        ConfigFile = config
+                    };
             }
         }
 

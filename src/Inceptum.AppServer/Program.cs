@@ -74,6 +74,11 @@ namespace Inceptum.AppServer
                             setup.DebugWraps =wraps.Select(Path.GetFullPath).ToArray();
                         }
                         break;
+                    case "-debug-folder": 
+                        i++;
+                        if (i < args.Length)
+                            setup.DebugFolder = args[i];
+                        break;
                     default:
                         Console.WriteLine("Unknown arg: " + args[i]);
                         return;
