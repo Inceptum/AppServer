@@ -5,6 +5,7 @@ using System.Xml;
 
 namespace Inceptum.AppServer.Configuration
 {
+    [Serializable]
     public class BundleNotFoundException : ConfigurationErrorsException
     {
         public BundleNotFoundException(string message, Exception inner, string filename, int line) : base(message, inner, filename, line)
