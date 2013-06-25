@@ -9,5 +9,7 @@ namespace Inceptum.AppServer
         public bool SendHb { get; set; }
         public int HbInterval { get; set; }
         public string[] DebugWraps { get; set; }
+
+        public object DebugFolder { get; set; }
     }
 }

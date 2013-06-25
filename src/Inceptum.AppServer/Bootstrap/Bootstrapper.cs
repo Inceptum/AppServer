@@ -95,6 +95,9 @@ namespace Inceptum.AppServer.Bootstrap
                                 debugWraps = setup.DebugWraps ?? new string[0]
                             }));
 
+                if (setup.DebugFolder != null)
+                    container.Register(Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(new {folder = setup.DebugFolder}));
+
                 //HeartBeats
                 if (setup.SendHb)
                     container.Register(Component.For<HbSender>().DependsOn(new { environment = setup.Environment, hbInterval = setup.HbInterval }));
