@@ -87,13 +87,14 @@ namespace Inceptum.AppServer.Bootstrap
                         Component.For<ApplicationInstance>().LifestyleTransient(),
                         Component.For<ApplicationRepositary>(),
                         Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
-                        Component.For<IApplicationBrowser>().ImplementedBy<NugetApplicationBrowser>().DependsOnBundle("server.host", "nuget", "{environment}", "{machineName}")
-,                        Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
+                        Component.For<IApplicationBrowser>().ImplementedBy<NugetApplicationBrowser>().DependsOnBundle("server.host", "nuget", "{environment}", "{machineName}")/*,                        
+                        Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
                             new
                             {
                                 repository = setup.Repository ?? "Repository",
                                 debugWraps = setup.DebugWraps ?? new string[0]
-                            }));
+                            })*/
+                            );
 
                 if (setup.DebugFolder != null)
                     container.Register(Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(new {folder = setup.DebugFolder}));

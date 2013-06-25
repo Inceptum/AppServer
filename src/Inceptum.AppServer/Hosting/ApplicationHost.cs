@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Castle.Facilities.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
@@ -12,6 +15,7 @@ using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.Windsor;
 using Inceptum.Core.Utils;
+using Inceptum.Messaging;
 using NLog;
 using NLog.Config;
 
@@ -48,7 +52,10 @@ namespace Inceptum.AppServer.Hosting
 
                 m_Container = new WindsorContainer();
                 //castle config
-                string configurationFile = string.Format("castle.{0}.config", AppDomain.CurrentDomain.FriendlyName);
+                var appName = AppDomain.CurrentDomain.FriendlyName;
+                var environment = context.Name;//TODO[MT]: environment should be set for every instance 
+
+                var configurationFile = string.Format("castle.{0}.config", appName);
                 if (File.Exists(configurationFile))
                 {
                     m_Container
@@ -67,14 +74,25 @@ namespace Inceptum.AppServer.Hosting
                 var createInstanceOriginal = ConfigurationItemFactory.Default.CreateInstance;
                 ConfigurationItemFactory.Default.CreateInstance = type => m_Container.Kernel.HasComponent(type) ? m_Container.Resolve(type) : createInstanceOriginal(type);
 
-
                 m_Container
-                    .AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig(Path.Combine(context.BaseDirectory,"nlog.config")))
+                    .AddFacility<LoggingFacility>(f => f.LogUsing<GenericsAwareNLoggerFactory>().WithConfig(Path.Combine(context.BaseDirectory, "nlog.config")))
                     .Register(
                         Component.For<AppServerContext>().Instance(context),
-                        Component.For<IConfigurationProvider>().Named("ConfigurationProvider").Instance(configurationProvider)
+                        Component.For<IConfigurationProvider>().Named("ConfigurationProvider")
+                                 .ImplementedBy<InstanceAwareConfigurationProvideWrapper>()
+                                 .DependsOn(new
+                                 {
+                                     configurationProvider,
+                                     instanceParams = new
+                                     {
+                                         environment,
+                                         appName,
+                                         machineName = Environment.MachineName,
+                                         instance = instanceName,
+                                     }
+                                 })
                     )
-                    .Install(FromAssembly.Instance(typeof (TApp).Assembly, new PluginInstallerFactory()))
+                    .Install(FromAssembly.Instance(typeof(TApp).Assembly, new PluginInstallerFactory()))
                     .Register(Component.For<IHostedApplication>().ImplementedBy<TApp>())
                     .Resolve<IHostedApplication>().Start();
                 Status = HostedAppStatus.Started;
@@ -125,6 +143,58 @@ namespace Inceptum.AppServer.Hosting
         {
             // prevents proxy from expiration
             return null;
+        }
+
+        private class InstanceAwareConfigurationProvideWrapper:IConfigurationProvider
+        {
+            private readonly IConfigurationProvider m_ConfigurationProvider;
+            private readonly IDictionary<string, string> m_InstanceParams;
+            private readonly Regex m_InstanceParamRegex;
+
+            public InstanceAwareConfigurationProvideWrapper(IConfigurationProvider configurationProvider, object instanceParams)
+            {
+                if (configurationProvider == null) throw new ArgumentNullException("configurationProvider");
+                if (instanceParams == null) throw new ArgumentNullException("instanceParams");
+                m_ConfigurationProvider = configurationProvider;
+                m_InstanceParams = extractParamValues(instanceParams);
+                m_InstanceParamRegex = createRegex(m_InstanceParams);
+            }
+
+            //TODO[MT]: methods (replaceParams, createRegex and extractParamValues) should be moved to some internal "Utils" namespace (same logic is used inside ConfigurationFacility)
+            private static Regex createRegex(IDictionary<string, string> paramsDictionary)
+            {
+                var r = string.Format("^{0}$", string.Join("|", paramsDictionary.Keys.Select(x => "\\{" + x + "\\}")));
+                return new Regex(r, RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            }
+
+            private static Dictionary<string, string> extractParamValues(object values)
+            {
+                var vals = values
+                    .GetType()
+                    .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(property => property.CanRead)
+                    .Select(property => new { key = property.Name, value = property.GetValue(values, null) });
+
+
+                return vals.ToDictionary(o => o.key, o => (o.value ?? "").ToString());
+            }
+
+            private string replaceParams(string paramName, bool strict = true)
+            {
+                if (!strict && (m_InstanceParamRegex == null || !m_InstanceParamRegex.IsMatch(paramName)))
+                    return paramName;
+                return m_InstanceParams.Aggregate(paramName,
+                                          (current, param) =>
+                                          current.Replace(string.Format("{{{0}}}", param.Key), param.Value));
+            }
+
+            public string GetBundle(string configuration, string bundleName, params string[] parameters)
+            {
+                var extraParams = parameters.Select(x => replaceParams(x)).ToArray();
+                bundleName = replaceParams(bundleName, false);
+
+                return m_ConfigurationProvider.GetBundle(configuration, bundleName, extraParams);
+            }
         }
     }
 }
