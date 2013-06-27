@@ -111,8 +111,7 @@ namespace Inceptum.AppServer.Hosting
 
         private ApplicationInstance createInstance(InstanceConfig config)
         {
-            //TODO[MT]: decide about default value for instance environment
-            var instance = m_InstanceFactory.Create(config.Name, config.Environment ?? "ENV", m_Context);
+            var instance = m_InstanceFactory.Create(config.Name, config.Environment, m_Context);
             m_Instances.Add(instance);
             instance.Subscribe(status => notefyInstancesChanged(instance.Name + ":" + instance.Status));
             return instance;
