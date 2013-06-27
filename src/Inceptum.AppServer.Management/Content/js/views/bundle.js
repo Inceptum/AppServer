@@ -16,7 +16,7 @@ define([
                 "click #save":"save",
                 "change #inputName":"change"
             },
-            'change':function(){
+            'change':function(event){
                 // Apply the change to the model
                 var target = event.target;
                 var change = {};
