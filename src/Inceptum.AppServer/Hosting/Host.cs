@@ -74,6 +74,7 @@ namespace Inceptum.AppServer.Hosting
                                                Name = cfg.Name,
                                                Id = cfg.Name,
                                                ApplicationId = cfg.ApplicationId,
+                                               Environment = cfg.Environment,
                                                Status = instance.Status,
                                                Version = cfg.Version,
                                                AutoStart = cfg.AutoStart,
@@ -110,7 +111,8 @@ namespace Inceptum.AppServer.Hosting
 
         private ApplicationInstance createInstance(InstanceConfig config)
         {
-            var instance = m_InstanceFactory.Create(config.Name, m_Context);
+            //TODO[MT]: decide about default value for instance environment
+            var instance = m_InstanceFactory.Create(config.Name, config.Environment ?? "ENV", m_Context);
             m_Instances.Add(instance);
             instance.Subscribe(status => notefyInstancesChanged(instance.Name + ":" + instance.Status));
             return instance;
@@ -122,6 +124,9 @@ namespace Inceptum.AppServer.Hosting
                 throw new ArgumentException("Instance name should be not empty string");
             if (string.IsNullOrEmpty(config.ApplicationId))
                 throw new ArgumentException("Instance application is not provided");
+            if (string.IsNullOrEmpty(config.Environment))
+                throw new ArgumentException("Instance environment is not provided");
+
             if (m_ApplicationRepositary.Applications.All(x => x.Name != config.ApplicationId))
                 throw new ArgumentException("Application '" + config.ApplicationId + "' not found");
 
@@ -169,6 +174,7 @@ namespace Inceptum.AppServer.Hosting
                     Name = config.Name,
                     Version = config.Version,
                     ApplicationId = config.ApplicationId,
+                    Environment = config.Environment,
                     AutoStart = config.AutoStart
                 };
                 instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Concat(new[] { cfg }).ToArray(), Formatting.Indented);
@@ -193,6 +199,7 @@ namespace Inceptum.AppServer.Hosting
                     Name = config.Name,
                     Version = config.Version,
                     ApplicationId = config.ApplicationId,
+                    Environment =  config.Environment,
                     AutoStart = config.AutoStart
                 };
 

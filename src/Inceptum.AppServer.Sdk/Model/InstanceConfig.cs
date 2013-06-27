@@ -11,5 +11,7 @@ namespace Inceptum.AppServer.Model
         [JsonConverter(typeof(StringVersionJsonConverter))]
         public Version Version { get; set; }
         public bool AutoStart { get; set; }
+
+        public string Environment { get; set; }
     }
 }

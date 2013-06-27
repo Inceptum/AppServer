@@ -249,8 +249,14 @@
     <None Include="Configuration\AppServer\server.transports">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Configuration\TestApp\test.uat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Configuration\TestApp\test">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Configuration\TestApp\test.dev">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="nlog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
