@@ -20,5 +20,7 @@ namespace Inceptum.AppServer.Model
 
         [JsonConverter(typeof(StringVersionJsonConverter))]
         public Version ActualVersion { get; set; }
+
+        public string Environment { get; set; }
     }
 }

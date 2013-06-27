@@ -41,7 +41,7 @@ namespace Inceptum.AppServer.Hosting
         public HostedAppStatus Status { get; private set; }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void Start(IConfigurationProvider configurationProvider, ILogCache logCache, AppServerContext context, string instanceName)
+        public void Start(IConfigurationProvider configurationProvider, ILogCache logCache, AppServerContext context, string instanceName, string environment)
         {
             Status = HostedAppStatus.Starting;
             if (m_Container != null)
@@ -53,8 +53,6 @@ namespace Inceptum.AppServer.Hosting
                 m_Container = new WindsorContainer();
                 //castle config
                 var appName = AppDomain.CurrentDomain.FriendlyName;
-                var environment = context.Name;//TODO[MT]: environment should be set for every instance 
-
                 var configurationFile = string.Format("castle.{0}.config", appName);
                 if (File.Exists(configurationFile))
                 {

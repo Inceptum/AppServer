@@ -7,7 +7,7 @@ namespace Inceptum.AppServer.Hosting
     internal interface IApplicationHost
     {
         HostedAppStatus Status { get; }
-        void Start(IConfigurationProvider configurationProvider, ILogCache logCache, AppServerContext context, string instanceName);
+        void Start(IConfigurationProvider configurationProvider, ILogCache logCache, AppServerContext context, string instanceName, string environment);
         void Stop();
     }
 }

@@ -28,6 +28,7 @@ namespace Inceptum.AppServer.Hosting
         private Version m_ActualVersion;
 
         public string Name { get; set; }
+        public string Environment { get; set; }
         public ILogger Logger { get; set; }
         public bool HasToBeRecreated { get; set; }
         public bool IsMisconfigured { get; set; }
@@ -66,11 +67,12 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
-        public ApplicationInstance(string name,AppServerContext context, IConfigurationProvider configurationProvider,
+        public ApplicationInstance(string name, string environment, AppServerContext context, IConfigurationProvider configurationProvider,
                                    ILogCache logCache, ILogger logger)
         {
             m_LogCache = logCache;
             Name = name;
+            Environment = environment;
             Logger = logger;
             m_ConfigurationProvider = configurationProvider;
             m_Context = context;
@@ -114,7 +116,7 @@ namespace Inceptum.AppServer.Hosting
                                                                   m_ApplicationHost.Start(
                                                                       MarshalableProxy.Generate(m_ConfigurationProvider),
                                                                       MarshalableProxy.Generate(m_LogCache),
-                                                                      m_Context,Name);
+                                                                      m_Context, Name, Environment);
 
                                                                   lock (m_SyncRoot)
                                                                   {
