@@ -3,10 +3,10 @@ define([
     'backbone',
     'underscore',
     'text!templates/bundle.html',
-    'views/alerts','libs/prettify',
-    'codemirrorjs', 'libs/jsonlint',
+    'views/alerts','jsonlint','libs/prettify',
+    'codemirrorjs',
     'shortcut'],
-    function ($, Backbone, _, template,alerts) {
+    function ($, Backbone, _, template,alerts,jsonlint) {
         var View = Backbone.View.extend({
             el:'#content',
             initialize:function () {
@@ -33,6 +33,7 @@ define([
                     this.codeMirror.setOption("readOnly",false);
                     this.isPreview=false;
                     $("#preview").removeClass("active");
+                    $("#verify").removeClass("disabled");
                 }
                 else{
                     if (!this.verify())
@@ -45,11 +46,13 @@ define([
                 var parentContent = (this.model.attributes.Parent!=null)
                     ?this.configuration.getBundle(this.model.attributes.Parent).attributes.Content
                     :{};
-                var merged = $.extend({},jsonlint.parse(parentContent), jsonlint.parse(this.codeMirror.getValue()));
+                var merged = $.extend(true,{},JSON.parse(parentContent), JSON.parse(this.codeMirror.getValue()));
                 this.codeMirror.setValue(JSON.stringify(merged, null, "  "));
                 this.codeMirror.setOption("readOnly",true);
                 this.isPreview=true;
                 $("#preview").addClass("active");
+                $("#verify").addClass("disabled");
+
             },
             toggleFullScreen: function () {
                 var wrap = this.codeMirror.getWrapperElement();
@@ -111,6 +114,30 @@ define([
                 }
             },
             verify:function () {
+                if(this.isPreview)
+                    return;
+                if (this.errorLine){
+                    this.codeMirror.removeLineClass(this.errorLine, "error", "error");
+                    console.log(this.errorLine)  ;
+                }
+                this.verificationErrors.text("").hide();
+                this.errorLine = undefined;
+
+                var json = this.codeMirror.getValue();
+                var lint=JSONLint(json, {comments:true} )
+                if(lint.error){
+                    this.errorLine = lint.line-1;
+                    this.verificationErrors.html("<strong>Error ("+lint.line+","+lint.character+"):</strong> " + lint.error).show();
+                    this.codeMirror.addLineClass(this.errorLine, "error", "error");
+                    this.jumpToLine(this.errorLine);
+                    return false;
+                } else{
+                    this.codeMirror.setValue(JSON.stringify(JSON.parse(json), null, "  "));
+                    return true;
+                }
+/*
+
+
                 try {
                     if (this.errorLine)
                         this.codeMirror.addLineClass(this.errorLine, null, null);
@@ -127,6 +154,7 @@ define([
                     this.jumpToLine(this.errorLine);
                     return false;
                 }
+*/
             },
             jumpToLine:function (i) {
                 this.codeMirror.setCursor(i);
