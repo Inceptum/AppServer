@@ -11,35 +11,26 @@ namespace Inceptum.AppServer.Configuration.Model
         void DeleteBundle(Bundle bundle);
     }
 
-    public class Config  : BundleCollectionBase, IBundleEventTracker
+    public class Config : BundleCollectionBase, IBundleEventTracker
     {
-        private SortedDictionary<string, string> m_Map;
-        readonly List<BundleData> m_UncommitedEvents = new List<BundleData>();
         private readonly IConfigurationPersister m_Persister;
+        private readonly List<BundleData> m_UncommitedEvents = new List<BundleData>();
+        private SortedDictionary<string, string> m_Map;
 
-        public Config(IConfigurationPersister persister, IContentProcessor contentProcessor, string name, Dictionary<string, string> bundles=null) 
-            : base(contentProcessor,null, name)
+        public Config(IConfigurationPersister persister, IContentProcessor contentProcessor, string name, Dictionary<string, string> bundles = null)
+            : base(contentProcessor, null, name)
         {
+            m_Map = new SortedDictionary<string, string>();
             m_Persister = persister;
             if (bundles == null)
                 return;
-            m_Map=new SortedDictionary<string, string>(bundles);
-            reset();
-        }
-
-       
-
-        private void reset()
-        {
-            Purge();
-            foreach (var bundleContent in m_Map)
+            foreach (var bundleContent in bundles)
             {
-                this[bundleContent.Key]=bundleContent.Value;
+                this[bundleContent.Key] = bundleContent.Value;
             }
+            populateMap();
             m_UncommitedEvents.Clear();
-
         }
-
 
 
         public string this[string name]
@@ -52,12 +43,12 @@ namespace Inceptum.AppServer.Configuration.Model
             }
             set
             {
-                var path = name.Split(new[] { '.' });
+                string[] path = name.Split(new[] {'.'});
                 BundleCollectionBase bundle = this;
                 int i;
                 for (i = 0; i < path.Length; i++)
                 {
-                    var found = bundle.FirstOrDefault(b => b.ShortName.ToLower() == path[i].ToLower());
+                    Bundle found = bundle.FirstOrDefault(b => b.ShortName.ToLower() == path[i].ToLower());
                     if (found == null)
                         break;
                     bundle = found;
@@ -70,7 +61,7 @@ namespace Inceptum.AppServer.Configuration.Model
         Bundle IBundleEventTracker.CreateBundle(Bundle parent, string name)
         {
             name = name.ToLower();
-            var bundle = new Bundle(parent??(BundleCollectionBase)this,name);
+            var bundle = new Bundle(parent ?? (BundleCollectionBase) this, name);
             lock (m_UncommitedEvents)
             {
                 m_UncommitedEvents.Add(new BundleData {Configuration = Name, Name = bundle.Name, Content = bundle.Content, Action = BundleAction.Create});
@@ -102,9 +93,7 @@ namespace Inceptum.AppServer.Configuration.Model
                 lock (m_UncommitedEvents)
                 {
                     m_Persister.Save(m_UncommitedEvents.ToArray());
-                    var map = new SortedDictionary<string, string>();
-                    Visit(b => map.Add(b.Name, b.Content));
-                    Interlocked.Exchange(ref m_Map, map);
+                    populateMap();
                     return true;
                 }
             }
@@ -116,6 +105,13 @@ namespace Inceptum.AppServer.Configuration.Model
             {
                 m_UncommitedEvents.Clear();
             }
+        }
+
+        private void populateMap()
+        {
+            var map = new SortedDictionary<string, string>();
+            Visit(b => map[b.Name] = b.Content);
+            Interlocked.Exchange(ref m_Map, map);
         }
     }
 }

@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Model;
+using Inceptum.AppServer.Configuration.Providers;
 using NUnit.Framework;
 using Rhino.Mocks;
 
@@ -31,7 +33,11 @@ namespace Inceptum.AppServer.Tests.Configuration
             Assert.That(list["a.b.c"].Parent, Is.SameAs(list["a.b"]), "wrong bundles structure");
             Assert.That(list["a.b"].Parent, Is.SameAs(list["a"]), "wrong bundles structure");
             Assert.That(list["a"].Parent, Is.Null, "wrong bundles structure");
+            Assert.That(new[] { config["a"], config["a.b"], config["a.b.c"] }, Is.EquivalentTo(new[] { "a", "ab", "abc" }), "wrong bundles content");
+
         }
+        
+
          
     }
 }
