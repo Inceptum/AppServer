@@ -53,7 +53,7 @@ namespace Inceptum.AppServer.Configuration.Model
                 throw new ArgumentException("There is already a bundle with the same name", "name");
             var bundle = EventTracker.CreateBundle(this as Bundle,name);
             m_ChildBundles.Add(name, bundle);
-            bundle.Content = content??ContentProcessor.GetEmptyContent();
+            bundle.PureContent = content??ContentProcessor.GetEmptyContent();
             return bundle;
         }
 

@@ -28,6 +28,11 @@ namespace Inceptum.AppServer.Configuration.Model
         public string PureContent
         {
             get { return m_PureContent; }
+            set
+            {
+                m_PureContent = value ?? ContentProcessor.GetEmptyContent();
+                EventTracker.UpdateBundle(this);
+            }
         }
 
         public override string Name
@@ -57,11 +62,7 @@ namespace Inceptum.AppServer.Configuration.Model
                            ? ContentProcessor.Merge(Parent.Content ?? ContentProcessor.GetEmptyContent(), PureContent ?? ContentProcessor.GetEmptyContent())
                            : PureContent;
             }
-            set
-            {
-                m_PureContent = value ?? ContentProcessor.GetEmptyContent();
-                EventTracker.UpdateBundle(this);
-            }
+           
         }
 
         public bool IsEmpty

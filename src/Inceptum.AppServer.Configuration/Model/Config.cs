@@ -54,7 +54,7 @@ namespace Inceptum.AppServer.Configuration.Model
                     bundle = found;
                 }
                 bundle = path.Skip(i).Aggregate(bundle, (current, t) => current.CreateSubBundle(t));
-                (bundle as Bundle).Content = value ?? ContentProcessor.GetEmptyContent();
+                (bundle as Bundle).PureContent = value ?? ContentProcessor.GetEmptyContent();
             }
         }
 
