@@ -17,7 +17,8 @@ require.config({
         "codemirrorjs": "libs/codemirror/mode/javascript",
         "fileupload": "libs/jquery.fileupload",
         "jquery.ui.widget": "libs/jquery.ui.widget",
-        "bootbox": "libs/bootbox"
+        "bootbox": "libs/bootbox",
+        "jsonlint":"libs/jsonlint"
     },
     'shim':
     {
@@ -36,7 +37,6 @@ require.config({
         "signalr": {
             deps: ["json2"],
             deps: ["jquery"]
-
         },
         "noext!sr/signalr/hubs":{
             deps: ["signalr"]
@@ -53,7 +53,11 @@ require.config({
 		},
         'hotkeys': {
 			 deps:		['jquery']
-		}
+		},
+        'jsonlint':{
+            'exports' :'jsonlint'
+        }
+
     }
 });
 
