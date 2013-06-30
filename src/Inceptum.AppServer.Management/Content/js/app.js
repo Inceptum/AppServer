@@ -8,7 +8,7 @@ define(['routers/home','jquery','services/notificationsListener'], function(Rout
         this.undelegateEvents();
         $(this.el).html('');
         this.dispose();
-        console.log(this.dispose);
+
     }
 
     // When you have an existing set of models in a collection,
