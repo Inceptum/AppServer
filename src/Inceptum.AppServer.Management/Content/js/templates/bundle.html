@@ -12,6 +12,15 @@
         overflow-y: hidden;
         overflow-x: auto;
     }
+
+    .CodeMirror-fullscreen {
+        display: block;
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        z-index: 9999;
+        background: #FFFFFF!important;
+    }
     .cm-s-default span.cm-string{
         color: #D14;
     }
@@ -21,6 +30,11 @@
 
     .error{
         background: #F2DEDE!important;
+    }
+
+    #code{
+        position: relative;
+
     }
 </style>
 
@@ -32,12 +46,15 @@
             <%=model.id%>
         <% }%>
         <span class="pull-right">
+            <div class="btn-group">
+            <a id="preview" class="btn btn-mini" ><i class="icon-align-left"></i> <strong>Preview (Ctrl+P)</strong></a>
+            <a id="fullScreen" class="btn btn-mini"><i class="icon-align-left"></i> <strong>FullScreen (F11)</strong></a>
             <a id="verify" class="btn btn-mini"><i class="icon-align-left"></i> <strong>Format</strong></a>
             <a id="save" class="btn btn-mini"><i class=" icon-ok"></i> <strong>Save</strong></a>
 <!--            <% if(model.id){%>
             <a class="btn btn-mini btn-danger"><i class="icon-trash"></i> <strong>Delete</strong></a>
         <% }%>-->
-
+            </div>
         </span>
     </h3>
 </div>
@@ -57,7 +74,7 @@
     Name:<input type="text" id="inputName" name="Name" value="<%=model.Name%>" >
 <% }%>
 
-<textarea id="code" name="Content"><%=model.Content%></textarea>
+<textarea id="code" name="Content"><%=model.PureContent%></textarea>
         <br>
 
 
@@ -88,3 +105,5 @@
         <a  class="btn" class="close" data-dismiss="modal" aria-hidden="true">Close</a>
     </div>
 </div>
+
+

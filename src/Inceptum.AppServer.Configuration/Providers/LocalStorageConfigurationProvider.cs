@@ -49,6 +49,33 @@ namespace Inceptum.AppServer.Configuration.Providers
             }
         }
 
+        public BundleInfo GetBundleInfo(string configuration, string bundleName)
+        {
+            var config = findConfig(configuration);
+            if (config == null)
+            {
+                throw new ConfigurationErrorsException(string.Format("Configuration {0} not found", configuration));
+            }
+            lock (config)
+            {
+                BundleInfo info = null;
+                config.Visit(b =>
+                    {
+                        if (b.Name == bundleName)
+                            info = new BundleInfo(getBundlesInfo(b, configuration))
+                                {
+                                    id = b.Name,
+                                    Name = b.ShortName,
+                                    Content = b.Content,
+                                    PureContent = b.PureContent,
+                                    Parent = b.Parent != null ? b.Parent.Name : null,
+                                    Configuration = configuration
+                                };
+                    });
+                return info;
+            }
+        }
+
         private BundleInfo[] getBundlesInfo(IEnumerable<Bundle> collection,string configuration)
         {
             return collection.Select(b => new BundleInfo(getBundlesInfo(b, configuration))

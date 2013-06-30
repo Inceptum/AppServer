@@ -4,17 +4,71 @@ define([
     'underscore',
     'text!templates/bundle.html',
     'views/alerts','libs/prettify',
-    'codemirrorjs', 'libs/jsonlint'],
+    'codemirrorjs', 'libs/jsonlint',
+    'shortcut'],
     function ($, Backbone, _, template,alerts) {
         var View = Backbone.View.extend({
             el:'#content',
             initialize:function () {
+                this.isFullScreen= false;
+                this.isPreview= false;
+                this.Content= "";
+
                 this.configuration=this.options.configuration;
-                _.bindAll(this, "verify", "jumpToLine", "save");
+                _.bindAll(this, "verify", "jumpToLine", "save","togglePreview","toggleFullScreen","switchToPreview");
+                shortcut.add("F11", this.toggleFullScreen);
+                shortcut.add("ctrl+p", this.togglePreview);
+                shortcut.add("ctrl+f", this.verify);
+                shortcut.add("ctrl+s", this.save);
             }, events:{
                 "click #verify":"verify",
                 "click #save":"save",
-                "change #inputName":"change"
+                "change #inputName":"change" ,
+                "click #preview":"togglePreview",
+                "click #fullScreen":"toggleFullScreen"
+            },
+            togglePreview:function () {
+                if(this.isPreview){
+                    this.codeMirror.setValue(this.Content);
+                    this.codeMirror.setOption("readOnly",false);
+                    this.isPreview=false;
+                    $("#preview").removeClass("active");
+                }
+                else{
+                    if (!this.verify())
+                        return;
+                    this.Content=this.codeMirror.getValue();
+                    this.switchToPreview();
+                }
+            },
+            switchToPreview:function(){
+                var parentContent = (this.model.attributes.Parent!=null)
+                    ?this.configuration.getBundle(this.model.attributes.Parent).attributes.Content
+                    :{};
+                var merged = $.extend({},jsonlint.parse(parentContent), jsonlint.parse(this.codeMirror.getValue()));
+                this.codeMirror.setValue(JSON.stringify(merged, null, "  "));
+                this.codeMirror.setOption("readOnly",true);
+                this.isPreview=true;
+                $("#preview").addClass("active");
+            },
+            toggleFullScreen: function () {
+                var wrap = this.codeMirror.getWrapperElement();
+                if (!this.isFullScreen) {
+                    wrap.className += " CodeMirror-fullscreen";
+                    $(".CodeMirror-fullscreen")
+                        .height( window.innerHeight || (document.documentElement || document.body).clientHeight + "px")
+                        .css("overflow","hidden");
+                    document.documentElement.style.overflow = "hidden";
+                    this.isFullScreen= true;
+                    this.codeMirror.focus();
+                } else {
+                    wrap.className = wrap.className.replace(" CodeMirror-fullscreen", "");
+                    $(".CodeMirror-fullscreen")
+                        .height("")
+                        .css("overflow","");
+                    this.isFullScreen= false;
+                }
+                this.codeMirror.refresh();
             },
             'change':function(event){
                 // Apply the change to the model
@@ -30,12 +84,17 @@ define([
                 if(this.verify()){
                     var self = this;
                     var action=this.model.isNew()?"create":"update";
-                    this.model.set("Content",this.codeMirror.getValue());
+                    var content=this.isPreview?this.Content:this.codeMirror.getValue()
+                    this.model.set("PureContent",content);
                     var options = {
                         success: function (model) {
-                            self.codeMirror.setValue(model.get("Content"));
+                            self.Content=model.get("PureContent");
+                            if(self.isPreview){
+                                self.switchToPreview();
+                            }
+                            else
+                                self.codeMirror.setValue(model.get("PureContent"));
                             alerts.show({type:"info",text:"Bundle '"+model.get("Name")+"' "+action+"d"});
-
                             self.navigate('#/configurations/'+model.get("Configuration")+"/bundles/"+model.id, true);
                         },
                         error: function (model,response) {
@@ -54,7 +113,7 @@ define([
             verify:function () {
                 try {
                     if (this.errorLine)
-                        this.codeMirror.setLineClass(this.errorLine, null, null);
+                        this.codeMirror.addLineClass(this.errorLine, null, null);
                     var result = jsonlint.parse(this.codeMirror.getValue());
                     this.codeMirror.setValue(JSON.stringify(result, null, "  "));
                     this.verificationErrors.text("").hide();
@@ -63,7 +122,7 @@ define([
                 } catch (ex) {
                     this.errorLine = (/Parse error on line (\d+)/g).exec(ex.message)[1] * 1 - 1;
                     this.verificationErrors.html("<strong>Error:</strong> " + ex.message).show();
-                    this.codeMirror.setLineClass(this.errorLine, "error", "error");
+                    this.codeMirror.addLineClass(this.errorLine, "error", "error");
                     this.jumpToLine(this.errorLine);
                     return false;
                 }
@@ -79,6 +138,7 @@ define([
             render:function () {
                 this.template = _.template(template, { model:this.model.toJSON() });
                 $(this.el).html(this.template);
+                var self=this;
                 this.codeMirror = CodeMirror.fromTextArea($(this.el).find("#code").get()[0], {
                     lineNumbers:true,
                     matchBrackets:true,
@@ -87,9 +147,19 @@ define([
                         return integer + ".";
                     }
                 });
+                CodeMirror.on(window, "resize", function() {
+                    var showing = $(".CodeMirror-fullscreen");
+                    if (!showing) return;
+                    showing.height( window.innerHeight || (document.documentElement || document.body).clientHeight + "px");
+                });
                 this.verificationErrors = $("#verificationErrors").hide();
-                //      $(".CodeMirror").addClass("well");
                 prettyPrint();
+            },
+            dispose:function(){
+                shortcut.remove("F11");
+                shortcut.remove("ctrl+p");
+                shortcut.remove("ctrl+f");
+                shortcut.remove("ctrl+s");
             }
         });
 

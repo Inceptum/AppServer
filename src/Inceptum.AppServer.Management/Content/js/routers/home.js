@@ -140,7 +140,7 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
             if(c){
                 var b=c.getBundle(bundle);
                 views.push(
-                    new BundleView({model:b})
+                    new BundleView({model:b,configuration:c})
                 );
             }
             this.showViews(views);

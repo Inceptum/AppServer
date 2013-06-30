@@ -11,5 +11,6 @@ namespace Inceptum.AppServer.Configuration
         void CreateOrUpdateBundle(string configuration, string name, string content);
         void CreateConfiguration(string configuration);
         bool DeleteConfiguration(string configuration);
+        BundleInfo GetBundleInfo(string configuration, string bundleName);
     }
 }
