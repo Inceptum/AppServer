@@ -5,7 +5,7 @@ define([
     'libs/bootstrap-notify'],
     function($, Backbone, _){
         var View = Backbone.View.extend({
-            attributes:{"style":"width:300px"},
+            attributes:{"style":"width:300px;z-index: 10000"},
             className: "notifications top-right",
             show: function(options){
                 var self=this;
