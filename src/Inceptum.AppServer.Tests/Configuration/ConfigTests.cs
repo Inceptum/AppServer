@@ -16,6 +16,9 @@ namespace Inceptum.AppServer.Tests.Configuration
         public void CtorTest()
         {
             var contentProcessor = MockRepository.GenerateMock<IContentProcessor>();
+            Func<string, string, string> merge = (p, c) => p + c;
+            contentProcessor.Stub(p => p.Merge(Arg<string>.Is.Anything, Arg<string>.Is.Anything)).Do(merge);
+       
             var persister = MockRepository.GenerateMock<IConfigurationPersister>();
             var bundles=new Dictionary<string, string>
                 {
