@@ -62,10 +62,10 @@ define([
                     this.isFullScreen= true;
                     this.codeMirror.focus();
                 } else {
-                    wrap.className = wrap.className.replace(" CodeMirror-fullscreen", "");
                     $(".CodeMirror-fullscreen")
                         .height("")
                         .css("overflow","");
+                    wrap.className = wrap.className.replace(" CodeMirror-fullscreen", "");
                     this.isFullScreen= false;
                 }
                 this.codeMirror.refresh();
@@ -120,6 +120,7 @@ define([
                     this.errorLine = undefined;
                     return true;
                 } catch (ex) {
+                    //alerts.show({type:"error",text:"Failed to "+action+" bundle "+bundleId+". "+JSON.parse(response.responseText).Error});
                     this.errorLine = (/Parse error on line (\d+)/g).exec(ex.message)[1] * 1 - 1;
                     this.verificationErrors.html("<strong>Error:</strong> " + ex.message).show();
                     this.codeMirror.addLineClass(this.errorLine, "error", "error");
