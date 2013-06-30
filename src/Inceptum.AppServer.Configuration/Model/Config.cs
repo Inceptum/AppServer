@@ -64,7 +64,7 @@ namespace Inceptum.AppServer.Configuration.Model
             var bundle = new Bundle(parent ?? (BundleCollectionBase) this, name);
             lock (m_UncommitedEvents)
             {
-                m_UncommitedEvents.Add(new BundleData {Configuration = Name, Name = bundle.Name, Content = bundle.Content, Action = BundleAction.Create});
+                m_UncommitedEvents.Add(new BundleData {Configuration = Name, Name = bundle.Name, Content = bundle.PureContent, Action = BundleAction.Create});
             }
             return bundle;
         }
@@ -73,7 +73,7 @@ namespace Inceptum.AppServer.Configuration.Model
         {
             lock (m_UncommitedEvents)
             {
-                m_UncommitedEvents.Add(new BundleData {Configuration = Name, Name = bundle.Name, Content = bundle.Content, Action = BundleAction.Save});
+                m_UncommitedEvents.Add(new BundleData { Configuration = Name, Name = bundle.Name, Content = bundle.PureContent, Action = BundleAction.Save });
             }
         }
 
@@ -81,7 +81,7 @@ namespace Inceptum.AppServer.Configuration.Model
         {
             lock (m_UncommitedEvents)
             {
-                m_UncommitedEvents.Add(new BundleData {Configuration = Name, Name = bundle.Name, Content = bundle.Content, Action = BundleAction.Delete});
+                m_UncommitedEvents.Add(new BundleData { Configuration = Name, Name = bundle.Name, Content = bundle.PureContent, Action = BundleAction.Delete });
             }
         }
 

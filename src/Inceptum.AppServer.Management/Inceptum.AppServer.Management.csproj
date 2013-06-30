@@ -194,6 +194,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Content\js\libs\jquery.signalR-1.1.2.js" />
     <EmbeddedResource Include="Content\js\libs\jquery.signalR-1.1.2.min.js" />
+    <Content Include="Content\js\libs\shortcut.js" />
     <Content Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="Scripts\jquery-1.6.4.js" />
     <Content Include="Scripts\jquery-1.6.4.min.js" />
