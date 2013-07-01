@@ -16,7 +16,7 @@ define([
                 var alert=$(this.el).notify({
                     type: params.type,
                     message: {text:params.text},
-                    fadeOut: { enabled: params.fadeOut==true, delay:3000}
+                    fadeOut: { enabled: true, delay:3000}
                 });
                 alert.show();
             }
