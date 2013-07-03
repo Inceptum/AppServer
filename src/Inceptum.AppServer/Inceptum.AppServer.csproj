@@ -95,8 +95,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="Inceptum.Messaging">
-      <HintPath>..\packages\Inceptum.Messaging.1.0.5.68\lib\net40\Inceptum.Messaging.dll</HintPath>
+    <Reference Include="Inceptum.Messaging, Version=1.0.5.76, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Inceptum.Messaging.1.0.5.76\lib\net40\Inceptum.Messaging.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

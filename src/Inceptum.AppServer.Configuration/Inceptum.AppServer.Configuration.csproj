@@ -40,12 +40,13 @@
     <Reference Include="Castle.Windsor">
       <HintPath>..\packages\Castle.Windsor.3.2.0\lib\net40\Castle.Windsor.dll</HintPath>
     </Reference>
-    <Reference Include="Inceptum.DataBus">
-      <HintPath>..\packages\Inceptum.DataBus.1.0.5.68\lib\net40\Inceptum.DataBus.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Inceptum.DataBus, Version=1.0.5.76, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Inceptum.DataBus.1.0.5.76\lib\net40\Inceptum.DataBus.dll</HintPath>
     </Reference>
-    <Reference Include="Inceptum.Messaging">
-      <HintPath>..\packages\Inceptum.Messaging.1.0.5.68\lib\net40\Inceptum.Messaging.dll</HintPath>
+    <Reference Include="Inceptum.Messaging, Version=1.0.5.76, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Inceptum.Messaging.1.0.5.76\lib\net40\Inceptum.Messaging.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\net40\Newtonsoft.Json.dll</HintPath>
