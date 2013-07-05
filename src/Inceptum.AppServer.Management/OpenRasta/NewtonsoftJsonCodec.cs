@@ -26,6 +26,7 @@ namespace Inceptum.AppServer.Management.OpenRasta
             if (entity == null)
                 return;
             response.Headers["Pragma"] = "no-cache";
+            response.Headers["Cache-Control"] = "no-cache, no-store, no-transform, must-revalidate";
             response.Headers["Expires"] = "Fri, 30 Oct 1998 14:19:41 GMT";
             using (var textWriter = new StreamWriter(response.Stream))
             {

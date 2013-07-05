@@ -25,19 +25,16 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
          InstanceEditView,ConfigurationView,BundleView,ConfigurationsSideBarView){
 	var Router = Backbone.Router.extend({
 		initialize: function(){
-            //TODO: need to have collections injected as singletons and react on events to render views
-            this.currentViews=[];
-			this.headerView = HeaderView;
-            this.apps = Applications;
-          //  this.apps.fetch({async:false});
-            this.instances=Instances;
-            this.instances.bind('reset', function(){alert("instances");});
-            this.apps.bind('reset', function(){alert("apps");});
-            //this.instances.fetch({async:false});
-            this.headerView.render();
             this.hostModel = new HostModel();
             this.hostModel.fetch({async:false});
             Configurations.fetch({async:false});
+
+            //TODO: need to have collections injected as singletons and react on events to render views
+            this.currentViews=[];
+			this.headerView = new HeaderView({model:this.hostModel});
+            this.apps = Applications;
+            this.instances=Instances;
+            this.headerView.render();
 			Backbone.history.start();
         },
         showViews:function(views){

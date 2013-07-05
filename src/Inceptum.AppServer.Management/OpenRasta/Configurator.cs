@@ -19,7 +19,6 @@ namespace Inceptum.AppServer.Management.OpenRasta
         {
             using (OpenRastaConfiguration.Manual)
             {
-                //ResourceSpace.Uses.ViewsEmbeddedInTheAssembly(Assembly.GetExecutingAssembly(), "Inceptum.AppServer.Management2.Views");
                 ResourceSpace.Has.ResourcesOfType<ServerError>().WithoutUri.TranscodedBy<NewtonsoftJsonCodec>();
                 ResourceSpace.Has.ResourcesOfType<string>().WithoutUri.TranscodedBy<UtfTextPlainCodec>();
 

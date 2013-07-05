@@ -15,7 +15,8 @@ namespace Inceptum.AppServer.Management.Handlers
             return new HostInfo
                        {
                            MachineName = m_Host.MachineName,
-                           Mode = "Standalone"
+                           Mode = "Standalone",
+                           Version = typeof(HostHandler).Assembly.GetName().Version.ToString()
                        };
         } 
     }

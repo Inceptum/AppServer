@@ -9,7 +9,6 @@ define([
             el: '#header',
             initialize: function () {
                 _(this).bindAll('onHeartBeat');
-                this.template = _.template( template, { } );
                 this.notifications = $.connection.uiNotificationHub;
                 $.connection.hub.url = context.signalRUrl('/signalr');
                 this.notifications.client.HeartBeat=this.onHeartBeat;
@@ -26,7 +25,8 @@ define([
                 });
             },
             render: function () {
-                $(this.el).html(this.template);
+                this.template = _.template( template, { model: this.model.toJSON() } );
+                $(this.el).html(this.template );
                 this.led=$(this.el).find('.led').fadeTo(10,.25);
 
                 $.connection.hub.start({
@@ -49,5 +49,5 @@ define([
             }
         });
 
-        return new View();
+        return View;
     });
