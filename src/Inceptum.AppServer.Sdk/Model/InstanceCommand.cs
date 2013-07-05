@@ -8,17 +8,22 @@ namespace Inceptum.AppServer.Hosting
     {
         public string Name { get; set; }
         public string Type { get; set; }
+        public string Value { get; set; }
     }
     [Serializable]
-    public class InstanceCommandSpec
+    public class InstanceCommand
     {
-        public InstanceCommandSpec(string name,InstanceCommandParam[] parameters)
+        public InstanceCommand(string name,InstanceCommandParam[] parameters)
         {
             Parameters = parameters;
             Name = name;
         }
 
-        public InstanceCommandParam[] Parameters { get; private set; }
-        public string Name { get; private set; }
+        public InstanceCommand()
+        {
+        }
+
+        public InstanceCommandParam[] Parameters { get; set; }
+        public string Name { get; set; }
     }
 }

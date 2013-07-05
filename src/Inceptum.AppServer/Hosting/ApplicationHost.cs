@@ -43,7 +43,7 @@ namespace Inceptum.AppServer.Hosting
         public HostedAppStatus Status { get; private set; }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public InstanceCommandSpec[] Start(IConfigurationProvider configurationProvider, ILogCache logCache, AppServerContext context, string instanceName, string environment)
+        public InstanceCommand[] Start(IConfigurationProvider configurationProvider, ILogCache logCache, AppServerContext context, string instanceName, string environment)
         {
             Status = HostedAppStatus.Starting;
             if (m_Container != null)
@@ -95,13 +95,13 @@ namespace Inceptum.AppServer.Hosting
                     .Install(FromAssembly.Instance(typeof(TApp).Assembly, new PluginInstallerFactory()))
                     .Register(Component.For<IHostedApplication>().ImplementedBy<TApp>());
                 m_HostedApplication = m_Container.Resolve<IHostedApplication>();
-                var allowedTypes = new []{typeof(string),typeof(int),typeof(DateTime),typeof(decimal)};
+                var allowedTypes = new []{typeof(string),typeof(int),typeof(DateTime),typeof(decimal),typeof(bool)};
                 var commands =
                     m_HostedApplication.GetType()
                                      .GetMethods()
                                      .Where(m => m.Name != "Start" && m.Name != "ToString" && m.Name != "GetHashCode" && m.Name != "GetType")
                                      .Where(m => m.GetParameters().All(p => allowedTypes.Contains(p.ParameterType)))
-                                     .Select(m => new InstanceCommandSpec( m.Name,m.GetParameters().Select(p => new InstanceCommandParam{Name = p.Name,Type = p.ParameterType.Name}).ToArray()));
+                                     .Select(m => new InstanceCommand( m.Name,m.GetParameters().Select(p => new InstanceCommandParam{Name = p.Name,Type = p.ParameterType.Name}).ToArray()));
                 m_HostedApplication.Start();
                 Status = HostedAppStatus.Started;
                 return commands.ToArray();
@@ -141,12 +141,21 @@ namespace Inceptum.AppServer.Hosting
             m_HostedApplication = null;
         }
 
-        public string Execute(string command)
+        public string Execute(InstanceCommand command)
         {
-            var methodInfo = m_HostedApplication.GetType().GetMethod(command);
+            var methodInfo = m_HostedApplication.GetType().GetMethod(command.Name);
             var result=methodInfo.Invoke(m_HostedApplication,
-                              methodInfo.GetParameters().Select(p => p.ParameterType.IsValueType ? Activator.CreateInstance(p.ParameterType) : null).ToArray());
+                              methodInfo.GetParameters().Select(p=>parseCommandParameterValue(p,command)).ToArray());
             return result == null ? null : result.ToString();
+        }
+
+        private object parseCommandParameterValue(ParameterInfo parameter,InstanceCommand command)
+        {
+            var instanceCommandParam = command.Parameters.FirstOrDefault(p => p.Name == parameter.Name);
+            if (instanceCommandParam == null || instanceCommandParam.Value==null)
+                return parameter.ParameterType.IsValueType ? Activator.CreateInstance(parameter.ParameterType) : null;
+
+            return Convert.ChangeType(instanceCommandParam.Value, parameter.ParameterType);
         }
 
         #endregion

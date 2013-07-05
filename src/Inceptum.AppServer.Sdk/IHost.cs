@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Subjects;
+using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Model;
 
 
@@ -22,6 +23,6 @@ namespace Inceptum.AppServer
         void UpdateInstance(ApplicationInstanceInfo config);
         void DeleteInstance(string name);
 
-        string ExecuteCommand(string instance, string command);
+        string ExecuteCommand(string instance, InstanceCommand command);
     }
 }

@@ -32,8 +32,11 @@ define(['jquery', 'backbone', 'underscore','context'], function($, Backbone, _,c
             var id = this.id;
             var self=this;
             $.ajax({
-                url: context.httpUrl('/api/instance/'+id+'/'+command),
-                type: 'POST',
+                url: context.httpUrl('/api/instance/'+id+'/command'),
+                type: "POST",
+                contentType: "application/json",
+                dataType: "json",
+                data: JSON.stringify(command),
                 success: function (data) {
                     if(options.success)
                         options.success(self,data);
@@ -41,6 +44,10 @@ define(['jquery', 'backbone', 'underscore','context'], function($, Backbone, _,c
                 error: function (args) {
                     if(options.error)
                         options.error(self,args);
+                },
+                complete: function (args) {
+                    if(options.complete )
+                        options.complete (self,args);
                 }
             });
         }

@@ -39,9 +39,9 @@ namespace Inceptum.AppServer.TestApp
             m_JObject = JObject.Parse("{}");
         }
 
-        public string DoSomething(DateTime date)
+        public string DoSomething(DateTime dateValue, string stringValue, int intValue, decimal decimalValue, bool boolValue)
         {
-            return string.Format("Something is done. Date {0}", date);
+            return string.Format("Something is done. Date {0}", dateValue);
         }
     }
 }

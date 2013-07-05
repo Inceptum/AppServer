@@ -5,8 +5,9 @@ define([
     'views/instanceRow',
     'text!templates/instancesList.html',
     'views/confirm',
+    'views/commandPopup',
     'views/alerts'],
-    function($, Backbone, _,instanceView, template,confirmView,alerts){
+    function($, Backbone, _,instanceView, template,confirmView,commandPopupView,alerts){
         var View = Backbone.View.extend({
             el: '#main',
             initialize: function(){
@@ -129,17 +130,24 @@ define([
             },
             command:function(model,view,command){
                 var self=this;
-                console.log(model);
-                model.command(command,{
-                    success: function (model,data){
-                        if(typeof data.message!='undefined')
-                            alerts.show({type:"info",text:data.message});
-                    },
-                    error:function(model,response){
-                        view.render();
-                        alerts.show({type:"error",text:"Failed to stop instance '"+model.id+"'.  "+JSON.parse(response.responseText).Error});
-                    }
-                });
+
+                var cmd=_.find(  model.attributes.Commands ,function(c){ return c.Name == command; });
+                commandPopupView.open(cmd)
+                    .done(function(){
+                        model.command(commandPopupView.command,{
+                            success: function (model,data){
+                                if(typeof data.Message!='undefined')
+                                    alerts.show({type:"info",text:data.Message});
+                            },
+                            error:function(model,response){
+                                view.render();
+                                alerts.show({type:"error",text:"Failed to execute command '"+commandPopupView.command.Name+"' for  instance '"+model.id+"'.  "+JSON.parse(response.responseText).Error});
+                            }     ,
+                            complete :function(){
+                                $(view.el).find(".actions button").removeAttr("disabled")
+                            }
+                        });
+                    }).fail(view.render());
             },
             'dispose':function(){
                 this.instances.unbind('add', this.add);

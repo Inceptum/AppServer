@@ -1,10 +1,16 @@
 ﻿using System.Linq;
 using System.Threading;
+using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Model;
 using OpenRasta.Web;
 
 namespace Inceptum.AppServer.Management.Handlers
 {
+    public class CommandResult
+    {
+        public string Message { get; set; }
+    }
+
     public class InstancesHandler
     {
         private readonly IHost m_Host;
@@ -62,9 +68,9 @@ namespace Inceptum.AppServer.Management.Handlers
         }
     
         [HttpOperation(HttpMethod.POST, ForUriName = "command")]
-        public OperationResult Command(string instance, string command)
+        public OperationResult Command(string instance, InstanceCommand command)
         {
-            return new OperationResult.OK(new {message = m_Host.ExecuteCommand(instance, command)});
+            return new OperationResult.OK(new CommandResult { Message = m_Host.ExecuteCommand(instance, command) });
         }
 
 
