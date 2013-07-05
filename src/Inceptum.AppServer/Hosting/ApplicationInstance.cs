@@ -129,7 +129,7 @@ namespace Inceptum.AppServer.Hosting
                                                               }
                                                               catch (Exception e)
                                                               {
-                                                                  Commands=new InstanceCommandSpec[0];
+                                                                  Commands=new InstanceCommand[0];
                                                                   Logger.ErrorFormat(e, "Instance '{0}' failed to start", Name);
                                                                   lock (m_SyncRoot)
                                                                   {
@@ -140,7 +140,7 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-        internal InstanceCommandSpec[] Commands { get; private set; }
+        internal InstanceCommand[] Commands { get; private set; }
 
         public void Stop()
         {
@@ -152,7 +152,7 @@ namespace Inceptum.AppServer.Hosting
                     throw new InvalidOperationException("Instance is " + Status);
                 if (Status == HostedAppStatus.Stopped)
                     throw new InvalidOperationException("Instance is not started");
-                Commands = new InstanceCommandSpec[0];
+                Commands = new InstanceCommand[0];
 
                 Status = HostedAppStatus.Stopping;
                 Logger.InfoFormat("Stopping instance '{0}'", Name);
@@ -260,9 +260,9 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-        public string ExecuteCommand(string command)
+        public string ExecuteCommand(InstanceCommand command)
         {
-            var cmd = Commands.FirstOrDefault(c => c.Name == command);
+            var cmd = Commands.FirstOrDefault(c => c.Name == command.Name);
             if(cmd==null)
                 throw new InvalidOperationException(string.Format("Command '{0}' not found",command));
            return m_ApplicationHost.Execute(command);

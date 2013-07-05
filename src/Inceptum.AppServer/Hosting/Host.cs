@@ -237,7 +237,7 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-        public string ExecuteCommand(string name, string command)
+        public string ExecuteCommand(string name, InstanceCommand command)
         {
             try
             {
@@ -252,7 +252,7 @@ namespace Inceptum.AppServer.Hosting
             }
             catch (Exception e)
             {
-                Logger.WarnFormat(e, "Failed to delete instance {0}", name);
+                Logger.WarnFormat(e, " Instance {0} failed to execute command {1} ", name,command);
                 throw;
             }
         }

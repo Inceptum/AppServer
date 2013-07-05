@@ -18,7 +18,8 @@ require.config({
         "fileupload": "libs/jquery.fileupload",
         "jquery.ui.widget": "libs/jquery.ui.widget",
         "bootbox": "libs/bootbox",
-        "jsonlint":"libs/jsonlint"
+        "jsonlint":"libs/jsonlint",
+        "datepicker":"libs/bootstrap-datepicker"
     },
     'shim':
     {
@@ -26,6 +27,9 @@ require.config({
             deps: ["jquery","libs/jquery.iframe-transport","jquery.ui.widget"]
         },
         "bootbox":{
+            deps: ["bootstrap"]
+        },
+        "datepicker":{
             deps: ["bootstrap"]
         },
         "throttle":{

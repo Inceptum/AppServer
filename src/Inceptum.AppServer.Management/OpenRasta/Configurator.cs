@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Inceptum.AppServer.Configuration;
+using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Management.Handlers;
 using Inceptum.AppServer.Management.Resources;
 using Inceptum.AppServer.Model;
@@ -20,6 +22,7 @@ namespace Inceptum.AppServer.Management.OpenRasta
             using (OpenRastaConfiguration.Manual)
             {
                 ResourceSpace.Has.ResourcesOfType<ServerError>().WithoutUri.TranscodedBy<NewtonsoftJsonCodec>();
+                ResourceSpace.Has.ResourcesOfType<InstanceCommand>().WithoutUri.TranscodedBy<NewtonsoftJsonCodec>();
                 ResourceSpace.Has.ResourcesOfType<string>().WithoutUri.TranscodedBy<UtfTextPlainCodec>();
 
                 ResourceSpace.Has
@@ -55,8 +58,8 @@ namespace Inceptum.AppServer.Management.OpenRasta
                     .TranscodedBy<NewtonsoftJsonCodec>();
                 
                 ResourceSpace.Has
-                    .ResourcesOfType<object>()
-                    .AtUri("api/instance/{instance}/{command}").Named("command")
+                    .ResourcesOfType<CommandResult>()
+                    .AtUri("api/instance/{instance}/command").Named("command")
                     .HandledBy<InstancesHandler>()
                     .TranscodedBy<NewtonsoftJsonCodec>();
 
