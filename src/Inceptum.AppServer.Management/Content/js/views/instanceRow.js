@@ -7,13 +7,14 @@ define([
         var View = Backbone.View.extend({
             tagName:"tr",
             initialize: function(){
-                _.bindAll(this, "render");
+                _.bindAll(this, "render" ,"emitCommand");
                 this.model.bind('change', this.render);
             },
             events:{
                 "click .start":"start",
                 "click .stop":"stop",
-                "click .delete":"delete"
+                "click .delete":"delete",
+                "click .command":"emitCommand"
             },
 
 
@@ -31,6 +32,12 @@ define([
                 e.preventDefault();
                 $(this.el).find(".actions button").attr("disabled", "disabled");
                 this.trigger('start',this.model,this);
+            },
+            emitCommand:function(e){
+                console.log($(e.target).data('command')) ;
+                e.preventDefault();
+                $(this.el).find(".actions button").attr("disabled", "disabled");
+                this.trigger("command",this.model,this,$(e.target).data('command'));
             },
             render: function(){
                 this.template = _.template( template, { model: this.model.toJSON() } );

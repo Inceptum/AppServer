@@ -7,12 +7,12 @@ define(['jquery', 'backbone', 'underscore','context'], function($, Backbone, _,c
         },
         idAttribute: "Id",
         start:function(options){
-            this.command("start",options);
+            this.action("start",options);
         },
         stop:function(options){
-            this.command("stop",options);
+            this.action("stop",options);
         },
-        command:function(action,options){
+        action:function(action,options){
             var id = this.id;
             var self=this;
             $.ajax({
@@ -27,7 +27,24 @@ define(['jquery', 'backbone', 'underscore','context'], function($, Backbone, _,c
                         options.error(self,args);
                 }
             });
+        },
+        command:function(command,options){
+            var id = this.id;
+            var self=this;
+            $.ajax({
+                url: context.httpUrl('/api/instance/'+id+'/'+command),
+                type: 'POST',
+                success: function (data) {
+                    if(options.success)
+                        options.success(self,data);
+                },
+                error: function (args) {
+                    if(options.error)
+                        options.error(self,args);
+                }
+            });
         }
+
 
     });
 

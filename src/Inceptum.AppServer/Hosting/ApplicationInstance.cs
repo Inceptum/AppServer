@@ -116,7 +116,7 @@ namespace Inceptum.AppServer.Hosting
                                                               {              
                                                                   createHost();
                                                                   //TODO: may be it is better to move wrapping with MarshalableProxy to castle
-                                                                  m_ApplicationHost.Start(
+                                                                  Commands=m_ApplicationHost.Start(
                                                                       MarshalableProxy.Generate(m_ConfigurationProvider),
                                                                       MarshalableProxy.Generate(m_LogCache),
                                                                       m_Context, Name, Environment);
@@ -129,6 +129,7 @@ namespace Inceptum.AppServer.Hosting
                                                               }
                                                               catch (Exception e)
                                                               {
+                                                                  Commands=new InstanceCommandSpec[0];
                                                                   Logger.ErrorFormat(e, "Instance '{0}' failed to start", Name);
                                                                   lock (m_SyncRoot)
                                                                   {
@@ -138,6 +139,8 @@ namespace Inceptum.AppServer.Hosting
                                                           });
             }
         }
+
+        internal InstanceCommandSpec[] Commands { get; private set; }
 
         public void Stop()
         {
@@ -149,6 +152,8 @@ namespace Inceptum.AppServer.Hosting
                     throw new InvalidOperationException("Instance is " + Status);
                 if (Status == HostedAppStatus.Stopped)
                     throw new InvalidOperationException("Instance is not started");
+                Commands = new InstanceCommandSpec[0];
+
                 Status = HostedAppStatus.Stopping;
                 Logger.InfoFormat("Stopping instance '{0}'", Name);
                 m_CurrentTask = Task.Factory.StartNew(() =>
@@ -253,6 +258,14 @@ namespace Inceptum.AppServer.Hosting
             {
                 Name = name;
             }
+        }
+
+        public string ExecuteCommand(string command)
+        {
+            var cmd = Commands.FirstOrDefault(c => c.Name == command);
+            if(cmd==null)
+                throw new InvalidOperationException(string.Format("Command '{0}' not found",command));
+           return m_ApplicationHost.Execute(command);
         }
     }
 }

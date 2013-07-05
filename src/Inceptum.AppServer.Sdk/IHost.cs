@@ -22,5 +22,6 @@ namespace Inceptum.AppServer
         void UpdateInstance(ApplicationInstanceInfo config);
         void DeleteInstance(string name);
 
+        string ExecuteCommand(string instance, string command);
     }
 }

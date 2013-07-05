@@ -53,6 +53,12 @@ namespace Inceptum.AppServer.Management.OpenRasta
                     .And.AtUri("api/instance/{instance}/restart").Named("restart")
                     .HandledBy<InstancesHandler>()
                     .TranscodedBy<NewtonsoftJsonCodec>();
+                
+                ResourceSpace.Has
+                    .ResourcesOfType<object>()
+                    .AtUri("api/instance/{instance}/{command}").Named("command")
+                    .HandledBy<InstancesHandler>()
+                    .TranscodedBy<NewtonsoftJsonCodec>();
 
                 ResourceSpace.Has
                     .ResourcesOfType<HostInfo>()
