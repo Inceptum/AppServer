@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.ServiceProcess;
 using Inceptum.AppServer.Bootstrap;
 using OpenWrap.Build;
@@ -28,7 +29,6 @@ namespace Inceptum.AppServer
         [LoaderOptimization(LoaderOptimization.MultiDomainHost)]
         public static void Main(params string[] args)
         {
-             
             var setup = new AppServerSetup
                             {
                                 SendHb = false,
@@ -106,6 +106,7 @@ namespace Inceptum.AppServer
             }
         }
 
+      
         private static IDisposable createHost(AppServerSetup setup = null)
         {
             return Bootstrapper.Start(setup);

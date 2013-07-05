@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,6 +20,10 @@ namespace Inceptum.AppServer.Hosting
         public AppDomainInitializer()
         {
             AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
+            AppDomain.CurrentDomain.AssemblyLoad += (sender, args) =>
+                {
+                    Console.WriteLine("Loaded:"+args.LoadedAssembly.FullName);
+                };
         }
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
@@ -33,10 +37,10 @@ namespace Inceptum.AppServer.Hosting
                                                  .ToDictionary(asm => asm.Key, asm => new Lazy<Assembly>(() => Assembly.LoadFrom(asm.Value)));
 
             //Preload assemblies. Otherwise asemblies from appserver folder are loaded (while they may have wrong version)
-            foreach (var loadedAssembly in m_LoadedAssemblies)
+/*            foreach (var loadedAssembly in m_LoadedAssemblies)
             {
                 Assembly assembly = loadedAssembly.Value.Value;
-            }
+            }#1#
             foreach (string dll in nativeDllToLoad)
             {
                 if (LoadLibrary(dll) == IntPtr.Zero)
@@ -102,4 +106,4 @@ namespace Inceptum.AppServer.Hosting
             return null;
         }
     }
-}
+}*/

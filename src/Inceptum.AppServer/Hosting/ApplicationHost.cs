@@ -94,6 +94,9 @@ namespace Inceptum.AppServer.Hosting
                     .Register(Component.For<IHostedApplication>().ImplementedBy<TApp>())
                     .Resolve<IHostedApplication>().Start();
                 Status = HostedAppStatus.Started;
+
+                
+
             }
             catch (Exception e)
             {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using Castle.Core.Logging;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
+using AppDomainInitializer = Inceptum.AppServer.Initializer.AppDomainInitializer;
 
 namespace Inceptum.AppServer.Hosting
 {
@@ -189,14 +191,17 @@ namespace Inceptum.AppServer.Hosting
                                                                                    DisallowApplicationBaseProbing = true,
                                                                                    ConfigurationFile = applicationParams.ConfigFile
                                                                                });
-            m_AppDomain.Load(typeof (HostedAppInfo).Assembly.GetName());
-            var appDomainInitializer =
-                (AppDomainInitializer)
-                m_AppDomain.CreateInstanceFromAndUnwrap(typeof (AppDomainInitializer).Assembly.Location, typeof (AppDomainInitializer).FullName, false, BindingFlags.Default, null, null, null, null);
+            //m_AppDomain.Load(typeof (HostedAppInfo).Assembly.GetName());
+            //var appDomainInitializer = (AppDomainInitializer) m_AppDomain.CreateInstanceFromAndUnwrap(typeof (AppDomainInitializer).Assembly.Location, typeof (AppDomainInitializer).FullName, false, BindingFlags.Default, null, null, null, null);
+            var appDomainInitializer = (AppDomainInitializer)m_AppDomain.CreateInstanceFromAndUnwrap(typeof(AppDomainInitializer).Assembly.Location, typeof(AppDomainInitializer).FullName, false, BindingFlags.Default, null, null, null, null);
 
-
-            appDomainInitializer.Initialize(path, applicationParams.AssembliesToLoad, applicationParams.NativeDllToLoad.ToArray());
-            m_ApplicationHost = appDomainInitializer.CreateHost(applicationParams.AppType);
+            var assembliesToLoad = new Dictionary<AssemblyName, string>(applicationParams.AssembliesToLoad)
+                {
+                    {typeof (AppInfo).Assembly.GetName(), typeof (AppInfo).Assembly.Location},
+                    {typeof (ApplicationInstance).Assembly.GetName(),typeof (ApplicationInstance).Assembly.Location}
+                };
+            appDomainInitializer.Initialize(path, assembliesToLoad, applicationParams.NativeDllToLoad.ToArray());
+            m_ApplicationHost = (IApplicationHost) appDomainInitializer.CreateInstance(typeof(ApplicationHost<>).AssemblyQualifiedName,applicationParams.AppType);
         }
 
         #region IObservable<HostedAppStatus> Members
