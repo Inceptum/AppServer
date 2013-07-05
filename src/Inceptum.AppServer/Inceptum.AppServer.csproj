@@ -202,7 +202,6 @@
     <Compile Include="AppDiscovery\Openwrap\NativeDllExporter.cs" />
     <Compile Include="AppDiscovery\Openwrap\OpenWrapApplicationBrowser.cs" />
     <Compile Include="AppDiscovery\Openwrap\HostedApplicationExporter.cs" />
-    <Compile Include="Hosting\AppDomainInitializer.cs" />
     <Compile Include="Hosting\ApplicationRepositary.cs" />
     <Compile Include="Hosting\Host.cs" />
     <Compile Include="Bootstrap\Bootstrapper.cs" />
@@ -296,7 +295,7 @@
   </Target>
 -->
   <Target Name="AfterBuild">
-    <CreateItem Include="$(OutDir)\*.dll;$(OutDir)\*.pdb;$(OutDir)\*.xml;" Exclude="">
+    <CreateItem Include="$(OutDir)\*.dll;$(OutDir)\*.pdb;$(OutDir)\*.xml;" Exclude="$(OutDir)\AppServer.pdb;$(OutDir)\AppServer.xml">
       <Output TaskParameter="Include" ItemName="FilesToMove" />
     </CreateItem>
     <RemoveDir Directories="$(OutDir)\bin\" />

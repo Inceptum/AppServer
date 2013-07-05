@@ -32,7 +32,7 @@ namespace Inceptum.AppServer.Initializer
             IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
 
             m_LoadedAssemblies = assembliesToLoad.Where(asm => loadedAssemblies.All(a => a.Name != asm.Key.Name))
-                                                 .ToDictionary(asm => asm.Key, asm => new Lazy<Assembly>(() => Assembly.Load(File.ReadAllBytes(asm.Value))));
+                                                 .ToDictionary(asm => asm.Key, asm => new Lazy<Assembly>(() => loadAssembly(asm.Value)));
       
             foreach (string dll in nativeDllToLoad)
             {
@@ -47,7 +47,20 @@ namespace Inceptum.AppServer.Initializer
             // Directory.SetCurrentDirectory(workingDirectory);
         }
 
- 
+        private static Assembly loadAssembly(string path)
+        {
+            byte[] assemblyBytes = File.ReadAllBytes(path);
+            var pdb = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path) + ".pdb");
+            if (File.Exists(pdb))
+            {
+                byte[] pdbBytes = File.ReadAllBytes(pdb);
+                return Assembly.Load(assemblyBytes, pdbBytes);
+            }
+
+            return Assembly.Load(assemblyBytes);
+        }
+
+
         public object CreateInstance(string typeName, params string[] typeArguments)
         {
             Type type = Type.GetType(typeName);
@@ -61,7 +74,7 @@ namespace Inceptum.AppServer.Initializer
             Assembly[] loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
             Assembly assembly =
                 loadedAssemblies.FirstOrDefault(
-                    a => a.GetName().Name == new AssemblyName(args.Name).Name || a.FullName == args.Name || a.GetName().Name == args.Name
+                    a => a.FullName == args.Name || a.GetName().Name == new AssemblyName(args.Name).Name || a.GetName().Name == args.Name
                     );
 
             if (assembly != null)
