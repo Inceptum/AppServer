@@ -7,6 +7,7 @@ using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using Castle.Facilities.Logging;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
@@ -198,7 +199,9 @@ namespace Inceptum.AppServer.Hosting
             var assembliesToLoad = new Dictionary<AssemblyName, string>(applicationParams.AssembliesToLoad)
                 {
                     {typeof (AppInfo).Assembly.GetName(), typeof (AppInfo).Assembly.Location},
-                    {typeof (ApplicationInstance).Assembly.GetName(),typeof (ApplicationInstance).Assembly.Location}
+                    {typeof (ApplicationInstance).Assembly.GetName(),typeof (ApplicationInstance).Assembly.Location},
+                     //AppServer is loaded not from package, so it dependencies used in appDOmain plugin should be provided aswell
+                    {typeof (LoggingFacility).Assembly.GetName(),typeof (LoggingFacility).Assembly.Location}
                 };
             appDomainInitializer.Initialize(path, assembliesToLoad, applicationParams.NativeDllToLoad.ToArray());
             m_ApplicationHost = (IApplicationHost) appDomainInitializer.CreateInstance(typeof(ApplicationHost<>).AssemblyQualifiedName,applicationParams.AppType);

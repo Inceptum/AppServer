@@ -116,6 +116,7 @@ namespace Inceptum.AppServer.Hosting
                         string.Format("Failed to start: {0}{1}Exception while disposing container: {2}", e,
                                       Environment.NewLine, e1));
                 }
+                string[] strings = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name + " " + a.GetName().Version).OrderBy(a => a).ToArray();
                 throw new ApplicationException(string.Format("Failed to start: {0}", e));
             }
         }
