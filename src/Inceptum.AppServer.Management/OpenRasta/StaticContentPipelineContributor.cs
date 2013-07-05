@@ -48,7 +48,8 @@ namespace Inceptum.AppServer.Management.OpenRasta
                     context.Response.Headers["date"] = File.GetCreationTime(GetType().Assembly.Location).ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
                     context.Response.Headers["last-modified"] = File.GetLastWriteTime(GetType().Assembly.Location).ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
                 }
-                context.Response.Headers["Cache-Control"] = debug ? "no-cache" : "public, must-revalidate, max-age=0";
+                //context.Response.Headers["Cache-Control"] = debug ? "no-cache" : "public, must-revalidate, max-age=0";
+                context.Response.Headers["Cache-Control"] = "no-cache";
 
                 
 
