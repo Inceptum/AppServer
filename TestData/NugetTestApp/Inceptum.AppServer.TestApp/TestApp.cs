@@ -38,5 +38,10 @@ namespace Inceptum.AppServer.TestApp
             m_Logger.InfoFormat("Value from app.config: '{0}'", ConfigurationManager.AppSettings["appConfigSetting"]);
             m_JObject = JObject.Parse("{}");
         }
+
+        public string DoSomething(DateTime date)
+        {
+            return string.Format("Something is done. Date {0}", date);
+        }
     }
 }

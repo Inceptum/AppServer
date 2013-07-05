@@ -78,7 +78,8 @@ namespace Inceptum.AppServer.Hosting
                                                Status = instance.Status,
                                                Version = cfg.Version,
                                                AutoStart = cfg.AutoStart,
-                                               ActualVersion=instance.ActualVersion
+                                               ActualVersion=instance.ActualVersion,
+                                               Commands = instance.Commands
                                            }).ToArray();
                     }
             }
@@ -228,6 +229,26 @@ namespace Inceptum.AppServer.Hosting
                 m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
                 updateInstances();
                 instance.Dispose();
+            }
+            catch (Exception e)
+            {
+                Logger.WarnFormat(e, "Failed to delete instance {0}", name);
+                throw;
+            }
+        }
+
+        public string ExecuteCommand(string name, string command)
+        {
+            try
+            {
+                ApplicationInstance instance;
+                lock (m_SyncRoot)
+                {
+                    instance = m_Instances.FirstOrDefault(i => i.Name == name);
+                    if (instance == null)
+                        return null;
+                    return instance.ExecuteCommand(command);
+                }
             }
             catch (Exception e)
             {

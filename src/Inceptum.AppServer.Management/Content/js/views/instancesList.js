@@ -11,7 +11,7 @@ define([
             el: '#main',
             initialize: function(){
                 this.filter=this.options.filter;
-                _(this).bindAll('add', 'remove','reset','destroy','start','stop','dispose');
+                _(this).bindAll('add', 'remove','reset','destroy','start','stop','dispose','command');
                 this.instances=this.options.instances;
                 this.subViews=[];
                 var self=this;
@@ -38,6 +38,7 @@ define([
                 view.bind("destroy",this.destroy);
                 view.bind("start",this.start);
                 view.bind("stop",this.stop);
+                view.bind("command",this.command);
 
 
                 //TODO: sort order id not preserved
@@ -70,6 +71,7 @@ define([
                     v.unbind("destroy",self.destroy);
                     v.unbind("start",self.start);
                     v.unbind("stop",self.stop);
+                    v.unbind("command",self.command);
                     v.close();
                 });
             },
@@ -119,6 +121,20 @@ define([
             stop:function(model,view){
                 var self=this;
                 model.stop({
+                    error:function(model,response){
+                        view.render();
+                        alerts.show({type:"error",text:"Failed to stop instance '"+model.id+"'.  "+JSON.parse(response.responseText).Error});
+                    }
+                });
+            },
+            command:function(model,view,command){
+                var self=this;
+                console.log(model);
+                model.command(command,{
+                    success: function (model,data){
+                        if(typeof data.message!='undefined')
+                            alerts.show({type:"info",text:data.message});
+                    },
                     error:function(model,response){
                         view.render();
                         alerts.show({type:"error",text:"Failed to stop instance '"+model.id+"'.  "+JSON.parse(response.responseText).Error});

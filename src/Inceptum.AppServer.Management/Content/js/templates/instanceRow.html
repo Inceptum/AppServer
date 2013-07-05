@@ -3,6 +3,21 @@
     <td><%=model.Version%><%if(!model.Version || model.Version==""){%><%=model.ActualVersion%> (latest) <%}%></td>
     <td><%=model.Status%></td>
     <td>
+        <% if(model.Commands && model.Commands.length>0) {%>
+        <div class="btn-group">
+            <a class="btn  btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
+                Command
+                <span class="caret"></span>
+            </a>
+
+            <ul class="dropdown-menu">
+                <% _.each(model.Commands, function(command) { %>  <a data-command="<%= command.Name %>" class="command" href="#"><%= command.Name %></a> <% }); %>
+            </ul>
+
+        </div>
+        <%}%>
+    </td>
+    <td>
         <div class="btn-group actions">
             <button class="btn btn-mini start" disabled="disabled" data-action="start">Start</button>
             <button class="btn btn-mini stop" disabled="disabled" data-action="stop">Stop</button>

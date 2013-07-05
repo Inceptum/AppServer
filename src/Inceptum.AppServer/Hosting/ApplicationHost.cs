@@ -24,6 +24,8 @@ namespace Inceptum.AppServer.Hosting
     internal class ApplicationHost<TApp> : MarshalByRefObject, IApplicationHost where TApp : IHostedApplication
     {
         private WindsorContainer m_Container;
+        private IHostedApplication m_HostedApplication;
+
         internal WindsorContainer Container
         {
             get { return m_Container; }
@@ -41,7 +43,7 @@ namespace Inceptum.AppServer.Hosting
         public HostedAppStatus Status { get; private set; }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void Start(IConfigurationProvider configurationProvider, ILogCache logCache, AppServerContext context, string instanceName, string environment)
+        public InstanceCommandSpec[] Start(IConfigurationProvider configurationProvider, ILogCache logCache, AppServerContext context, string instanceName, string environment)
         {
             Status = HostedAppStatus.Starting;
             if (m_Container != null)
@@ -91,12 +93,18 @@ namespace Inceptum.AppServer.Hosting
                                  })
                     )
                     .Install(FromAssembly.Instance(typeof(TApp).Assembly, new PluginInstallerFactory()))
-                    .Register(Component.For<IHostedApplication>().ImplementedBy<TApp>())
-                    .Resolve<IHostedApplication>().Start();
+                    .Register(Component.For<IHostedApplication>().ImplementedBy<TApp>());
+                m_HostedApplication = m_Container.Resolve<IHostedApplication>();
+                var allowedTypes = new []{typeof(string),typeof(int),typeof(DateTime),typeof(decimal)};
+                var commands =
+                    m_HostedApplication.GetType()
+                                     .GetMethods()
+                                     .Where(m => m.Name != "Start" && m.Name != "ToString" && m.Name != "GetHashCode" && m.Name != "GetType")
+                                     .Where(m => m.GetParameters().All(p => allowedTypes.Contains(p.ParameterType)))
+                                     .Select(m => new InstanceCommandSpec( m.Name,m.GetParameters().Select(p => new InstanceCommandParam{Name = p.Name,Type = p.ParameterType.Name}).ToArray()));
+                m_HostedApplication.Start();
                 Status = HostedAppStatus.Started;
-
-                
-
+                return commands.ToArray();
             }
             catch (Exception e)
             {
@@ -130,6 +138,15 @@ namespace Inceptum.AppServer.Hosting
             m_Container.Dispose();
             m_Container = null;
             Status = HostedAppStatus.Stopped;
+            m_HostedApplication = null;
+        }
+
+        public string Execute(string command)
+        {
+            var methodInfo = m_HostedApplication.GetType().GetMethod(command);
+            var result=methodInfo.Invoke(m_HostedApplication,
+                              methodInfo.GetParameters().Select(p => p.ParameterType.IsValueType ? Activator.CreateInstance(p.ParameterType) : null).ToArray());
+            return result == null ? null : result.ToString();
         }
 
         #endregion

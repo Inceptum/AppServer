@@ -60,6 +60,12 @@ namespace Inceptum.AppServer.Management.Handlers
         {
             m_Host.StopInstance(instance);
         }
+    
+        [HttpOperation(HttpMethod.POST, ForUriName = "command")]
+        public OperationResult Command(string instance, string command)
+        {
+            return new OperationResult.OK(new {message = m_Host.ExecuteCommand(instance, command)});
+        }
 
 
         [HttpOperation(HttpMethod.POST, ForUriName = "restart")]

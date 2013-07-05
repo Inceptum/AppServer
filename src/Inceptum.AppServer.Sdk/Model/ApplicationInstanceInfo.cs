@@ -1,4 +1,5 @@
 ﻿using System;
+using Inceptum.AppServer.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -22,5 +23,7 @@ namespace Inceptum.AppServer.Model
         public Version ActualVersion { get; set; }
 
         public string Environment { get; set; }
+
+        public InstanceCommandSpec[] Commands { get; set; }
     }
 }
