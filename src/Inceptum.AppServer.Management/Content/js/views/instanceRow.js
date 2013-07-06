@@ -17,7 +17,6 @@ define([
                 "click .command":"emitCommand"
             },
 
-
             'delete' : function(e){
                 e.preventDefault();
                 $(this.el).find(".actions button").attr("disabled", "disabled");
@@ -54,6 +53,7 @@ define([
                     $(this.el).find(".start").removeAttr("disabled");
                     $(this.el).find(".delete").removeAttr("disabled");
                 }
+                $(this.el).find(".commands").removeAttr("disabled");
 
                 return this;
             },

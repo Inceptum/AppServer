@@ -1,26 +1,24 @@
+
     <td><a href="#/instances/<%=model.Name%>"><%=model.Name%></a></td>
     <td><a href="#/applications/<%=model.ApplicationId%>"><%=model.ApplicationId%></a></td>
     <td><%=model.Version%><%if(!model.Version || model.Version==""){%><%=model.ActualVersion%> (latest) <%}%></td>
     <td><%=model.Status%></td>
     <td>
+        <div class="btn-group actions pull-right">
         <% if(model.Commands && model.Commands.length>0) {%>
-        <div class="btn-group">
-            <a class="btn  btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
-                Command
+            <button class="btn btn-group commands">
+            <a class="btn  btn-mini  dropdown-toggle" data-toggle="dropdown" href="#">
+                <i class="icon-wrench"></i>
                 <span class="caret"></span>
             </a>
-
             <ul class="dropdown-menu">
                 <% _.each(model.Commands, function(command) { %>  <a data-command="<%= command.Name %>" class="command" href="#"><%= command.Name %></a> <% }); %>
             </ul>
-
-        </div>
+            </button>
         <%}%>
-    </td>
-    <td>
-        <div class="btn-group actions">
             <button class="btn btn-mini start" disabled="disabled" data-action="start">Start</button>
             <button class="btn btn-mini stop" disabled="disabled" data-action="stop">Stop</button>
             <button class="btn btn-mini btn-danger delete" disabled="disabled"  data-action="delete">Delete</button>
+
         </div>
     </td>
