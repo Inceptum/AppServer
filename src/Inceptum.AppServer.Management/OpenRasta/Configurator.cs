@@ -90,9 +90,9 @@ namespace Inceptum.AppServer.Management.OpenRasta
                 ResourceSpace.Has
                     .ResourcesOfType<IDownloadableFile>()
                     .AtUri("api/configurations/{configuration}/export").Named("export")
-                    .And.AtUri("api/configurations/{configuration}/import")
+                    .And.AtUri("api/configurations/{configuration}/import").Named("import")
                     .HandledBy<ConfigurationsHandler>()
-                    .TranscodedBy<ApplicationOctetStreamCodec>(null); 
+                    .TranscodedBy<ApplicationOctetStreamCodec>(); 
             }
         }
 
