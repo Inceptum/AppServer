@@ -33,7 +33,6 @@ define([
                 }
                 sorted=_.sortBy(sorted, function(v){ return v.name; });
 
-                                                              console.log(sorted);
                 this.template = _.template( template, { model: sorted } );
                 $(this.el).html(this.template);
                 $(this.el).find('*[data-name="'+this.activeItem.Name+'"][data-vendor="'+this.activeItem.Vendor+'"]').addClass("active");
@@ -46,7 +45,6 @@ define([
                     success: function () {
                     },
                     error: function (args) {
-                        console.log(args);
                         var error="";
                         if(args.responseText)
                             error=JSON.parse(args.responseText).Error;
