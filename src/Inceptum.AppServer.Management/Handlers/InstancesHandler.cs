@@ -34,9 +34,9 @@ namespace Inceptum.AppServer.Management.Handlers
             return new OperationResult.OK(instanceInfo);
         }
 
-        public ApplicationInstanceInfo[] GetByApplication(string application)
+        public ApplicationInstanceInfo[] GetByApplication(string vendor,string application)
         {
-            return m_Host.Instances.Where(i => i.ApplicationId == application).ToArray();
+            return m_Host.Instances.Where(i => i.ApplicationId == application && i.ApplicationVendor == vendor).ToArray();
         }
 
         public void Post(ApplicationInstanceInfo instanceConfig)

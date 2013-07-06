@@ -55,8 +55,8 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
 			'serverStatus': 'serverStatus',
 			'serverLog': 'serverLog',
 			'applications': 'applications',
-			'applications/:app': 'applications',
-			'applications/:app/instances/create': 'createInstance',
+			'applications/:vendor/:app': 'applications',
+			'applications/:vendor/:app/instances/create': 'createInstance',
 			'instances/:name': 'instance',
 			'configurations': 'configurations',
 			'configurations/:config': 'configurations',
@@ -84,8 +84,8 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
             var active;
             var application;
             if (model) {
-                active = model.get("ApplicationId");
-                application = this.apps.get(model.get("ApplicationId"));
+                active = {Name:model.get("ApplicationId"),Vendor:model.get("ApplicationVendor")};
+                application = this.apps.get(active);
             }
             this.showViews([
                 new AppsSideBarView({applications:this.apps, active:active}),
@@ -93,23 +93,25 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
             ]);
             this.headerView.selectMenuItem("applications");
 		},
-		'applications': function(app){
-            var views=[new AppsSideBarView({applications:this.apps, active:app})];
+		'applications': function(vendor,app){
+            var views=[new AppsSideBarView({applications:this.apps, active:{Vendor:vendor,Name:app}})];
             var application;
             if(app)
-               application = this.apps.get(app);
+               //application = this.apps.get({Vendor:"InceptumSoft",Name:"TestApp"});
+                application = this.apps.get({Vendor:vendor,Name:app});
+
             if(application)
                 views.push(new AppView({model:application,instances:this.instances}));
 
             this.showViews(views);
             this.headerView.selectMenuItem("applications");
 		},
-		'createInstance': function(app){
+		'createInstance': function(vendor,app){
             var application;
             if (app)
-                application = this.apps.get(app);
+                application = this.apps.get({Vendor:vendor,Name:app});
             var views=[
-                new AppsSideBarView({applications:this.apps,  active:app}),
+                new AppsSideBarView({applications:this.apps,  active:{Vendor:vendor,Name:app}}),
                 new InstanceEditView({application:application})
             ];
             this.showViews(views);

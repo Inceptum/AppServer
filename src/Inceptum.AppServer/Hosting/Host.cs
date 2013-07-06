@@ -74,6 +74,7 @@ namespace Inceptum.AppServer.Hosting
                                                Name = cfg.Name,
                                                Id = cfg.Name,
                                                ApplicationId = cfg.ApplicationId,
+                                               ApplicationVendor = cfg.ApplicationVendor,
                                                Environment = cfg.Environment,
                                                Status = instance.Status,
                                                Version = cfg.Version,
@@ -124,11 +125,13 @@ namespace Inceptum.AppServer.Hosting
                 throw new ArgumentException("Instance name should be not empty string");
             if (string.IsNullOrEmpty(config.ApplicationId))
                 throw new ArgumentException("Instance application is not provided");
+            if (string.IsNullOrEmpty(config.ApplicationVendor))
+                throw new ArgumentException("Instance application is not provided");
             if (string.IsNullOrEmpty(config.Environment))
                 throw new ArgumentException("Instance environment is not provided");
 
-            if (m_ApplicationRepositary.Applications.All(x => x.Name != config.ApplicationId))
-                throw new ArgumentException("Application '" + config.ApplicationId + "' not found");
+            if (m_ApplicationRepositary.Applications.All(x => x.Name != config.ApplicationId && x.Vendor==config.ApplicationVendor))
+                throw new ArgumentException("Application '" + config.ApplicationVendor+"(c) "+config.ApplicationId + "' not found");
 
         }
 
@@ -174,6 +177,7 @@ namespace Inceptum.AppServer.Hosting
                     Name = config.Name,
                     Version = config.Version,
                     ApplicationId = config.ApplicationId,
+                    ApplicationVendor = config.ApplicationVendor,
                     Environment = config.Environment,
                     AutoStart = config.AutoStart
                 };
@@ -199,6 +203,7 @@ namespace Inceptum.AppServer.Hosting
                     Name = config.Name,
                     Version = config.Version,
                     ApplicationId = config.ApplicationId,
+                    ApplicationVendor = config.ApplicationVendor,
                     Environment =  config.Environment,
                     AutoStart = config.AutoStart
                 };

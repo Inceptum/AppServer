@@ -18,7 +18,7 @@ define([
                 var self=this;
                 var filtered;
                 if(this.filter)
-                    filtered=this.instances.select(function(i){return i.get("ApplicationId")==self.filter;});
+                    filtered=this.instances.select(function(i){return i.get("ApplicationId")==self.filter.ApplicationId && i.get("ApplicationVendor")==self.filter.ApplicationVendor ;});
                 else
                     filtered=this.instances.models;
                 _.each(filtered,function(instance){
@@ -30,7 +30,7 @@ define([
                 this.rendered=false;
             },
             add : function(instance) {
-                if(this.filter && instance.get("ApplicationId")!=this.filter)
+                if(this.filter && (instance.get("ApplicationId")!=this.filter.ApplicationId || instance.get("ApplicationVendor")!=this.filter.ApplicationVendor))
                     return;
                 var view = new instanceView({
                     tagName : 'tr',
@@ -53,7 +53,7 @@ define([
                 }
             },
             remove : function(instance) {
-                if(this.filter && instance.get("ApplicationId")!=this.filter)
+                if(this.filter && (instance.get("ApplicationId")!=this.filter.ApplicationId || instance.get("ApplicationVendor")!=this.filter.ApplicationVendor))
                     return;
                 var viewToRemove = _(this.subViews).select(function(v) { return v.model === instance; })[0];
                 this.subViews = _(this.subViews).without(viewToRemove);

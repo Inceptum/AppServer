@@ -13,16 +13,16 @@
     <div class="control-group">
         <label class="control-label" for="inputApplication">Application</label>
         <div class="controls">
-            <% if(!model.Id){%>
-            <input disabled="disabled" type="text" id="inputApplication"  placeholder="Application" value="<%=model.ApplicationId%>">
-            <% }else {%>
-            <%=model.ApplicationId%>
-            <% }%>
+            <dd>
+                <label>
+                <a href="#/applications/<%=model.ApplicationVendor%>/<%=model.ApplicationId%>"><%=model.ApplicationVendor%>(c) <%=model.ApplicationId%></a>
+            </label>
+            </dd>
         </div>
     </div>
     
     <div class="control-group">
-        <label class="control-label" for="inputEnvironment">Environment</label>
+        <label class="control-label" for="Environment">Environment</label>
         <div class="controls">
             <input type="text" id="Environment" name="Environment" placeholder="Environment" value="<%=model.Environment%>">
         </div>
