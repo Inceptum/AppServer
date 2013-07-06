@@ -6,7 +6,7 @@ define([
     'text!templates/commandPopup.html','datepicker'],
     function($, Backbone, _,alerts, template){
         var View = Backbone.View.extend({
-            className: "modal hide ",
+            className: "modal hide fade",
             initialize: function(){
                 _(this).bindAll('change');
             },
@@ -45,7 +45,7 @@ define([
 
                 var deferred = this.deferred = new $.Deferred;
                 this.template = _.template( template, this.command );
-                $(this.el).html(this.template);
+                $(this.el).html(this.template).modal({backdrop:true,show:true});
                 $(this.el).find('.datepicker').datepicker({autoclose:true,format:"dd/mm/yyyy"});
                 $('body').append(this.el);
 
@@ -59,7 +59,7 @@ define([
                 return deferred;
             },
             hide: function(){
-                this.$el.modal('hide');
+                this.$el.remove();
             },
             'dispose':function(){
 

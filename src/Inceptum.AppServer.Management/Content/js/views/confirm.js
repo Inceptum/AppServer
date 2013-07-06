@@ -41,7 +41,7 @@ define([
                 },options);
                 var deferred = this.deferred = new $.Deferred;
                 this.template = _.template( template, params );
-                $(this.el).html(this.template);
+                $(this.el).html(this.template).modal({backdrop:true,show:true});
 
                 $('body').append(this.el);
 
