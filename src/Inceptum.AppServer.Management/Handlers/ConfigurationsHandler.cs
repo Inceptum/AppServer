@@ -64,6 +64,7 @@ namespace Inceptum.AppServer.Management.Handlers
             m_Provider.DeleteBundle(configuration, bundle);
         }
 
+        [HttpOperation(HttpMethod.POST, ForUriName = "import")]
         public OperationResult PostImport(string configuration, IFile file)
         {
             var memoryStream = new MemoryStream();
@@ -112,7 +113,7 @@ namespace Inceptum.AppServer.Management.Handlers
                     newEntry.DateTime = DateTime.Now;
 
                     zipStream.PutNextEntry(newEntry);
-                    var memStreamIn = new MemoryStream(Encoding.UTF8.GetBytes(bundle.Content));
+                    var memStreamIn = new MemoryStream(Encoding.UTF8.GetBytes(bundle.PureContent));
                     StreamUtils.Copy(memStreamIn, zipStream, new byte[4096]);
                     zipStream.CloseEntry();
                 }

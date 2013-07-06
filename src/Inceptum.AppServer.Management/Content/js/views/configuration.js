@@ -111,10 +111,11 @@ define([
                 $('#progress .bar').css('width','0%');
                 var self=this;
                 this.uploader=this.importDialog.find("#inputFile").fileupload({
-                    dataType: 'json',
-                    multipart:false,
+                   /* dataType: 'json',*/
+                    multipart:true,
                     autoUpload:false,
                     fileInput:null,
+                    paramName:"file",
                     done: function (e, data) {
                         $('#progressAlert').addClass("hide");
                         self.model.fetch({async:false});
