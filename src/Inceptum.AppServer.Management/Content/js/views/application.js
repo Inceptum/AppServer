@@ -30,7 +30,7 @@ define([
                 this.template = _.template( template, { model: this.model.toJSON() } );
                 $(this.el).html(this.template);
                 $(this.el).find('.app-versions ul li a').first().click();
-                this.instancesList = new InstancesListView({ el: $(this.el).find(".instances"), instances:this.instances, filter:this.model.get("Name")});
+                this.instancesList = new InstancesListView({ el: $(this.el).find(".instances"), instances:this.instances, filter:{ApplicationId:this.model.get("Name"),ApplicationVendor:this.model.get("Vendor")}});
                 this.instancesList.render();
             },
             'dispose':function(){

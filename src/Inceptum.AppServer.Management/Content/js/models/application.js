@@ -1,4 +1,4 @@
-define(['jquery', 'backbone', 'underscore','collections/applicationVersions'], function($, Backbone, _,ApplicationVersions){
+define(['jquery', 'backbone', 'underscore','collections/applicationVersions','backbone.composite.keys'], function($, Backbone, _,ApplicationVersions){
 
     var Model = Backbone.Model.extend({
 
@@ -10,8 +10,7 @@ define(['jquery', 'backbone', 'underscore','collections/applicationVersions'], f
         url:function () {
             return "/api/applications/" + this.get("Configuration") + "/" + this.id;
         },
-        idAttribute: "Name"
-
+        idAttribute: ['Vendor', "Name"]
     });
 
     return Model;

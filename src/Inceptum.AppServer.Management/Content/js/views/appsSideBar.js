@@ -21,14 +21,22 @@ define([
                  this.render();
             },
             remove:function(model){
-                 if(model.id == this.activeItem)
+                 if(model.attributes.Vendor == this.activeItem.Vendor&& model.attributes.Name==this.activeItem.Name)
                      this.activeItem=null;
                  this.render();
             },
             render: function(){
-                this.template = _.template( template, { model: this.applications.toJSON() } );
+                var grouped=_.groupBy(this.applications.toJSON(),function(a){return a.Vendor;})
+                var sorted=[];
+                for ( var vendor in grouped ){
+                    sorted.push({name:vendor,apps:grouped[vendor]});
+                }
+                sorted=_.sortBy(sorted, function(v){ return v.name; });
+
+                                                              console.log(sorted);
+                this.template = _.template( template, { model: sorted } );
                 $(this.el).html(this.template);
-                $(this.el).find('*[data-id="'+this.activeItem+'"]').addClass("active");
+                $(this.el).find('*[data-name="'+this.activeItem.Name+'"][data-vendor="'+this.activeItem.Vendor+'"]').addClass("active");
             },
             rediscoverApps:function(e,sender){
                 var self=this;

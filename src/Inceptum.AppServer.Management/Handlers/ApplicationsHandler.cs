@@ -20,9 +20,9 @@ namespace Inceptum.AppServer.Management.Handlers
             
         }
 
-        public OperationResult Get(string application)
+        public OperationResult Get(string vendor,string application)
         {
-            Application app = m_Host.Applications.FirstOrDefault(a => a.Name == application);
+            Application app = m_Host.Applications.FirstOrDefault(a => a.Name == application && a.Vendor==vendor);
             if (app == null)
                 return new OperationResult.NotFound() {Description = "Application not found"};
             return new OperationResult.OK { ResponseResource = app };

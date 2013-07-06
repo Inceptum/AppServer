@@ -7,6 +7,7 @@ require.config({
         "underscore": "libs/underscore-min",
 //        "backbone": "libs/backbone-min",
         "backbone": "libs/backbone",
+        "backbone.composite.keys": "libs/backbone-composite-keys",
         "bootstrap":"libs/bootstrap.min",
         "scrollTo":"libs/jquery.scrollTo-min",
         "shortcut":"libs/shortcut",
@@ -48,6 +49,9 @@ require.config({
         backbone: {
             'deps': ['jquery', 'underscore'],
             'exports': 'Backbone'
+        },
+        "backbone.composite.keys": {
+            'deps': ['backbone']
         },
         underscore: {
             'exports': '_'

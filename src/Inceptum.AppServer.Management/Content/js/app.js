@@ -28,9 +28,14 @@ define(['routers/home','jquery','services/notificationsListener'], function(Rout
         _.each( models, function(model) {
 
             var idAttribute = this.model.prototype.idAttribute;
-            var modelId = model[idAttribute];
+            if(!(idAttribute instanceof Array))
+                idAttribute=[idAttribute];
+            //handling complex ids
+            var modelId = _.map(idAttribute, function(attr){ return model[attr]; }).join('-');
 
-            if ( modelId == undefined ) throw new Error("Can't update a model with no id attribute. Please use 'reset'.");
+            if ( modelId == undefined ) {
+                throw new Error("Can't update a model with no id attribute. Please use 'reset'.");
+            }
 
             if ( this._byId[modelId] ) {
                 var attrs = (model instanceof Backbone.Model) ? _.clone(model.attributes) : _.clone(model);

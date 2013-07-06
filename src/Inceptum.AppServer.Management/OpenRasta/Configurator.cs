@@ -34,13 +34,13 @@ namespace Inceptum.AppServer.Management.OpenRasta
                 
                 ResourceSpace.Has
                     .ResourcesOfType<Application>()
-                    .AtUri("api/applications/{application}")
+                    .AtUri("api/applications/{vendor}/{application}")
                     .HandledBy<ApplicationsHandler>()
                     .TranscodedBy<NewtonsoftJsonCodec>();
 
                 ResourceSpace.Has
                     .ResourcesOfType<ApplicationInstanceInfo[]>()
-                    .AtUri("api/applications/{application}/instances")
+                    .AtUri("api/applications/{vendor}/{application}/instances")
                     .And.AtUri("api/instances")
                     .HandledBy<InstancesHandler>()
                     .TranscodedBy<NewtonsoftJsonCodec>();

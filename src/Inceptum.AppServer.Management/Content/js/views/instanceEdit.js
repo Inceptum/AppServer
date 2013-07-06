@@ -12,7 +12,7 @@ define([
                 _(this).bindAll('submit');
                 this.application=this.options.application;
                 if(!this.model)
-                    this.model=new instanceModel({"ApplicationId":this.application.id});
+                    this.model=new instanceModel({"ApplicationId":this.application.attributes.Name,"ApplicationVendor":this.application.attributes.Vendor});
                 else
                     this.model=this.model.clone();
             },
@@ -43,7 +43,7 @@ define([
                 this.model.save(null, {
                     success: function (model) {
                         alerts.show({type:"info",text:"Instance '"+model.get("Name")+"' "+action+"d"});
-                        self.navigate('#/applications/'+model.get("ApplicationId"), true);
+                        self.navigate('#/applications/'+model.get("ApplicationVendor")+'/'+model.get("ApplicationId"), true);
                     },
                     error: function (model,response) {
                         var instanceId=action==="update"?"'"+model.id+"'":"";

@@ -8,6 +8,7 @@ namespace Inceptum.AppServer.Model
     {
         public string Name { get; set; }
         public string ApplicationId { get; set; }
+        public string ApplicationVendor { get; set; }
         [JsonConverter(typeof(StringVersionJsonConverter))]
         public Version Version { get; set; }
         public bool AutoStart { get; set; }

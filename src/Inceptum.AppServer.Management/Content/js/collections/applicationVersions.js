@@ -3,5 +3,6 @@ define(['jquery', 'backbone', 'underscore','models/applicationVersion'], functio
         model:ApplicationVersionModel
     });
 
+
     return Collection;
 });

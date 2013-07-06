@@ -11,26 +11,21 @@
         }
     </style>
     <ul class="nav nav-list appsMenu">
-        <!--                <li class="nav-header">System</li>
-       <li><a href="#">Configuration <span class="badge">1</span></a></li>
-       <li><a href="#">Management <span class="badge">1</span></a></li>
-       <li class="nav-header">Hosted</li>-->
-        <li class="nav-header">Applications <span class="pull-right">
+        <li class="nav-header"> <span class="pull-right">
             <a class="btn btn-mini rediscover" type="button" title="Rediscover"><i class="icon-refresh"></i></a>
         </span></li>
-        <% _.each(model,function(app) { %>
-<!--
-        <li data-id="<%= app.Name %>"><a style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: block;width:190px" href="#applications/<%= app.Name %>"><i class="icon-cog"></i> <%= app.Name %></a></li>
--->
-        <li data-id="<%= app.Name %>">
-            <a href="#applications/<%= app.Name %>" class="item"><i class="icon-cog"></i><span><%= app.Name %></span></a>
+        <%
+        console.log(model);
+        _.each(model,function(vendor){
+        console.log(vendor);
+        %><li class="nav-header"><%=vendor.name%></li><%
+        _.each(vendor.apps,function(app) { %>
+        <li data-name="<%= app.Name %>"data-vendor="<%= app.Vendor %>">
+            <a href="#applications/<%= app.Vendor %>/<%= app.Name %>" class="item"><i class="icon-cog"></i><span><%= app.Name %></span></a>
         </li>
-        <% }); %>
-        <!--
-                    <li class="active"><a href="#">TestApp <span class="badge">2</span></a></li>
-                    <li><a href="#">Orchestrator</a></li>
-                    <li ><a href="#">DiasoftAdapter</a></li>
-                    <li><a href="#">CyberplatAdapter</a></li>
-        -->
+
+        <% });
+
+        });%>
     </ul>
 </div>
