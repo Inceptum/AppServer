@@ -15,9 +15,7 @@
             <a class="btn btn-mini rediscover" type="button" title="Rediscover"><i class="icon-refresh"></i></a>
         </span></li>
         <%
-        console.log(model);
         _.each(model,function(vendor){
-        console.log(vendor);
         %><li class="nav-header"><%=vendor.name%></li><%
         _.each(vendor.apps,function(app) { %>
         <li data-name="<%= app.Name %>"data-vendor="<%= app.Vendor %>">

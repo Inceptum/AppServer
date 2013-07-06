@@ -59,7 +59,7 @@ define([
                 return deferred;
             },
             hide: function(){
-                this.$el.remove();
+                this.$el.modal('hide');
             },
             'dispose':function(){
 
