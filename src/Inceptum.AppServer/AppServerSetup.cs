@@ -1,7 +1,13 @@
+using System.Collections.Generic;
+
 namespace Inceptum.AppServer
 {
     class AppServerSetup
     {
+        public AppServerSetup()
+        {
+            DebugFolders = new List<string>();
+        }
         public string ConfSvcUrl { get; set; }
         public string[] AppsToStart { get; set; }
         public string Environment { get; set; }
@@ -10,6 +16,6 @@ namespace Inceptum.AppServer
         public int HbInterval { get; set; }
         public string[] DebugWraps { get; set; }
 
-        public object DebugFolder { get; set; }
+        public List<string> DebugFolders { get; set; }
     }
 }
