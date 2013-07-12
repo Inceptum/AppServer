@@ -37,7 +37,7 @@ namespace Inceptum.AppServer.AppDiscovery
 
     public class FolderApplicationBrowser : IApplicationBrowser
     {
-        private readonly string m_Folder;
+        private readonly string[] m_Folders;
         private ILogger m_Logger = NullLogger.Instance;
 
         public string Name
@@ -45,14 +45,15 @@ namespace Inceptum.AppServer.AppDiscovery
             get { return "FileSystem"; }
         }
 
-        public FolderApplicationBrowser(string folder)
+        public FolderApplicationBrowser(string[] folders)
         {
-            if (folder == null) throw new ArgumentNullException("folder");
-            if (!Directory.Exists(folder)) throw new ArgumentException("folder", string.Format("Folder '{0}' not found", folder));
-            if (!Directory.Exists(folder))
-                Directory.CreateDirectory(folder);
+            if (folders == null) throw new ArgumentNullException("folders");
+            foreach (var folder in folders)
+            {
+                if (!Directory.Exists(folder)) throw new ArgumentException("folder", string.Format("Folder '{0}' not found", folder));
+            }
 
-            m_Folder = Path.GetFullPath(folder);
+            m_Folders = folders.Select(folder => Path.GetFullPath(folder)).ToArray();
         }
 
         public ILogger Logger
@@ -65,7 +66,18 @@ namespace Inceptum.AppServer.AppDiscovery
 
         public IEnumerable<HostedAppInfo> GetAvailabelApps()
         {
-            var apps = (from file in Directory.GetFiles(Path.GetFullPath(m_Folder), "*.dll").Concat(Directory.GetFiles(Path.GetFullPath(m_Folder), "*.exe"))
+            return m_Folders.SelectMany(GetAvailabelAppsInFolder);
+        }
+
+        public ApplicationParams GetApplicationParams(string application, Version version)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+        public IEnumerable<HostedAppInfo> GetAvailabelAppsInFolder(string folder)
+        {
+            var apps = (from file in Directory.GetFiles(Path.GetFullPath(folder), "*.dll").Concat(Directory.GetFiles(Path.GetFullPath(folder), "*.exe"))
                         let asm = CeceilExtencions.TryReadAssembly(file)
                         where asm != null
                         let attribute = asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof(HostedApplicationAttribute).FullName)
@@ -75,7 +87,7 @@ namespace Inceptum.AppServer.AppDiscovery
                         select new { assembly = asm, file, name, vendor });
 
             var assemblies =
-                from file in Directory.GetFiles(Path.GetFullPath(m_Folder), "*.dll").Concat(Directory.GetFiles(Path.GetFullPath(m_Folder), "*.exe"))
+                from file in Directory.GetFiles(Path.GetFullPath(folder), "*.dll").Concat(Directory.GetFiles(Path.GetFullPath(folder), "*.exe"))
                 let asm = CeceilExtencions.TryReadAssembly(file)
                 where asm != null
                 select new {assemblyName = asm.FullName, file};
@@ -96,7 +108,7 @@ namespace Inceptum.AppServer.AppDiscovery
                 string config=null;
                 if (File.Exists(app.file + ".config"))
                     config =app.file+".config";
-                if(File.Exists(Path.Combine(m_Folder,"app.config")))
+                if(File.Exists(Path.Combine(folder,"app.config")))
                     config =app.file+".config";
                 yield return new HostedAppInfo(app.name, app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, assembliesToLoad, new string[0])
                     {
@@ -105,12 +117,7 @@ namespace Inceptum.AppServer.AppDiscovery
             }
         }
 
-        public ApplicationParams GetApplicationParams(string application, Version version)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
+       
 
         public static AppInfo ReadAppInfo(AssemblyDefinition assembly)
         {

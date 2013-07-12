@@ -77,7 +77,7 @@ namespace Inceptum.AppServer
                     case "-debug-folder": 
                         i++;
                         if (i < args.Length)
-                            setup.DebugFolder = args[i];
+                            setup.DebugFolders.Add(args[i]);
                         break;
                     default:
                         Console.WriteLine("Unknown arg: " + args[i]);

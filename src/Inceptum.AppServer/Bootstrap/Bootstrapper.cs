@@ -96,8 +96,8 @@ namespace Inceptum.AppServer.Bootstrap
                             })*/
                             );
 
-                if (setup.DebugFolder != null)
-                    container.Register(Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(new {folder = setup.DebugFolder}));
+                if (setup.DebugFolders.Any())
+                    container.Register(Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(new {folders = setup.DebugFolders.ToArray()}));
 
                 //HeartBeats
                 if (setup.SendHb)
