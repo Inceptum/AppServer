@@ -21,9 +21,10 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
 
         public NugetApplicationBrowser(ILogger logger,string applicationRepository, params string[] dependenciesRepositories)
         {
+            applicationRepository=Path.Combine(AppDomain.CurrentDomain.BaseDirectory, applicationRepository);
             Logger = logger;
             m_DependenciesRepositories = dependenciesRepositories.Select(
-                r => Directory.Exists(r)?Path.GetFullPath(r):r).ToArray();
+                r => Directory.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, r)) ? Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, r)) : r).ToArray();
             m_ApplicationRepository = Directory.Exists(applicationRepository) ? Path.GetFullPath(applicationRepository) : applicationRepository;
         }
 
@@ -62,7 +63,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                 new[] {appsRepo}.Concat(dependencyRepositories)
                 );
 
-            var manager = new PackageManager(dependencyRepo, @".\NugetLoaclRepo") {Logger = this};
+            var manager = new PackageManager(dependencyRepo, Path.Combine(AppDomain.CurrentDomain.BaseDirectory,@".\NugetLoaclRepo")) {Logger = this};
 
 
             IEnumerable<IPackage> dependencies=null;

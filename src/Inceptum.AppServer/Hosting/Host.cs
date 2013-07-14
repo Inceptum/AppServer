@@ -41,7 +41,7 @@ namespace Inceptum.AppServer.Hosting
             m_Context = new AppServerContext
             {
                 Name = Name,
-                AppsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "apps"),
+                AppsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "apps"),
                 BaseDirectory = AppDomain.CurrentDomain.BaseDirectory
             };
         }
