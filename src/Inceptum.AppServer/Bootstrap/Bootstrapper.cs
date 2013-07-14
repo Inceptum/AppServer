@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
@@ -55,7 +56,7 @@ namespace Inceptum.AppServer.Bootstrap
             {
                 container.Register(
                     Component.For<IConfigurationProvider, IManageableConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>().Named("localStorageConfigurationProvider")
-                                  .DependsOn(new { configFolder = Path.Combine(Environment.CurrentDirectory, "Configuration") }));
+                                  .DependsOn(new { configFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration") }));
 
                 //If remote configuration source is provided in app.config use it by default
                 if (setup.ConfSvcUrl != null)
