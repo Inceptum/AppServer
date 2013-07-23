@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using Castle.Core;
 using Castle.MicroKernel;
@@ -6,44 +7,61 @@ using Castle.MicroKernel.Context;
 
 namespace Inceptum.AppServer.Configuration
 {
-	internal class ConnectionStringResolver : ISubDependencyResolver
-	{
-		private readonly Dictionary<string, ConnectionString> m_ConnectionStrings = new Dictionary<string, ConnectionString>();
+    internal class ConnectionStringResolver : IConnectionStringProvider, ISubDependencyResolver
+    {
+        private readonly Dictionary<string, ConnectionString> m_ConnectionStrings;
 
-		public ConnectionStringResolver()
-		{
-		}
+        public ConnectionStringResolver(Dictionary<string, string> connectionStrings)
+        {
+            m_ConnectionStrings = new Dictionary<string, ConnectionString>(connectionStrings.ToDictionary(kvp => kvp.Key, kvp => (ConnectionString) kvp.Value));
+        }
 
-		public ConnectionStringResolver(Dictionary<string, string> connectionStrings)
-		{
-			foreach (var str in connectionStrings)
-			{
-				m_ConnectionStrings.Add(str.Key, str.Value);
-			}
-		}
+        public bool ContainsAny()
+        {
+            return m_ConnectionStrings.Any();
+        }
 
-		public bool CanResolve(CreationContext context, ISubDependencyResolver parentResolver,
-		                       ComponentModel model, DependencyModel dependency)
-		{
-			if (dependency.TargetItemType == typeof (ConnectionString))
-				return m_ConnectionStrings.Any(p => p.Key.ToLower() == dependency.DependencyKey.ToLower());
-			
-			if (dependency.TargetItemType == typeof (IDictionary<string, ConnectionString>))
-				return m_ConnectionStrings.Any();
+        public bool Contains(string connectionStringName)
+        {
+            return m_ConnectionStrings.ContainsKey(connectionStringName);
+        }
 
-			return false;
-		}
+        public ConnectionString Get(string connectionStringName)
+        {
+            if (!Contains(connectionStringName))
+                throw new ConfigurationErrorsException(string.Format("Connection string with name '{0}' not found", connectionStringName));
 
-		public object Resolve(CreationContext context, ISubDependencyResolver parentResolver,
-		                      ComponentModel model, DependencyModel dependency)
-		{
-			if (dependency.TargetItemType == typeof (ConnectionString))
-				return m_ConnectionStrings.First(p => p.Key.ToLower() == dependency.DependencyKey.ToLower()).Value;
+            return m_ConnectionStrings[connectionStringName];
+        }
 
-			if (dependency.TargetItemType == typeof (IDictionary<string, ConnectionString>))
-				return m_ConnectionStrings;
+        public IDictionary<string, ConnectionString> GetAll()
+        {
+            //copy
+            return new Dictionary<string, ConnectionString>(m_ConnectionStrings);
+        }
 
-			return null;
-		}
-	}
+        public bool CanResolve(CreationContext context, ISubDependencyResolver parentResolver,
+                               ComponentModel model, DependencyModel dependency)
+        {
+            if (dependency.TargetItemType == typeof (ConnectionString))
+                return this.Contains(dependency.DependencyKey);
+
+            if (dependency.TargetItemType == typeof (IDictionary<string, ConnectionString>))
+                return this.ContainsAny();
+
+            return false;
+        }
+
+        public object Resolve(CreationContext context, ISubDependencyResolver parentResolver,
+                              ComponentModel model, DependencyModel dependency)
+        {
+            if (dependency.TargetItemType == typeof (ConnectionString))
+                return this.Get(dependency.DependencyKey);
+
+            if (dependency.TargetItemType == typeof (IDictionary<string, ConnectionString>))
+                return this.GetAll();
+
+            return null;
+        }
+    }
 }

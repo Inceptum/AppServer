@@ -1,59 +1,63 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System.Configuration;
+using Inceptum.Messaging.Contract;
 using Castle.Core;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Context;
-using Castle.MicroKernel.Resolvers;
-using Inceptum.Messaging.Contract;
 
 namespace Inceptum.AppServer.Configuration
 {
-    internal class EndpointResolver : ISubDependencyResolver
+    public class EndpointResolver : IEndpointProvider, ISubDependencyResolver
     {
-		private readonly Dictionary<string, Endpoint> m_Endpoints = new Dictionary<string, Endpoint>();
-
-        public EndpointResolver()
+        private readonly Dictionary<string, Endpoint> m_Endpoints;
+        public EndpointResolver(Dictionary<string, Endpoint> endpoints)
         {
+            m_Endpoints = endpoints;
+            m_Endpoints = new Dictionary<string, Endpoint>(endpoints, StringComparer.InvariantCultureIgnoreCase);
         }
 
-		public EndpointResolver(Dictionary<string, Endpoint> endpoints)
+        public bool Contains(string endpointName)
         {
-            if (endpoints == null) throw new ArgumentNullException("endpoints");
-            m_Endpoints = endpoints;
+            return m_Endpoints.ContainsKey(endpointName);
+        }
+
+        public Endpoint Get(string endpointName)
+        {
+            if (!Contains(endpointName))
+                throw new ConfigurationErrorsException(string.Format("Endpoint with name '{0} not found", endpointName));
+
+            return m_Endpoints[endpointName];
         }
 
         public bool CanResolve(CreationContext context, ISubDependencyResolver parentResolver,
-                               ComponentModel model, DependencyModel dependency)
+                              ComponentModel model, DependencyModel dependency)
         {
-			if(dependency.TargetItemType != typeof(Endpoint)) return false;
+            if (dependency.TargetItemType != typeof(Endpoint)) return false;
 
-			var endpointName = getEndpointName(model, dependency);
-        	var canResolve = m_Endpoints.Any(p => p.Key.ToLower() == endpointName.ToLower());
-        	return  canResolve;
+            var endpointName = getEndpointName(model, dependency);
+            return this.Contains(endpointName);
         }
 
-    	public object Resolve(CreationContext context, ISubDependencyResolver parentResolver,
+        public object Resolve(CreationContext context, ISubDependencyResolver parentResolver,
                               ComponentModel model, DependencyModel dependency)
-    	{
-    		var endpointName = getEndpointName(model, dependency);
-    		var endpoint = m_Endpoints.First(p => p.Key.ToLower() == endpointName.ToLower()).Value;
-    		return endpoint;
-    	}
+        {
+            var endpointName = getEndpointName(model, dependency);
+            return this.Get(endpointName);
+        }
 
-    	private static string getEndpointName(ComponentModel model, DependencyModel dependency)
-    	{
-			var endpointName = dependency.DependencyKey;
-			if (model.ExtendedProperties.Contains("endpointNames"))
-			{
-				var endpointNames = (IDictionary<string, string>)model.ExtendedProperties["endpointNames"];
-				if(endpointNames.ContainsKey(dependency.DependencyKey))
-				{
-					endpointName = endpointNames[dependency.DependencyKey];
-				}
-			}
-			return endpointName;
-    	}
+        private static string getEndpointName(ComponentModel model, DependencyModel dependency)
+        {
+            var endpointName = dependency.DependencyKey;
+            if (model.ExtendedProperties.Contains("endpointNames"))
+            {
+                var endpointNames = (IDictionary<string, string>)model.ExtendedProperties["endpointNames"];
+                if (endpointNames.ContainsKey(dependency.DependencyKey))
+                {
+                    endpointName = endpointNames[dependency.DependencyKey];
+                }
+            }
+            return endpointName;
+        }
     }
 }
