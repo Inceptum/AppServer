@@ -26,15 +26,14 @@ namespace Inceptum.AppServer.Tests.Configuration
 			m_Endpoint3 = new Endpoint("transport-id-3", "destination-3");
 			m_Endpoint4 = new Endpoint("transport-id-4", "destination-4");
 			m_Endpoint5 = new Endpoint("transport-id-5", "destination-5");
-			var endpointResolver = new EndpointResolver(
-					new Dictionary<string, Endpoint>()
-						{
-							{"endpoint1", m_Endpoint1},
-							{"endpoint2", m_Endpoint2},
-							{"endpoint3", m_Endpoint3},
-							{"endpoint4", m_Endpoint4},
-							{"endpoint5", m_Endpoint5},
-						});
+            var endpointResolver = new EndpointResolver(new Dictionary<string, Endpoint>()
+		        {
+		            {"endpoint1", m_Endpoint1},
+		            {"endpoint2", m_Endpoint2},
+		            {"endpoint3", m_Endpoint3},
+		            {"endpoint4", m_Endpoint4},
+		            {"endpoint5", m_Endpoint5},
+		        });
 
 			m_Container = new WindsorContainer();
 			m_Container.Kernel.Resolver.AddSubResolver(endpointResolver);

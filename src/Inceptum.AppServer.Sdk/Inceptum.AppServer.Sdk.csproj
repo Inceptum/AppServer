@@ -94,6 +94,8 @@
     </Compile>
     <Compile Include="AppInfo.cs" />
     <Compile Include="Configuration\BundleNotFoundException.cs" />
+    <Compile Include="Configuration\IConnectionStringProvider.cs" />
+    <Compile Include="Configuration\IEndpointProvider.cs" />
     <Compile Include="HostedAppStatus.cs" />
     <Compile Include="Logging\GenericsAwareNLoggerFactory.cs" />
     <Compile Include="Model\Application.cs" />

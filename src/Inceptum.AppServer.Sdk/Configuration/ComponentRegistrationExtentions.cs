@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Castle.Core;
 using Castle.MicroKernel;
-using Castle.MicroKernel.ModelBuilder;
 using Castle.MicroKernel.ModelBuilder.Descriptors;
 using Castle.MicroKernel.Registration;
 using Inceptum.Messaging;
@@ -76,8 +74,8 @@ namespace Inceptum.AppServer.Configuration
                                                  .DependsOnBundle(bundleName, "", parameters)
                                                  .DependsOn(new { jailStrategies = jailStrategies});
 
-                kernel.Register(transportResolver, Component.For<EndpointResolver>().DependsOnBundle(bundleName, "", parameters ?? new string[0]));
-                var endpointResolver = kernel.Resolve<EndpointResolver>();
+                kernel.Register(transportResolver, Component.For<IEndpointProvider>().Forward<ISubDependencyResolver>().ImplementedBy<EndpointResolver>().Named("EndpointResolver").DependsOnBundle(bundleName, "", parameters ?? new string[0]));
+                var endpointResolver = kernel.Resolve<ISubDependencyResolver>("EndpointResolver");
                 kernel.Resolver.AddSubResolver(endpointResolver);
             });
             return facility;
@@ -87,11 +85,12 @@ namespace Inceptum.AppServer.Configuration
         public static ConfigurationFacility ConfigureConnectionStrings(this ConfigurationFacility facility, string bundleName, params string[] parameters)
         {
             facility.AddInitStep(kernel =>
-            {
-                kernel.Register(Component.For<ConnectionStringResolver>().DependsOnBundle(bundleName, "", parameters ?? new string[0]));
-                var connectionStringResolver = kernel.Resolve<ConnectionStringResolver>();
-                kernel.Resolver.AddSubResolver(connectionStringResolver);
-            });
+                {
+                    kernel.Register(Component.For<IConnectionStringProvider>().Forward<ISubDependencyResolver>().ImplementedBy<ConnectionStringResolver>().Named("ConnectionStringResolver").DependsOnBundle(bundleName, "", parameters ?? new string[0]));
+
+                    var connectionStringResolver = kernel.Resolve<ISubDependencyResolver>("ConnectionStringResolver");
+                    kernel.Resolver.AddSubResolver(connectionStringResolver);
+                });
             return facility;
         }
     }
