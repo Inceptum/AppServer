@@ -105,7 +105,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             string appConfig = package.GetFiles().Where(f => f.Path.ToLower() == @"config\app.config")
                                       .Select(c => Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(package), c.Path))
                                       .Select(Path.GetFullPath).FirstOrDefault();
-
+            Logger.Debug("Assemblies to load: "+string.Join(Environment.NewLine,assembliesToLoad.Select(a=>a.path).ToArray()));
             return new ApplicationParams(getAppType(packageAssemblies), appConfig, new string[0], assembliesToLoad.ToDictionary(a =>
                 {
                     var assembly = CeceilExtencions.TryReadAssembly(a.path);
