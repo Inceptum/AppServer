@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
 using Inceptum.AppServer.Model;
+using Mono.Cecil;
 using NuGet;
 using Castle.Core.Logging;
 using ILogger = Castle.Core.Logging.ILogger;
@@ -106,11 +107,25 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                                       .Select(c => Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(package), c.Path))
                                       .Select(Path.GetFullPath).FirstOrDefault();
             Logger.Debug("Assemblies to load: "+string.Join(Environment.NewLine,assembliesToLoad.Select(a=>a.path).ToArray()));
-            return new ApplicationParams(getAppType(packageAssemblies), appConfig, new string[0], assembliesToLoad.ToDictionary(a =>
+
+
+
+            var assemblies=new Dictionary<AssemblyName, string>();
+            foreach (var a in assembliesToLoad)
+            {
+                var assembly = CeceilExtencions.TryReadAssembly(a.path);
+
+                if (assembly == null)
                 {
-                    var assembly = CeceilExtencions.TryReadAssembly(a.path);
-                    return new AssemblyName(assembly.Name.Name);
-                }, a => a.path));
+                    //BUG: Microsoft.Bcl.1.1.3 contains file _._ which loads as assembly while it is crap 
+                    Logger.WarnFormat("Failed to load assembly {0}", a.path);
+                }
+                else
+                {
+                    assemblies.Add(new AssemblyName(assembly.Name.Name),a.path);
+                }
+            }
+            return new ApplicationParams(getAppType(packageAssemblies), appConfig, new string[0], assemblies);
         }
 
         public IEnumerable<HostedAppInfo> GetAvailabelApps()
