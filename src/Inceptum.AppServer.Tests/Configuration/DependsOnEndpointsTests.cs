@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace Inceptum.AppServer.Tests.Configuration
 {
-	[TestFixture]
+    [TestFixture]
 	public class DependsOnEndpointsTests
 	{
 		private Endpoint m_Endpoint1;
@@ -42,9 +42,9 @@ namespace Inceptum.AppServer.Tests.Configuration
 		[Test]
 		public void EndpointResolveByConstructorParameterNameTest()
 		{
-			m_Container.Register(Component.For<Test1>());
+			m_Container.Register(Component.For<EndpontTest1>());
 			
-			var test1 = m_Container.Resolve<Test1>();
+			var test1 = m_Container.Resolve<EndpontTest1>();
 			Assert.AreEqual(m_Endpoint1.TransportId, test1.Endpoint.TransportId);
 			Assert.AreEqual(m_Endpoint1.Destination, test1.Endpoint.Destination);
 		}
@@ -52,9 +52,9 @@ namespace Inceptum.AppServer.Tests.Configuration
 		[Test]
 		public void EndpointResolveByOverridenParameterNameTest()
 		{
-			m_Container.Register(Component.For<Test1>().WithEndpoints(new { endpoint1 = "endpoint2" }));
+			m_Container.Register(Component.For<EndpontTest1>().WithEndpoints(new { endpoint1 = "endpoint2" }));
 			
-			var test1 = m_Container.Resolve<Test1>();
+			var test1 = m_Container.Resolve<EndpontTest1>();
 			Assert.AreEqual(m_Endpoint2.TransportId, test1.Endpoint.TransportId);
 			Assert.AreEqual(m_Endpoint2.Destination, test1.Endpoint.Destination);
 		}
@@ -64,8 +64,8 @@ namespace Inceptum.AppServer.Tests.Configuration
 		{
 			var endpoint = new Endpoint( transportId: "custom-transport-id", destination:"custom-destination");
 			
-			m_Container.Register(Component.For<Test1>().WithEndpoints(new { endpoint1 = endpoint }));
-			var test1 = m_Container.Resolve<Test1>();
+			m_Container.Register(Component.For<EndpontTest1>().WithEndpoints(new { endpoint1 = endpoint }));
+			var test1 = m_Container.Resolve<EndpontTest1>();
 			Assert.AreEqual(endpoint.TransportId, test1.Endpoint.TransportId);
 			Assert.AreEqual(endpoint.Destination, test1.Endpoint.Destination);
 		}
@@ -73,9 +73,9 @@ namespace Inceptum.AppServer.Tests.Configuration
 		[Test]
 		public void EndpointResolveByTwoDifferentConstructorParameterNameTest()
 		{
-			m_Container.Register(Component.For<Test2>());
+			m_Container.Register(Component.For<EndpointTest2>());
 
-			var test1 = m_Container.Resolve<Test2>();
+			var test1 = m_Container.Resolve<EndpointTest2>();
 			Assert.AreEqual(m_Endpoint1.TransportId, test1.Endpoint1.TransportId);
 			Assert.AreEqual(m_Endpoint1.Destination, test1.Endpoint1.Destination);
 			Assert.AreEqual(m_Endpoint2.TransportId, test1.Endpoint2.TransportId);
@@ -85,9 +85,9 @@ namespace Inceptum.AppServer.Tests.Configuration
 		[Test]
 		public void EndpointResolveByTwoDifferentOverridenParameterNameTest()
 		{
-			m_Container.Register(Component.For<Test2>().WithEndpoints(new { endpoint1 = "endpoint4", endpoint2 = "endpoint5" }));
+			m_Container.Register(Component.For<EndpointTest2>().WithEndpoints(new { endpoint1 = "endpoint4", endpoint2 = "endpoint5" }));
 
-			var test1 = m_Container.Resolve<Test2>();
+			var test1 = m_Container.Resolve<EndpointTest2>();
 			Assert.AreEqual(m_Endpoint4.TransportId, test1.Endpoint1.TransportId);
 			Assert.AreEqual(m_Endpoint4.Destination, test1.Endpoint1.Destination);
 			Assert.AreEqual(m_Endpoint5.TransportId, test1.Endpoint2.TransportId);
@@ -97,9 +97,9 @@ namespace Inceptum.AppServer.Tests.Configuration
 		[Test]
 		public void EndpointResolveByTwoDifferentOneOverridenParameterNameTest()
 		{
-			m_Container.Register(Component.For<Test2>().WithEndpoints(new { endpoint2 = "endpoint5" }));
+			m_Container.Register(Component.For<EndpointTest2>().WithEndpoints(new { endpoint2 = "endpoint5" }));
 
-			var test1 = m_Container.Resolve<Test2>();
+			var test1 = m_Container.Resolve<EndpointTest2>();
 			Assert.AreEqual(m_Endpoint1.TransportId, test1.Endpoint1.TransportId);
 			Assert.AreEqual(m_Endpoint1.Destination, test1.Endpoint1.Destination);
 			Assert.AreEqual(m_Endpoint5.TransportId, test1.Endpoint2.TransportId);
@@ -111,9 +111,9 @@ namespace Inceptum.AppServer.Tests.Configuration
 		{
 			var endpoint = new Endpoint(transportId: "custom-transport-id", destination: "custom-destination");
 
-			m_Container.Register(Component.For<Test2>().WithEndpoints(new { endpoint1 = "endpoint4", endpoint2 = endpoint }));
+			m_Container.Register(Component.For<EndpointTest2>().WithEndpoints(new { endpoint1 = "endpoint4", endpoint2 = endpoint }));
 
-			var test1 = m_Container.Resolve<Test2>();
+			var test1 = m_Container.Resolve<EndpointTest2>();
 			Assert.AreEqual(m_Endpoint4.TransportId, test1.Endpoint1.TransportId);
 			Assert.AreEqual(m_Endpoint4.Destination, test1.Endpoint1.Destination);
 			Assert.AreEqual(endpoint.TransportId, test1.Endpoint2.TransportId);
@@ -121,22 +121,22 @@ namespace Inceptum.AppServer.Tests.Configuration
 		}
 	}
 
-	internal class Test1
+	internal class EndpontTest1
 	{
 		public Endpoint Endpoint { get; private set; }
 
-		public Test1(Endpoint endpoint1)
+		public EndpontTest1(Endpoint endpoint1)
 		{
 			Endpoint = endpoint1;
 		}
 	}
 
-	internal class Test2
+	internal class EndpointTest2
 	{
 		public Endpoint Endpoint1 { get; private set; }
 		public Endpoint Endpoint2 { get; private set; }
 
-		public Test2(Endpoint endpoint1, Endpoint endpoint2)
+		public EndpointTest2(Endpoint endpoint1, Endpoint endpoint2)
 		{
 			Endpoint1 = endpoint1;
 			Endpoint2 = endpoint2;

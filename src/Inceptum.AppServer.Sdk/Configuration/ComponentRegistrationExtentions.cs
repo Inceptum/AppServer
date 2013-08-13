@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Dynamic;
 using Castle.Core;
 using Castle.MicroKernel;
 using Castle.MicroKernel.ModelBuilder.Descriptors;
@@ -20,31 +22,45 @@ namespace Inceptum.AppServer.Configuration
         	return r.ExtendedProperties(new {dependsOnBundle = bundleName, jsonPath, bundleParameters = parameters});
         }
 
-		public static ComponentRegistration<T> WithEndpoints<T>(this ComponentRegistration<T> r, object endpoints)
-			 where T : class
-		{
-			var dictionary = new ReflectionBasedDictionaryAdapter(endpoints);
+        private static ComponentRegistration<T> with<T, TE>(this ComponentRegistration<T> r, Func<IDictionary<string, string>, object> getExtendedProperties, object dependencies)
+            where T : class
+        {
+            var dictionary = new ReflectionBasedDictionaryAdapter(dependencies);
 
-			var explicitEndpoints = new Dictionary<string, Endpoint>();
-			var endpointNames = new Dictionary<string, string>();
-			foreach (var key in dictionary.Keys)
-			{
-				var dependencyName = key.ToString();
-				if (dictionary[key] is Endpoint)
-				{
-					var endpoint = (Endpoint)dictionary[key];
-					explicitEndpoints[dependencyName] = endpoint;
-				}
-				if (dictionary[key] is string)
-				{
-					var endpointName = (string) dictionary[key];
-					endpointNames[dependencyName] = endpointName;
-				}
-			}
+            var explicitDependencies = new Dictionary<string, TE>();
+            var dependenciesNames = new Dictionary<string, string>();
+            foreach (var key in dictionary.Keys)
+            {
+                var dependencyName = key.ToString();
+                if (dictionary[key] is TE)
+                {
+                    var dependency = (TE)dictionary[key];
+                    explicitDependencies[dependencyName] = dependency;
+                }
+                if (dictionary[key] is string)
+                {
+                    var depndencyName = (string)dictionary[key];
+                    dependenciesNames[dependencyName] = depndencyName;
+                }
+            }
 
-			return r.AddDescriptor(new CustomDependencyDescriptor(explicitEndpoints)).ExtendedProperties(new { endpointNames });
+            return r.AddDescriptor(new CustomDependencyDescriptor(explicitDependencies)).ExtendedProperties(getExtendedProperties(dependenciesNames));
 			
-		}
+        }
+
+        public static ComponentRegistration<T> WithEndpoints<T>(this ComponentRegistration<T> r, object endpoints)
+             where T : class
+        {
+            //endpointNames extended property is used to resolve endpoint with EndpointResolver
+            return with<T, Endpoint>(r, dictionary => new { endpointNames = dictionary }, endpoints);
+        }
+
+        public static ComponentRegistration<T> WithConnectionStrings<T>(this ComponentRegistration<T> r, object connectionStrings)
+             where T : class
+        {
+            //connecionStrings extended property is used to resolve connection string with ConnectionStringResolver
+            return with<T, ConnectionString>(r, dictionary => new { connectionStrings = dictionary }, connectionStrings);
+        }
 
     	public static ComponentRegistration<T> FromConfiguration<T>(this ComponentRegistration<T> r, string bundleName, string jsonPath, params string[] parameters) where T : class
         {

@@ -44,7 +44,7 @@ namespace Inceptum.AppServer.Configuration
                                ComponentModel model, DependencyModel dependency)
         {
             if (dependency.TargetItemType == typeof (ConnectionString))
-                return this.Contains(dependency.DependencyKey);
+                return this.Contains(getConnectionStringName(model, dependency));
 
             if (dependency.TargetItemType == typeof (IDictionary<string, ConnectionString>))
                 return this.ContainsAny();
@@ -56,12 +56,26 @@ namespace Inceptum.AppServer.Configuration
                               ComponentModel model, DependencyModel dependency)
         {
             if (dependency.TargetItemType == typeof (ConnectionString))
-                return this.Get(dependency.DependencyKey);
+                return this.Get(getConnectionStringName(model, dependency));
 
             if (dependency.TargetItemType == typeof (IDictionary<string, ConnectionString>))
                 return this.GetAll();
 
             return null;
+        }
+
+        private static string getConnectionStringName(ComponentModel model, DependencyModel dependency)
+        {
+            var connectionStringName = dependency.DependencyKey;
+            if (model.ExtendedProperties.Contains("connectionStrings"))
+            {
+                var connectionStringsNames = (IDictionary<string, string>)model.ExtendedProperties["connectionStrings"];
+                if (connectionStringsNames.ContainsKey(dependency.DependencyKey))
+                {
+                    connectionStringName = connectionStringsNames[dependency.DependencyKey];
+                }
+            }
+            return connectionStringName;
         }
     }
 }
