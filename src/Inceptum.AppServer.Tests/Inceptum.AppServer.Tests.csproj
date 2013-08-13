@@ -110,6 +110,7 @@
     <Compile Include="Configuration\ConfigTests.cs" />
     <Compile Include="Configuration\ConfigurationFacilityTests.cs" />
     <Compile Include="Configuration\ConfigurationProviderTests.cs" />
+    <Compile Include="Configuration\DependsOnConnectionStringsTests.cs" />
     <Compile Include="Configuration\DependsOnEndpointsTests.cs" />
     <Compile Include="Configuration\FileSystemConfigurationProviderTests.cs" />
     <Compile Include="Configuration\RemoteConfigurationProviderTests.cs" />
