@@ -23,7 +23,7 @@ Application **CAN**
 ----------------
 To achive all above please create following files under project root folder:
 
-1. Applicaton.cs
+1. Application.cs
 2. $ProjectName$.nuspec - make sure that the name of nuspec is the same as the name of the csproj
 3. Windsor\ApplicationInstaller.cs
 4. Properties\ApplicationInfo.cs 
