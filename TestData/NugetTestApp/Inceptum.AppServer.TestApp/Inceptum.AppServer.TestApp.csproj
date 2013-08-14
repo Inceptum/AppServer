@@ -43,10 +43,10 @@
       <HintPath>..\packages\Castle.Windsor.3.2.0\lib\net40\Castle.Windsor.dll</HintPath>
     </Reference>
     <Reference Include="Inceptum.AppServer.Sdk">
-      <HintPath>..\packages\Inceptum.AppServer.Sdk.1.1.0.18\lib\net40\Inceptum.AppServer.Sdk.dll</HintPath>
+      <HintPath>..\packages\Inceptum.AppServer.Sdk.1.1.0.49\lib\net40\Inceptum.AppServer.Sdk.dll</HintPath>
     </Reference>
     <Reference Include="Inceptum.DataBus">
-      <HintPath>..\packages\Inceptum.DataBus.1.0.5.68\lib\net40\Inceptum.DataBus.dll</HintPath>
+      <HintPath>..\packages\Inceptum.DataBus.1.0.5.86\lib\net40\Inceptum.DataBus.dll</HintPath>
     </Reference>
     <Reference Include="Inceptum.Messaging">
       <HintPath>..\packages\Inceptum.Messaging.1.0.5.68\lib\net40\Inceptum.Messaging.dll</HintPath>
@@ -115,7 +115,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.8\tools\Microsoft.Bcl.Build.targets" />
+  <!--<Import Project="..\packages\Microsoft.Bcl.Build.1.0.8\tools\Microsoft.Bcl.Build.targets" />-->
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

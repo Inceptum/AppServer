@@ -10,7 +10,7 @@
     <description>TestApp</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2013</copyright>
-    <tags>Inceptum.AppServer.Applicaton</tags>
+    <tags>Inceptum.AppServer.Application</tags>
   </metadata>
   <files> 
     <file src="App.config" target="config" /> 
