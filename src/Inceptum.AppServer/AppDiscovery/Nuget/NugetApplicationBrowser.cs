@@ -64,7 +64,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                 new[] {appsRepo}.Concat(dependencyRepositories)
                 );
 
-            var manager = new PackageManager(dependencyRepo, Path.Combine(AppDomain.CurrentDomain.BaseDirectory,@".\NugetLoaclRepo")) {Logger = this};
+            var manager = new PackageManager(dependencyRepo, Path.Combine(AppDomain.CurrentDomain.BaseDirectory,@".\NugetLocalRepo")) {Logger = this};
 
 
             IEnumerable<IPackage> dependencies=null;
@@ -131,7 +131,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
         public IEnumerable<HostedAppInfo> GetAvailabelApps()
         {
             IPackageRepository appsRepo = PackageRepositoryFactory.Default.CreateRepository(m_ApplicationRepository);
-            var packages = from p in appsRepo.GetPackages() where p.Tags != null && p.Tags.Contains("Inceptum.AppServer.Applicaton") orderby p.Id select p;
+            var packages = from p in appsRepo.GetPackages() where p.Tags != null && p.Tags.Contains("Inceptum.AppServer.Application") orderby p.Id select p;
             return packages.ToArray().Select(package => new HostedAppInfo(
                                                   package.Id,
                                                   string.Join(", ", package.Authors),
