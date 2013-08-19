@@ -6,15 +6,15 @@
     <td>
         <div class="btn-group actions pull-right">
         <% if(model.Commands && model.Commands.length>0) {%>
-            <button class="btn btn-group commands">
+            <div class="btn btn-group commands">
             <a class="btn  btn-mini  dropdown-toggle" data-toggle="dropdown" href="#">
                 <i class="icon-wrench"></i>
                 <span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
-                <% _.each(model.Commands, function(command) { %>  <a data-command="<%= command.Name %>" class="command" href="#"><%= command.Name %></a> <% }); %>
+                <% _.each(model.Commands, function(command) { %>  <li><a data-command="<%= command.Name %>" class="command" href="#"><%= command.Name %></a></li> <% }); %>
             </ul>
-            </button>
+            </div>
         <%}%>
             <button class="btn btn-mini start" disabled="disabled" data-action="start">Start</button>
             <button class="btn btn-mini stop" disabled="disabled" data-action="stop">Stop</button>
