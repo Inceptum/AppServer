@@ -96,6 +96,10 @@
     <Compile Include="Configuration\BundleNotFoundException.cs" />
     <Compile Include="Configuration\IConnectionStringProvider.cs" />
     <Compile Include="Configuration\IEndpointProvider.cs" />
+    <Compile Include="Configuration\Providers\CachingRemoteConfigurationProvider.cs" />
+    <Compile Include="Configuration\Providers\FileSystemConfigurationProvider.cs" />
+    <Compile Include="Configuration\Providers\RemoteConfigurationProvider.cs" />
+    <Compile Include="Configuration\Providers\ResourceConfigurationProviderBase.cs" />
     <Compile Include="HostedAppStatus.cs" />
     <Compile Include="Logging\GenericsAwareNLoggerFactory.cs" />
     <Compile Include="Model\Application.cs" />
@@ -126,6 +130,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
