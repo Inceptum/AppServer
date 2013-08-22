@@ -144,7 +144,7 @@ define([
                                 alerts.show({type:"error",text:"Failed to execute command '"+commandPopupView.command.Name+"' for  instance '"+model.id+"'.  "+JSON.parse(response.responseText).Error});
                             }     ,
                             complete :function(){
-                                $(view.el).find(".actions button").removeAttr("disabled")
+                                view.render();
                             }
                         });
                     }).fail(view.render());
