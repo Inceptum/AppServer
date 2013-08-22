@@ -1,6 +1,15 @@
 <!DOCTYPE html>
-<html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
 <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>Inceptum.AppServer</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/bootstrap-notify.css" rel="stylesheet">
@@ -8,12 +17,13 @@
     <link href="css/codemirror.css" rel="stylesheet">
     <link href="css/prettify.css" rel="stylesheet">
     <style>
-        body {
-            padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        html, body {
+            height: 100%;
         }
 
-        html, body {
-         /* height: 100%;*/
+        .container-fluid {
+            padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+
         }
 
         dt {
@@ -23,19 +33,30 @@
 
         #sidebar>div {
             position: fixed;
-            width: 220px;
+            width: inherit;
+            /* width: 220px;*/
         }
+
         .page-header {
             padding-bottom: 5px;
             margin: 0px 0 30px;
             border-bottom: 1px solid #EEE;
         }
 
+            /* dropdown buttons in btn-group . see instanceRow*/
+        .btn-group.btn {
+            border: 0;
+            padding: 0;
+        }
 
-         /* dropdown buttons in btn-group . see instanceRow*/
-        .btn-group.btn {   border: 0;   padding: 0; }
-        .btn-group.btn > .btn { border-radius: 0 }
-        .btn-group.btn > .dropdown-menu {  text-align: left; }
+        .btn-group.btn > .btn {
+            border-radius: 0
+        }
+
+        .btn-group.btn > .dropdown-menu {
+            text-align: left;
+        }
+
         .btn-group.btn:first-child > .btn {
             -webkit-border-radius: 4px 0 0 4px;
             -moz-border-radius: 4px 0 0 4px;
@@ -48,6 +69,15 @@
             border-radius: 0 4px 4px 0;
         }
 
+        #main {
+            padding-left: 400px;
+        }
+
+
+        .sidebar {
+            padding-top: 60px;
+            float: left;
+        }
 
     </style>
     <script type="text/javascript">
@@ -60,14 +90,11 @@
 <body>
 
 <div id="header"></div>
+<div class="sidebar span5  hidden-phone" id="sidebar">
 
-<div class="container" id="main">
-    <div class="row">
-        <div class="span3" id="sidebar">
-        </div>
-
-        <div class="span9" id="content">
-        </div>
+</div>
+<div class="container-fluid" id="main">
+    <div class="span7" id="content">
     </div>
 </div>
 
