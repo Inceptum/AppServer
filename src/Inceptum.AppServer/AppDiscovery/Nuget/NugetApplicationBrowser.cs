@@ -49,7 +49,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             }
             return refs;
         }
-
+        
         public string Name
         {
             get { return "Nuget"; }
@@ -65,9 +65,8 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                 );
 
             var manager = new PackageManager(dependencyRepo, Path.Combine(AppDomain.CurrentDomain.BaseDirectory,@".\NugetLocalRepo")) {Logger = this};
-
-
-            IEnumerable<IPackage> dependencies=null;
+            
+            IPackage[] dependencies=null;
             PackageWrapper package=null;
 
             var foundPackage = manager.LocalRepository.FindPackage(application, new SemanticVersion(version));
@@ -101,6 +100,10 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                             path = Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(p), a.Path)
                         };
 
+            var nativesToLoad =
+                from p in dependencies
+                from a in p.GetFiles("unmanaged")
+                select a.Path;
 
             IEnumerable<string> packageAssemblies = getAssemblies(package)
                 .Select(a => Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(package), a.Path));
@@ -126,7 +129,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                     assemblies.Add(new AssemblyName(assembly.Name.Name),a.path);
                 }
             }
-            return new ApplicationParams(getAppType(packageAssemblies), appConfig, new string[0], assemblies);
+            return new ApplicationParams(getAppType(packageAssemblies), appConfig, nativesToLoad.ToArray(), assemblies);
         }
 
         public IEnumerable<HostedAppInfo> GetAvailabelApps()
