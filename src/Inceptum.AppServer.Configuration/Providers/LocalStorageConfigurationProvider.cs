@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.ServiceModel;
 using System.Threading;
 using Inceptum.AppServer.Configuration.Json;
 using Inceptum.AppServer.Configuration.Model;
@@ -10,6 +11,8 @@ using Inceptum.AppServer.Configuration.Persistence;
 
 namespace Inceptum.AppServer.Configuration.Providers
 {
+        [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
+
     public class LocalStorageConfigurationProvider : IManageableConfigurationProvider
     {
         private readonly IContentProcessor m_ContentProcessor;
