@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Inceptum.AppServer.Configuration;
+using Inceptum.AppServer.Initializer;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
 using AppDomainInitializer = Inceptum.AppServer.Initializer.AppDomainInitializer;
@@ -144,11 +145,16 @@ namespace Inceptum.AppServer.Hosting
 
         public void Stop()
         {
+            stop(false);
+        }
+
+        private void stop(bool abort)
+        {
             lock (m_SyncRoot)
             {
                 if (m_IsDisposing)
                     throw new ObjectDisposedException("Instance is being disposed");
-                if (Status == HostedAppStatus.Starting || Status == HostedAppStatus.Stopping)
+                if ((Status == HostedAppStatus.Starting && !abort)|| Status == HostedAppStatus.Stopping)
                     throw new InvalidOperationException("Instance is " + Status);
                 if (Status == HostedAppStatus.Stopped)
                     throw new InvalidOperationException("Instance is not started");
@@ -161,12 +167,15 @@ namespace Inceptum.AppServer.Hosting
                         try
                         {
                             m_ApplicationHost.Stop();
-                            AppDomain.Unload(m_AppDomain);
-                            Logger.InfoFormat("Instance '{0}' stopped",  Name);
                         }
                         catch (Exception e)
                         {
-                            Logger.ErrorFormat(e, "Instance '{0}' failed to stop",  Name);
+                            Logger.ErrorFormat(e, "Instance '{0}' application failed while stopping", Name);
+                        }
+                        finally
+                        {
+                            Logger.InfoFormat("Instance '{0}' stopped", Name);
+                            AppDomain.Unload(m_AppDomain);
                         }
                         lock (m_SyncRoot)
                         {
@@ -197,8 +206,7 @@ namespace Inceptum.AppServer.Hosting
                                                                                    DisallowApplicationBaseProbing = true,
                                                                                    ConfigurationFile = applicationParams.ConfigFile
                                                                                });
-            //m_AppDomain.Load(typeof (HostedAppInfo).Assembly.GetName());
-            //var appDomainInitializer = (AppDomainInitializer) m_AppDomain.CreateInstanceFromAndUnwrap(typeof (AppDomainInitializer).Assembly.Location, typeof (AppDomainInitializer).FullName, false, BindingFlags.Default, null, null, null, null);
+
             var appDomainInitializer = (AppDomainInitializer)m_AppDomain.CreateInstanceFromAndUnwrap(typeof(AppDomainInitializer).Assembly.Location, typeof(AppDomainInitializer).FullName, false, BindingFlags.Default, null, null, null, null);
 
             var assembliesToLoad = new Dictionary<AssemblyName, string>(applicationParams.AssembliesToLoad)
@@ -208,7 +216,11 @@ namespace Inceptum.AppServer.Hosting
                      //AppServer is loaded not from package, so it dependencies used in appDOmain plugin should be provided aswell
                     {typeof (LoggingFacility).Assembly.GetName(),typeof (LoggingFacility).Assembly.Location}
                 };
-            appDomainInitializer.Initialize(path, assembliesToLoad, applicationParams.NativeDllToLoad.ToArray());
+            appDomainInitializer.Initialize(path, assembliesToLoad, applicationParams.NativeDllToLoad.ToArray(),new AppDomainCrashHandler( err =>
+            {
+                Logger.FatalFormat("Instance '{0}' crashed:{1}", Name, err);
+                // stop(true);
+            }));
             m_ApplicationHost = (IApplicationHost) appDomainInitializer.CreateInstance(typeof(ApplicationHost<>).AssemblyQualifiedName,applicationParams.AppType);
         }
 
