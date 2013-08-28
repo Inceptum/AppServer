@@ -7,6 +7,23 @@ using System.Runtime.InteropServices;
 
 namespace Inceptum.AppServer.Initializer
 {
+
+    [Serializable]
+    public class AppDomainCrashHandler : MarshalByRefObject
+    {
+        private readonly Action<string> m_Handler;
+
+        public AppDomainCrashHandler(Action<string> handler)
+        {
+            m_Handler = handler;
+        }
+
+        public void Handle(string exception)
+        {
+            m_Handler(exception);
+        }
+    }
+
     /// <summary>
     /// Initializes app domain with explicit list of assemblies resolvable assemblies. Class is taken off to separate assembly
     /// to workaround clr assembly resolving in load from context behaviour where refereneced assembluies are loaded from  the
@@ -27,8 +44,12 @@ namespace Inceptum.AppServer.Initializer
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr LoadLibrary(string lpFileName);
 
-        public void Initialize(string workingDirectory, Dictionary<AssemblyName, string> assembliesToLoad, IEnumerable<string> nativeDllToLoad)
+        public void Initialize(string workingDirectory, Dictionary<AssemblyName, string> assembliesToLoad, IEnumerable<string> nativeDllToLoad, AppDomainCrashHandler crashHandler)
         {
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            {
+                crashHandler.Handle(args.ExceptionObject.ToString());
+            };
             IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
 
             m_LoadedAssemblies = assembliesToLoad.Where(asm => loadedAssemblies.All(a => a.Name != asm.Key.Name))

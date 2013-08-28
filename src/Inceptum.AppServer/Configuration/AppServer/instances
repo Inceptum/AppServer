@@ -1,2 +1,18 @@
 [
+  {
+    "Name": "ssss",
+    "ApplicationId": "Unistream.Messenger.Backend",
+    "ApplicationVendor": null,
+    "Version": null,
+    "AutoStart": true,
+    "Environment": "dit"
+  },
+  {
+    "Name": "loans",
+    "ApplicationId": "Unistream.Integration.Loans",
+    "ApplicationVendor": "Unistream",
+    "Version": null,
+    "AutoStart": false,
+    "Environment": "dev"
+  }
 ]

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -34,9 +36,14 @@ namespace Inceptum.AppServer.TestApp
         public void Start()
         {
             m_Logger.InfoFormat("Test App");
-            m_Logger.InfoFormat("Value from config: '{0}'",m_Config.Value);
+            m_Logger.InfoFormat("Value from config: '{0}'", m_Config.Value);
             m_Logger.InfoFormat("Value from app.config: '{0}'", ConfigurationManager.AppSettings["appConfigSetting"]);
             m_JObject = JObject.Parse("{}");
+            new Thread(() => {
+                m_Logger.Error("FAIL!!!");
+                throw new Exception();
+            }).Start();
+            m_Logger.InfoFormat("1");
         }
 
         public string DoSomething(DateTime dateValue, string stringValue, int intValue, decimal decimalValue, bool boolValue)
