@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
+using System.ServiceModel;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
@@ -16,7 +18,8 @@ using AppDomainInitializer = Inceptum.AppServer.Initializer.AppDomainInitializer
 
 namespace Inceptum.AppServer.Hosting
 {
-    public class ApplicationInstance : IDisposable, IObservable<HostedAppStatus>
+     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
+    public class ApplicationInstance : IDisposable, IObservable<HostedAppStatus>, IApplicationInstance
     {
         private readonly IConfigurationProvider m_ConfigurationProvider;
         private readonly AppServerContext m_Context;
@@ -30,6 +33,7 @@ namespace Inceptum.AppServer.Hosting
         private HostedAppStatus m_Status;
         private ApplicationParams m_ApplicationParams;
         private Version m_ActualVersion;
+        private ServiceHost m_ServiceHost;
 
         public string Name { get; set; }
         public string Environment { get; set; }
@@ -187,6 +191,20 @@ namespace Inceptum.AppServer.Hosting
 
         private void createHost()
         {
+            m_ServiceHost = new ServiceHost(this);
+            m_ServiceHost.AddServiceEndpoint(typeof(IApplicationInstance), new NetNamedPipeBinding(), new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/instances/" + Name));
+            //m_ConfigurationProviderServiceHost.Faulted += new EventHandler(this.IpcHost_Faulted);
+            m_ServiceHost.Open();
+
+            var process = Process.Start(new ProcessStartInfo
+            {
+                FileName = "Inceptum.AppServer.Initializer.exe",
+                Arguments = Name,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            });
+
+
             string path = Path.GetFullPath(new[] {m_Context.AppsDirectory, Name}.Aggregate(Path.Combine));
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
@@ -197,7 +215,7 @@ namespace Inceptum.AppServer.Hosting
             {
                 applicationParams = m_ApplicationParams.Clone();
             }
-            
+
 
             m_AppDomain =  AppDomain.CreateDomain(Name, null, new AppDomainSetup
                                                                                {
@@ -278,6 +296,40 @@ namespace Inceptum.AppServer.Hosting
             if(cmd==null)
                 throw new InvalidOperationException(string.Format("Command '{0}' not found",command));
            return m_ApplicationHost.Execute(command);
+        }
+
+        public void RegisterApplicationHost()
+        {
+            var operationContext = OperationContext.Current;
+            var operationContextType = operationContext.GetType();
+            var getCallbackChannelMethod = operationContextType.GetMethod("GetCallbackChannel");
+
+            getCallbackChannelMethod = getCallbackChannelMethod.MakeGenericMethod(typeof(IApplicationInitializer));
+            var initializer = (IApplicationInitializer)getCallbackChannelMethod.Invoke(operationContext, null);
+            Task.Factory.StartNew(() =>
+            {
+                ApplicationParams applicationParams;
+                lock (m_SyncRoot)
+                {
+                    applicationParams = m_ApplicationParams.Clone();
+                }
+
+
+                var assembliesToLoad = new Dictionary<AssemblyName, string>(applicationParams.AssembliesToLoad)
+                {
+                    {typeof (AppInfo).Assembly.GetName(), typeof (AppInfo).Assembly.Location},
+                    {typeof (ApplicationInstance).Assembly.GetName(), typeof (ApplicationInstance).Assembly.Location},
+                    //AppServer is loaded not from package, so it dependencies used in appDOmain plugin should be provided aswell
+                    {typeof (LoggingFacility).Assembly.GetName(), typeof (LoggingFacility).Assembly.Location}
+                };
+                initializer.Initialize(assembliesToLoad.Select(p=>Tuple.Create(p.Key.ToString(),p.Value)).ToArray(), applicationParams.NativeDllToLoad.ToArray());
+            });
+
+
+
+            //           m_ApplicationHost = (IApplicationHost)appDomainInitializer.CreateInstance(typeof(ApplicationHost<>).AssemblyQualifiedName, applicationParams.AppType);
+
+
         }
     }
 }

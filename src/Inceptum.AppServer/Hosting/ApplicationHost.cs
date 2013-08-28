@@ -79,7 +79,7 @@ namespace Inceptum.AppServer.Hosting
                     .Register(
                         Component.For<AppServerContext>().Instance(context),
                         Component.For<IConfigurationProvider>().Named("ConfigurationProvider")
-                                 .ImplementedBy<InstanceAwareConfigurationProvideWrapper>()
+                                 .ImplementedBy<InstanceAwareConfigurationProviderWrapper>()
                                  .DependsOn(new
                                  {
                                      configurationProvider,
@@ -173,13 +173,13 @@ namespace Inceptum.AppServer.Hosting
             return null;
         }
 
-        private class InstanceAwareConfigurationProvideWrapper:IConfigurationProvider
+        private class InstanceAwareConfigurationProviderWrapper:IConfigurationProvider
         {
             private readonly IConfigurationProvider m_ConfigurationProvider;
             private readonly IDictionary<string, string> m_InstanceParams;
             private readonly Regex m_InstanceParamRegex;
 
-            public InstanceAwareConfigurationProvideWrapper(IConfigurationProvider configurationProvider, object instanceParams)
+            public InstanceAwareConfigurationProviderWrapper(IConfigurationProvider configurationProvider, object instanceParams)
             {
                 if (configurationProvider == null) throw new ArgumentNullException("configurationProvider");
                 if (instanceParams == null) throw new ArgumentNullException("instanceParams");

@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.ServiceModel;
 using System.ServiceProcess;
+using System.Threading;
 using Inceptum.AppServer.Bootstrap;
+using Inceptum.AppServer.Configuration;
+using Inceptum.AppServer.Hosting;
 using OpenWrap.Build;
 using OpenWrap.Commands;
 using OpenWrap.Commands.Wrap;
@@ -29,6 +35,10 @@ namespace Inceptum.AppServer
         [LoaderOptimization(LoaderOptimization.MultiDomainHost)]
         public static void Main(params string[] args)
         {
+            var jobObject = new JobObject();
+           
+           // jobObject.AddProcess(process.Handle);
+
             var setup = new AppServerSetup
                             {
                                 SendHb = false,
@@ -103,13 +113,19 @@ namespace Inceptum.AppServer
             using (createHost(setup))
             {
                 Console.ReadLine();
+                jobObject.Dispose();
             }
         }
 
-      
+
+
         private static IDisposable createHost(AppServerSetup setup = null)
         {
             return Bootstrapper.Start(setup);
         }
     }
+
+
+   
+
 }
