@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using System.Xml.Schema;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
+using Castle.Services.Logging.NLogIntegration;
+using Castle.Windsor;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
@@ -32,8 +34,9 @@ namespace Inceptum.AppServer.Hosting
         private ServiceHost m_ServiceHost;
         private JobObject m_JobObject;
         private Process m_Process;
+         private ChannelFactory<IApplicationHost> m_AppHostFactory;
 
-        public string Name { get; set; }
+         public string Name { get; set; }
         public string Environment { get; set; }
         public ILogger Logger { get; set; }
         public bool HasToBeRecreated { get; set; }
@@ -160,18 +163,26 @@ namespace Inceptum.AppServer.Hosting
                     {
                         try
                         {
-                            m_ApplicationHost.Stop();
+                            if(m_ApplicationHost!=null)
+                                m_ApplicationHost.Stop();
+                            if(m_AppHostFactory!=null)
+                                m_AppHostFactory.Close();
                         }
                         catch (Exception e)
                         {
                             Logger.ErrorFormat(e, "Instance '{0}' application failed while stopping", Name);
+                            if (!m_Process.HasExited)
+                                m_Process.Kill();
                         }
                         finally
                         {
                             Logger.InfoFormat("Instance '{0}' stopped", Name);
-                            if(!m_Process.HasExited)
-                                m_Process.Kill();
+                            if (!m_Process.HasExited)
+                                m_Process.WaitForExit();
+                                
                             m_Process = null;
+                            m_ApplicationHost = null;
+                            m_AppHostFactory = null;
                         }
                         lock (m_SyncRoot)
                         {
@@ -196,7 +207,14 @@ namespace Inceptum.AppServer.Hosting
             m_JobObject.AddProcess(m_Process);
         }
 
-        #region IObservable<HostedAppStatus> Members
+         public void ReportFailure(string error)
+         {
+             Logger.ErrorFormat("Instance '{0}' crashed: {1}", Name,error);
+             stop(true);
+         }
+ 
+
+         #region IObservable<HostedAppStatus> Members
 
         public IDisposable Subscribe(IObserver<HostedAppStatus> observer)
         {
@@ -252,20 +270,17 @@ namespace Inceptum.AppServer.Hosting
            return m_ApplicationHost.Execute(command);
         }
 
-        public void RegisterApplicationHost(string uri)
+        public void RegisterApplicationHost(string uri, InstanceCommand[] instanceCommands)
         {
-            var factory = new ChannelFactory<IApplicationHost>(new NetNamedPipeBinding(), new EndpointAddress(uri));
-            IApplicationHost applicationHost = factory.CreateChannel();
-            Task.Factory.StartNew(() =>
+            m_AppHostFactory = new ChannelFactory<IApplicationHost>(new NetNamedPipeBinding(), new EndpointAddress(uri));
+            IApplicationHost applicationHost = m_AppHostFactory.CreateChannel();
+            Commands = instanceCommands;
+            m_ApplicationHost = applicationHost;
+            lock (m_SyncRoot)
             {
-                Commands = applicationHost.Start();
-                m_ApplicationHost = applicationHost;
-                lock (m_SyncRoot)
-                {
-                    Status = HostedAppStatus.Started;
-                }
-                Logger.InfoFormat("Instance {0} started", Name);
-            });
+                Status = HostedAppStatus.Started;
+            }
+            Logger.InfoFormat("Instance {0} started", Name);
         }
 
         public InstanceParams GetInstanceParams()
@@ -280,9 +295,12 @@ namespace Inceptum.AppServer.Hosting
              var assembliesToLoad = new Dictionary<string, string>(applicationParams.AssembliesToLoad)
                 {
                     {typeof (AppInfo).Assembly.GetName().FullName, typeof (AppInfo).Assembly.Location},
-                    {typeof (ApplicationInstance).Assembly.GetName().FullName, typeof (ApplicationInstance).Assembly.Location},
+                    //{typeof (ApplicationInstance).Assembly.GetName().FullName, typeof (ApplicationInstance).Assembly.Location},
                     //AppServer is loaded not from package, so it dependencies used in appDOmain plugin should be provided aswell
-                    {typeof (LoggingFacility).Assembly.GetName().FullName, typeof (LoggingFacility).Assembly.Location}
+                    {typeof (LoggingFacility).Assembly.GetName().FullName, typeof (LoggingFacility).Assembly.Location},
+                    {typeof (ILogger).Assembly.GetName().FullName, typeof (ILogger).Assembly.Location},
+                    {typeof (WindsorContainer).Assembly.GetName().FullName, typeof (WindsorContainer).Assembly.Location},
+                    {typeof (NLogFactory).Assembly.GetName().FullName, typeof (NLogFactory).Assembly.Location}
                 };
             return new InstanceParams
             {

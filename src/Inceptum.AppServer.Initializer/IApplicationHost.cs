@@ -10,8 +10,6 @@ namespace Inceptum.AppServer.Hosting
     public interface IApplicationHost
     {
         [OperationContract]
-        InstanceCommand[] Start();
-        [OperationContract]
         void Stop();
         [OperationContract]
         string Execute(InstanceCommand command);
