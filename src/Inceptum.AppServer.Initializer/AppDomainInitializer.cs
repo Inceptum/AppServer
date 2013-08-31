@@ -44,7 +44,7 @@ namespace Inceptum.AppServer.Initializer
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr LoadLibrary(string lpFileName);
 
-        public void Initialize(string workingDirectory, Dictionary<AssemblyName, string> assembliesToLoad, IEnumerable<string> nativeDllToLoad, AppDomainCrashHandler crashHandler)
+        public void Initialize(string workingDirectory, Dictionary<string, string> assembliesToLoad, IEnumerable<string> nativeDllToLoad, AppDomainCrashHandler crashHandler)
         {
             AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
             {
@@ -52,8 +52,8 @@ namespace Inceptum.AppServer.Initializer
             };
             IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
 
-            m_LoadedAssemblies = assembliesToLoad.Where(asm => loadedAssemblies.All(a => a.Name != asm.Key.Name))
-                                                 .ToDictionary(asm => asm.Key, asm => new Lazy<Assembly>(() => loadAssembly(asm.Value)));
+            m_LoadedAssemblies = assembliesToLoad.Where(asm => loadedAssemblies.All(a => a.Name != new AssemblyName(asm.Key).Name))
+                                                 .ToDictionary(asm => new AssemblyName(asm.Key), asm => new Lazy<Assembly>(() => loadAssembly(asm.Value)));
       
             foreach (string dll in nativeDllToLoad)
             {

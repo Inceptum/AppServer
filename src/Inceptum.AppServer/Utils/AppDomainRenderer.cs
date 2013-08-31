@@ -16,7 +16,8 @@ namespace Inceptum.AppServer.Utils
         /// </summary>
         public static void Register()
         {
-            ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("app_domain", typeof(AppDomainRendererImpl));
+            ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("app_domain", typeof (AppDomainRendererImpl));
+            ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("appServer_app", typeof(AppDomainDataRendererImpl));
         }
 
     }
@@ -47,5 +48,26 @@ namespace Inceptum.AppServer.Utils
         [DefaultParameter]
         public string DefaultAppDomainAlias { get; set; }
 
+    } 
+    
+    /// <summary>
+    /// Custom app domain renderer implementation to domain friendly name for logging
+    /// </summary>
+    [LayoutRenderer("appServer_app")]
+    public class AppDomainDataRendererImpl : LayoutRenderer
+    {
+        /// <summary>
+        /// Appends app domain friendly name to logging message
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="logEvent"></param>
+        protected override void Append(StringBuilder builder, LogEventInfo logEvent)
+        {
+            var friendlyName = AppDomain.CurrentDomain.GetData("AppServer.Application")??"";
+            builder.Append(friendlyName);
+        }
+
+ 
     }
+
 }

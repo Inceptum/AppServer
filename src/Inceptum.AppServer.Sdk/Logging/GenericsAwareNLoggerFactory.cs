@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using Castle.Core.Logging;
+using NLog;
 using NLog.Config;
 
 namespace Inceptum.AppServer.Logging
@@ -14,6 +16,29 @@ namespace Inceptum.AppServer.Logging
     public class GenericsAwareNLoggerFactory : Castle.Services.Logging.NLogIntegration.NLogFactory
     {
         public GenericsAwareNLoggerFactory() { }
+
+        public GenericsAwareNLoggerFactory(bool configuredExternally) : base(configuredExternally)
+        {
+        }
+        public GenericsAwareNLoggerFactory(string configFile, Action<LoggingConfiguration> updateConfig)
+            : base(prepareConfig(configFile, updateConfig))
+        {
+        }
+
+        private static LoggingConfiguration prepareConfig(string configFile, Action<LoggingConfiguration> updateConfig)
+        {
+            LoggingConfiguration configuration=null;
+
+            if (configFile != null && File.Exists(GetConfigFile(configFile).FullName))
+                configuration = new XmlLoggingConfiguration(GetConfigFile(configFile).FullName);
+
+            if (configuration == null)
+            {
+                configuration=new LoggingConfiguration();
+            }
+            updateConfig(configuration);
+            return configuration;
+        }
 
         public GenericsAwareNLoggerFactory(string configFile) : base(configFile) { }
 

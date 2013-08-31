@@ -77,6 +77,7 @@
     <Reference Include="System.Reactive.PlatformServices">
       <HintPath>..\packages\Rx-PlatformServices.2.1.30214.0\lib\Net40\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
     <Reference Include="System.Xml.Linq" />
@@ -93,6 +94,7 @@
       <Link>Properties\VersionInfo.cs</Link>
     </Compile>
     <Compile Include="AppInfo.cs" />
+    <Compile Include="AppServerContext.cs" />
     <Compile Include="Configuration\BundleNotFoundException.cs" />
     <Compile Include="Configuration\IConnectionStringProvider.cs" />
     <Compile Include="Configuration\IEndpointProvider.cs" />
@@ -101,7 +103,9 @@
     <Compile Include="Configuration\Providers\RemoteConfigurationProvider.cs" />
     <Compile Include="Configuration\Providers\ResourceConfigurationProviderBase.cs" />
     <Compile Include="HostedAppStatus.cs" />
+    <Compile Include="Logging\ILogCache.cs" />
     <Compile Include="Logging\GenericsAwareNLoggerFactory.cs" />
+    <Compile Include="Logging\LogEvent.cs" />
     <Compile Include="Model\Application.cs" />
     <Compile Include="Model\ApplicationInstanceInfo.cs" />
     <Compile Include="Model\ApplicationParams.cs" />

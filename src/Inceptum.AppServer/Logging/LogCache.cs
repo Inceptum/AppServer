@@ -1,13 +1,32 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
+using Castle.Core.Logging;
 using Microsoft.AspNet.SignalR;
+using NLog;
+using NLog.Common;
+using NLog.Targets;
 
 namespace Inceptum.AppServer.Logging
 {
+        
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class LogCache : ILogCache
     {
         private readonly int m_Capacity;
         readonly List<LogEvent> m_Cache = new List<LogEvent>();
+        private Logger m_Logger;
+
+        private Logger Logger
+        {
+            get
+            {
+                if (m_Logger == null)
+                    m_Logger = LogManager.GetLogger(GetType().FullName);
+                return m_Logger;
+            }
+        }
 
         public LogCache(int capacity)
         {
@@ -22,7 +41,8 @@ namespace Inceptum.AppServer.Logging
                 if (m_Cache.Count > m_Capacity)
                     m_Cache.RemoveRange(0, m_Cache.Count - m_Capacity);
             }
-
+            if (message.Source != "Server")
+                Logger.Info("[{0}] {1}",message.Source,message.Message);
             var context = GlobalHost.ConnectionManager.GetConnectionContext<LogConnection>();
             context.Connection.Broadcast(message);
         }

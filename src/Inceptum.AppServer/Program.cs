@@ -35,8 +35,6 @@ namespace Inceptum.AppServer
         [LoaderOptimization(LoaderOptimization.MultiDomainHost)]
         public static void Main(params string[] args)
         {
-            var jobObject = new JobObject();
-           
            // jobObject.AddProcess(process.Handle);
 
             var setup = new AppServerSetup
@@ -113,7 +111,7 @@ namespace Inceptum.AppServer
             using (createHost(setup))
             {
                 Console.ReadLine();
-                jobObject.Dispose();
+                
             }
         }
 
