@@ -23,7 +23,7 @@ namespace Inceptum.AppServer.Hosting
         private readonly AppServerContext m_Context;
         private readonly Subject<HostedAppStatus> m_StatusSubject = new Subject<HostedAppStatus>();
         private readonly object m_SyncRoot = new object();
-        private IApplicationHost2 m_ApplicationHost;
+        private IApplicationHost m_ApplicationHost;
         private Task m_CurrentTask;
         private bool m_IsDisposing;
         private HostedAppStatus m_Status;
@@ -192,6 +192,7 @@ namespace Inceptum.AppServer.Hosting
                 UseShellExecute = false,
                 CreateNoWindow = true*/
             });
+
             m_JobObject.AddProcess(m_Process);
         }
 
@@ -253,8 +254,8 @@ namespace Inceptum.AppServer.Hosting
 
         public void RegisterApplicationHost(string uri)
         {
-            var factory = new ChannelFactory<IApplicationHost2>(new NetNamedPipeBinding(), new EndpointAddress(uri));
-            IApplicationHost2 applicationHost = factory.CreateChannel();
+            var factory = new ChannelFactory<IApplicationHost>(new NetNamedPipeBinding(), new EndpointAddress(uri));
+            IApplicationHost applicationHost = factory.CreateChannel();
             Task.Factory.StartNew(() =>
             {
                 Commands = applicationHost.Start();
@@ -292,7 +293,6 @@ namespace Inceptum.AppServer.Hosting
                                             applicationParams.NativeDllToLoad,
                                             assembliesToLoad
                                         ),
-                AppHostType = typeof(ApplicationHost2<>).AssemblyQualifiedName,
                 AppServerContext = m_Context,
                 Environment = Environment
             }; 

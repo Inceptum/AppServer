@@ -17,9 +17,7 @@ namespace Inceptum.AppServer.Model
         [DataMember]
 
         public AppServerContext AppServerContext { get; set; }
-
-        [DataMember]
-        public string AppHostType { get; set; }
+ 
 
         [DataMember]
         public string Environment { get; set; }
