@@ -10,13 +10,9 @@ using Castle.Facilities.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Castle.Windsor.Installer;
-using Inceptum.AppServer.Bootstrap;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Logging;
-using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.Windsor;
-using Inceptum.Core.Utils;
-using Inceptum.Messaging;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -25,7 +21,7 @@ using NLog.Targets.Wrappers;
 namespace Inceptum.AppServer.Hosting
 {
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single,IncludeExceptionDetailInFaults = true)]
-    internal class ApplicationHost2<TApp> : MarshalByRefObject, IApplicationHost2 where TApp : IHostedApplication
+    internal class ApplicationHost<TApp> : IApplicationHost where TApp : IHostedApplication
     {
         private WindsorContainer m_Container;
         private IHostedApplication m_HostedApplication;
@@ -35,41 +31,25 @@ namespace Inceptum.AppServer.Hosting
         private readonly string m_InstanceName;
         private readonly AppServerContext m_Context;
 
-        internal WindsorContainer Container
+        public ApplicationHost(ILogCache logCache, IConfigurationProvider configurationProvider, string environment, string instanceName, AppServerContext context)
         {
-            get { return m_Container; }
+            m_LogCache = logCache;
+            m_ConfigurationProvider = configurationProvider;
+            m_Environment = environment;
+            m_InstanceName = instanceName;
+            m_Context = context;
         }
 
-
-        public ApplicationHost2(ILogCache logCache, IConfigurationProvider configurationProvider, string environment, string instanceName, AppServerContext context)
-        {
-            this.m_LogCache = logCache;
-            this.m_ConfigurationProvider = configurationProvider;
-            this.m_Environment = environment;
-            this.m_InstanceName = instanceName;
-            this.m_Context = context;
-            Status=HostedAppStatus.Stopped;
-        }
-
-        public HostedAppStatus Status { get; private set; }
 
         #region IApplicationHost2 Members
-
-
-        public HostedAppStatus GetStatus()
-        {
-            return Status;
-        }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public InstanceCommand[] Start()
         {
-            Status = HostedAppStatus.Starting;
             if (m_Container != null)
                 throw new InvalidOperationException("Host is already started");
             try
             {
-                AppDomainRenderer.Register();
 
                 m_Container = new WindsorContainer();
                 //castle config
@@ -96,36 +76,7 @@ namespace Inceptum.AppServer.Hosting
                 m_Container
                     .AddFacility<LoggingFacility>(f => f.LogUsing(new GenericsAwareNLoggerFactory(
                         null,//Path.Combine(m_Context.BaseDirectory, "nlog.config"),
-                        config =>
-                        {
-                            Target logFile = new AsyncTargetWrapper(new FileTarget
-                            {
-                                FileName = Path.Combine(m_Context.BaseDirectory, "logs", m_InstanceName,"${shortdate}.log"),
-                                Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
-                            });
-                            config.AddTarget("logFile", logFile);
-                            var rule = new LoggingRule("*", LogLevel.Debug, logFile);
-                            config.LoggingRules.Add(rule);
-
-
-                            Target console = new AsyncTargetWrapper(new ConsoleTarget
-                            {
-                                Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
-                            });
-                            config.AddTarget("console", console);
-                            rule = new LoggingRule("*", LogLevel.Debug, console);
-                            config.LoggingRules.Add(rule);
-
-                            Target managementConsole = new ManagementConsoleTarget(m_LogCache, m_InstanceName)
-                            {
-                                Layout = @"${date:format=HH\:mm\:ss.fff} ${level} [${threadid}][${threadname}] [" + m_InstanceName + ".${logger:shortName=true}] ${message} ${exception:format=tostring}"
-                            };
-                            config.AddTarget("managementConsole", managementConsole);
-                            rule = new LoggingRule("*", LogLevel.Debug, managementConsole);
-                            config.LoggingRules.Add(rule);
-                        })))
-
- 
+                        updateLoggingConfig)))
                     .Register(
                         Component.For<AppServerContext>().Instance(m_Context),
                         Component.For<IConfigurationProvider>().Named("ConfigurationProvider")
@@ -144,6 +95,8 @@ namespace Inceptum.AppServer.Hosting
                     )
                     .Install(FromAssembly.Instance(typeof(TApp).Assembly, new PluginInstallerFactory()))
                     .Register(Component.For<IHostedApplication>().ImplementedBy<TApp>());
+
+
                 m_HostedApplication = m_Container.Resolve<IHostedApplication>();
                 var allowedTypes = new []{typeof(string),typeof(int),typeof(DateTime),typeof(decimal),typeof(bool)};
                 var commands =
@@ -153,13 +106,10 @@ namespace Inceptum.AppServer.Hosting
                                      .Where(m => m.GetParameters().All(p => allowedTypes.Contains(p.ParameterType)))
                                      .Select(m => new InstanceCommand( m.Name,m.GetParameters().Select(p => new InstanceCommandParam{Name = p.Name,Type = p.ParameterType.Name}).ToArray()));
                 m_HostedApplication.Start();
-                Status = HostedAppStatus.Started;
                 return commands.ToArray();
             }
             catch (Exception e)
             {
-                Status = HostedAppStatus.Stopped;
-
                 try
                 {
                     if (m_Container != null)
@@ -179,15 +129,45 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
+        private void updateLoggingConfig(LoggingConfiguration config)
+        {
+            Target logFile = new AsyncTargetWrapper(new FileTarget
+            {
+                FileName = Path.Combine(m_Context.BaseDirectory, "logs", m_InstanceName, "${shortdate}.log"),
+                Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
+            });
+            config.AddTarget("logFile", logFile);
+            var rule = new LoggingRule("*", LogLevel.Debug, logFile);
+            config.LoggingRules.Add(rule);
+
+
+            Target console = new AsyncTargetWrapper(new ConsoleTarget
+            {
+                Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
+            });
+            config.AddTarget("console", console);
+            rule = new LoggingRule("*", LogLevel.Debug, console);
+            config.LoggingRules.Add(rule);
+
+            Target managementConsole = new ManagementConsoleTarget(m_LogCache, m_InstanceName)
+            {
+                Layout = @"${date:format=HH\:mm\:ss.fff} ${level} [${threadid}][${threadname}] [" + m_InstanceName + ".${logger:shortName=true}] ${message} ${exception:format=tostring}"
+            };
+            config.AddTarget("managementConsole", managementConsole);
+            rule = new LoggingRule("*", LogLevel.Debug, managementConsole);
+            config.LoggingRules.Add(rule);
+        }
+
+
+
+
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void Stop()
         {
-            Status = HostedAppStatus.Stopping;
             if (m_Container == null)
                 throw new InvalidOperationException("Host is not started");
             m_Container.Dispose();
             m_Container = null;
-            Status = HostedAppStatus.Stopped;
             m_HostedApplication = null;
         }
 
@@ -210,18 +190,7 @@ namespace Inceptum.AppServer.Hosting
 
         #endregion
 
-        /// <summary>
-        /// Obtains a lifetime service object to control the lifetime policy for this instance.
-        /// </summary>
-        /// <returns>
-        /// An object of type <see cref="T:System.Runtime.Remoting.Lifetime.ILease"/> used to control the lifetime policy for this instance. This is the current lifetime service object for this instance if one exists; otherwise, a new lifetime service object initialized to the value of the <see cref="P:System.Runtime.Remoting.Lifetime.LifetimeServices.LeaseManagerPollTime"/> property.
-        /// </returns>
-        /// <exception cref="T:System.Security.SecurityException">The immediate caller does not have infrastructure permission. </exception><filterpriority>2</filterpriority><PermissionSet><IPermission class="System.Security.Permissions.SecurityPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Flags="RemotingConfiguration, Infrastructure"/></PermissionSet>
-        public override object InitializeLifetimeService()
-        {
-            // prevents proxy from expiration
-            return null;
-        }
+        
 
         private class InstanceAwareConfigurationProviderWrapper:IConfigurationProvider
         {

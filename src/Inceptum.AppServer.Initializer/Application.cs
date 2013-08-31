@@ -125,7 +125,7 @@ namespace Inceptum.AppServer.Initializer
             
 
             m_ApplicationInitializer.Initialize(instanceParams.ApplicationParams.AssembliesToLoad, instanceParams.ApplicationParams.NativeDllToLoad, null);
-            var hostType = Type.GetType(instanceParams.AppHostType).MakeGenericType(Type.GetType(instanceParams.ApplicationParams.AppType));
+            var hostType = typeof(ApplicationHost<>).MakeGenericType(Type.GetType(instanceParams.ApplicationParams.AppType));
 
 
 
@@ -135,7 +135,7 @@ namespace Inceptum.AppServer.Initializer
             m_ServiceHost = new ServiceHost(appHost);
             var address = new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/" + name);
             //TODO: need to do it in better way. String based type resolving is a bug source
-            m_ServiceHost.AddServiceEndpoint(hostType.GetInterface("IApplicationHost2"), new NetNamedPipeBinding(), address);
+            m_ServiceHost.AddServiceEndpoint(typeof(IApplicationHost), new NetNamedPipeBinding(), address);
             //m_ConfigurationProviderServiceHost.Faulted += new EventHandler(this.IpcHost_Faulted);
             m_ServiceHost.Open();
             
