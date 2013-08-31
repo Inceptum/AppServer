@@ -50,6 +50,7 @@
     <Compile Include="Application.cs" />
     <Compile Include="IApplicationInstance.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WndUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Inceptum.AppServer.Sdk\Inceptum.AppServer.Sdk.csproj">
