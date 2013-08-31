@@ -1,22 +1,54 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace Inceptum.AppServer.Model
 {
+
+
+    [DataContract]
+    public class InstanceParams
+    {
+        [DataMember]
+        public ApplicationParams ApplicationParams { get; set; }
+
+        [DataMember]
+
+        public AppServerContext AppServerContext { get; set; }
+
+        [DataMember]
+        public string AppHostType { get; set; }
+
+        [DataMember]
+        public string Environment { get; set; }
+    }
+
+
+    [DataContract]
     public class ApplicationParams
     {
+        [DataMember]
         public string AppType { get; set; }
+        [DataMember]
         public string ConfigFile { get; set; }
+        [DataMember]
         public string[] NativeDllToLoad { get; set; }
-        public Dictionary<AssemblyName, string> AssembliesToLoad { get; private set; }
+        [DataMember]
+        public Dictionary<string, string> AssembliesToLoad { get; private set; }
 
-        public ApplicationParams(string appType, string configFile, string[] nativeDllToLoad, Dictionary<AssemblyName, string> assembliesToLoad)
+        public ApplicationParams(string appType, string configFile, string[] nativeDllToLoad, Dictionary<string, string> assembliesToLoad)
         {
             AppType = appType;
             ConfigFile = configFile;
             NativeDllToLoad = nativeDllToLoad;
-            AssembliesToLoad = new Dictionary<AssemblyName, string>(assembliesToLoad);
+            AssembliesToLoad = assembliesToLoad.ToDictionary(p => p.Key, p => p.Value);
+        }
+        public ApplicationParams(string appType, string configFile, string[] nativeDllToLoad, Dictionary<AssemblyName, string> assembliesToLoad)
+            : this(appType, configFile, nativeDllToLoad, assembliesToLoad.ToDictionary(p => p.Key.FullName, p => p.Value))
+        {
+         
         }
 
         public bool Equals(ApplicationParams other)
@@ -26,7 +58,7 @@ namespace Inceptum.AppServer.Model
             return Equals(other.AppType, AppType) 
                 && Equals(other.ConfigFile, ConfigFile) 
                 && other.NativeDllToLoad.OrderBy(x => x).SequenceEqual(NativeDllToLoad.OrderBy(x => x))
-                && other.AssembliesToLoad.Select(x => x.Key.FullName + "|" + x.Value).OrderBy(x => x).SequenceEqual(AssembliesToLoad.Select(x => x.Key.FullName + "|" + x.Value).OrderBy(x => x));
+                && other.AssembliesToLoad.Select(x => x.Key + "|" + x.Value).OrderBy(x => x).SequenceEqual(AssembliesToLoad.Select(x => x.Key + "|" + x.Value).OrderBy(x => x));
         }
 
         public override bool Equals(object obj)
@@ -51,7 +83,7 @@ namespace Inceptum.AppServer.Model
 
         public ApplicationParams Clone()
         {
-            return new ApplicationParams(AppType, ConfigFile, NativeDllToLoad.ToArray(), new Dictionary<AssemblyName, string>(AssembliesToLoad));
+            return new ApplicationParams(AppType, ConfigFile, NativeDllToLoad.ToArray(), new Dictionary<string, string>(AssembliesToLoad));
         }
 
         public static bool operator ==(ApplicationParams p1,ApplicationParams p2)

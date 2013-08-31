@@ -10,6 +10,7 @@ using System.ServiceModel;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Inceptum.AppServer.AppDiscovery;
+using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Notification;
@@ -32,13 +33,23 @@ namespace Inceptum.AppServer.Hosting
         private readonly object m_SyncRoot = new object();
         private readonly ApplicationRepositary m_ApplicationRepositary;
         private ServiceHost m_ConfigurationProviderServiceHost;
+        private ServiceHost m_LogCacheServiceHost;
+        private JobObject m_JobObject;
+        private ILogCache m_LogCache;
 
-        public Host(IManageableConfigurationProvider configurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepositary applicationRepositary, ILogger logger = null, string name = null)
+        public Host(ILogCache logCache,IManageableConfigurationProvider configurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepositary applicationRepositary, ILogger logger = null, string name = null)
         {
+            m_LogCache = logCache;
+            m_JobObject = new JobObject();
             m_ConfigurationProviderServiceHost = new ServiceHost(configurationProvider, new[] { new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id) });
             m_ConfigurationProviderServiceHost.AddServiceEndpoint(typeof(IConfigurationProvider), new NetNamedPipeBinding(), "ConfigurationProvider");
             //m_ConfigurationProviderServiceHost.Faulted += new EventHandler(this.IpcHost_Faulted);
             m_ConfigurationProviderServiceHost.Open();
+
+            m_LogCacheServiceHost = new ServiceHost(logCache, new[] { new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id) });
+            m_LogCacheServiceHost.AddServiceEndpoint(typeof(ILogCache), new NetNamedPipeBinding(), "LogCache");
+            //m_LogCacheServiceHost.Faulted += new EventHandler(this.IpcHost_Faulted);
+            m_LogCacheServiceHost.Open();
 
 
 
@@ -376,6 +387,7 @@ namespace Inceptum.AppServer.Hosting
 
         public void Dispose()
         {
+            m_JobObject.Dispose();
             Logger.InfoFormat("Host is disposed");
         }
     }

@@ -54,6 +54,7 @@ namespace Inceptum.AppServer.Bootstrap
             logger.Info("Registering components");
             try
             {
+                container.Register(Component.For<JobObject>());
                 container.Register(
                     Component.For<IConfigurationProvider, IManageableConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>().Named("localStorageConfigurationProvider")
                                   .DependsOn(new { configFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration") }));
