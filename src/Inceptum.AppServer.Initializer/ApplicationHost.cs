@@ -1,16 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.ServiceModel;
-using System.Text.RegularExpressions;
+using System.Threading;
 using Castle.Facilities.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Castle.Windsor.Installer;
 using Inceptum.AppServer.Configuration;
+using Inceptum.AppServer.Initializer;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Windsor;
 using NLog;
@@ -20,18 +23,66 @@ using NLog.Targets.Wrappers;
 
 namespace Inceptum.AppServer.Hosting
 {
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single,IncludeExceptionDetailInFaults = true)]
-    internal class ApplicationHost<TApp> : IApplicationHost where TApp : IHostedApplication
-    {
-        private WindsorContainer m_Container;
-        private IHostedApplication m_HostedApplication;
-        private readonly ILogCache m_LogCache;
-        private readonly IConfigurationProvider m_ConfigurationProvider;
-        private readonly string m_Environment;
-        private readonly string m_InstanceName;
-        private readonly AppServerContext m_Context;
 
-        public ApplicationHost(ILogCache logCache, IConfigurationProvider configurationProvider, string environment, string instanceName, AppServerContext context)
+    class AppContainer : WindsorContainer
+    {
+
+        public static void updateLoggingConfig(LoggingConfiguration config, string baseDirectory, string instanceName, ILogCache logCache)
+        {
+            Target logFile = new AsyncTargetWrapper(new FileTarget
+            {
+                FileName = Path.Combine(baseDirectory, "logs", instanceName, "${shortdate}.log"),
+                Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
+            });
+            config.AddTarget("logFile", logFile);
+            var rule = new LoggingRule("*", LogLevel.Debug, logFile);
+            config.LoggingRules.Add(rule);
+
+
+            Target console = new AsyncTargetWrapper(new ConsoleTarget
+            {
+                Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
+            });
+            config.AddTarget("console", console);
+            rule = new LoggingRule("*", LogLevel.Debug, console);
+            config.LoggingRules.Add(rule);
+
+            Target managementConsole = new ManagementConsoleTarget(logCache, instanceName)
+            {
+                Layout = @"${date:format=HH\:mm\:ss.fff} ${level} [${threadid}][${threadname}] [" + instanceName + ".${logger:shortName=true}] ${message} ${exception:format=tostring}"
+            };
+            config.AddTarget("managementConsole", managementConsole);
+            rule = new LoggingRule("*", LogLevel.Debug, managementConsole);
+            config.LoggingRules.Add(rule);
+        }
+    }
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single,IncludeExceptionDetailInFaults = true)]
+    internal class ApplicationHost : IApplicationHost 
+    {
+        private IDisposable m_Container;
+        private IHostedApplication m_HostedApplication;
+        private   ILogCache m_LogCache;
+        private   IConfigurationProvider m_ConfigurationProvider;
+        private string m_Environment;
+        private readonly string m_InstanceName;
+        private AppServerContext m_Context;
+        ManualResetEvent m_StopEvent=new ManualResetEvent(false);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        private static extern IntPtr LoadLibrary(string lpFileName);
+
+
+
+        private Dictionary<AssemblyName, Lazy<Assembly>> m_LoadedAssemblies;
+        private IApplicationInstance m_Instance;
+        private ServiceHost m_ServiceHost;
+
+        public ApplicationHost(string instanceName)
+        {
+            m_InstanceName = instanceName;
+        }
+
+     /*   public ApplicationHost(ILogCache logCache, IConfigurationProvider configurationProvider, string environment, string instanceName, AppServerContext context)
         {
             m_LogCache = logCache;
             m_ConfigurationProvider = configurationProvider;
@@ -39,29 +90,149 @@ namespace Inceptum.AppServer.Hosting
             m_InstanceName = instanceName;
             m_Context = context;
         }
+*/
+
+        #region Initialization
+
+        public void Run()
+        {
+
+            m_ServiceHost = new ServiceHost(this);
+            var address = new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/" + m_InstanceName).ToString();
+            //TODO: need to do it in better way. String based type resolving is a bug source
+            m_ServiceHost.AddServiceEndpoint(typeof(IApplicationHost), new NetNamedPipeBinding(), address);
+            //m_ConfigurationProviderServiceHost.Faulted += new EventHandler(this.IpcHost_Faulted);
+            m_ServiceHost.Open();
 
 
-        #region IApplicationHost2 Members
 
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        public InstanceCommand[] Start()
+            var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/instances/" + m_InstanceName;
+            var factory = new ChannelFactory<IApplicationInstance>(new NetNamedPipeBinding(), new EndpointAddress(uri));
+            m_Instance = factory.CreateChannel();
+            var instanceParams = m_Instance.GetInstanceParams();
+            AppDomain.CurrentDomain.UnhandledException += onUnhandledException;
+
+            
+           
+
+
+            m_Environment = instanceParams.Environment;
+            m_Context = instanceParams.AppServerContext;
+
+ 
+            IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
+
+            m_LoadedAssemblies = instanceParams.ApplicationParams.AssembliesToLoad.Where(asm => loadedAssemblies.All(a => a.Name != new AssemblyName(asm.Key).Name))
+                                                 .ToDictionary(asm => new AssemblyName(asm.Key), asm => new Lazy<Assembly>(() => loadAssembly(asm.Value)));
+
+            foreach (string dll in instanceParams.ApplicationParams.NativeDllToLoad)
+            {
+                if (LoadLibrary(dll) == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to load unmanaged dll " + Path.GetFileName(dll) + " from package");
+                }
+            }
+            AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
+            var congigurationProvider = getCongigurationProvider();
+            var logCache = getLogCache();
+
+
+            var instanceCommands = initContainer(Type.GetType(instanceParams.ApplicationParams.AppType));
+            m_Instance.RegisterApplicationHost(address, instanceCommands);
+
+            m_StopEvent.WaitOne();
+            if (m_Container == null)
+                throw new InvalidOperationException("Host is not started");
+            m_Container.Dispose();
+            if(congigurationProvider!=null)
+                congigurationProvider.Close();
+            if(logCache!=null)
+                logCache.Close();
+            m_Container = null;
+            m_HostedApplication = null;
+            if (m_ServiceHost!=null)
+                m_ServiceHost.Close();
+            
+        }
+
+        private void onUnhandledException(object sender, UnhandledExceptionEventArgs args)
+        {
+            m_Instance.ReportFailure(args.ExceptionObject.ToString());
+        }
+
+        private static Assembly loadAssembly(string path)
+        {
+            byte[] assemblyBytes = File.ReadAllBytes(path);
+            var pdb = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path) + ".pdb");
+            if (File.Exists(pdb))
+            {
+                byte[] pdbBytes = File.ReadAllBytes(pdb);
+                return Assembly.Load(assemblyBytes, pdbBytes);
+            }
+
+            return Assembly.Load(assemblyBytes);
+        }
+
+        private Assembly onAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            Assembly[] loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            Assembly assembly =
+                loadedAssemblies.FirstOrDefault(
+                    a => a.FullName == args.Name || a.GetName().Name == new AssemblyName(args.Name).Name || a.GetName().Name == args.Name
+                    );
+
+            if (assembly != null)
+                return assembly;
+
+            assembly = (from asm in m_LoadedAssemblies
+                        where asm.Key.Name == new AssemblyName(args.Name).Name
+                        orderby asm.Key.Version descending
+                        select asm.Value.Value).FirstOrDefault();
+
+
+            return assembly;
+        }
+
+
+        private   ChannelFactory<IConfigurationProvider> getCongigurationProvider()
+        {
+            var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/ConfigurationProvider";
+            var factory = new ChannelFactory<IConfigurationProvider>(new NetNamedPipeBinding(),
+                new EndpointAddress(uri));
+            m_ConfigurationProvider = factory.CreateChannel();
+            return factory;
+        }
+
+        private   ChannelFactory<ILogCache> getLogCache()
+        {
+            var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/LogCache";
+            var factory = new ChannelFactory<ILogCache>(new NetNamedPipeBinding(),
+                new EndpointAddress(uri));
+            m_LogCache= factory.CreateChannel();
+            return factory;
+        }
+
+        #endregion
+
+        #region IApplicationHost Members
+
+        private InstanceCommand[] initContainer(Type appType)
         {
             if (m_Container != null)
                 throw new InvalidOperationException("Host is already started");
+            var container = new WindsorContainer();
             try
             {
-
-                m_Container = new WindsorContainer();
                 //castle config
                 var appName = AppDomain.CurrentDomain.FriendlyName;
                 var configurationFile = string.Format("castle.{0}.config", appName);
                 if (File.Exists(configurationFile))
                 {
-                    m_Container
+                    container
                         .Install(Castle.Windsor.Installer.Configuration.FromXmlFile(configurationFile));
                 }
 
-                m_Container.Register(
+                container.Register(
                    Component.For<ILogCache>().Instance(m_LogCache).Named("LogCache"),
                    Component.For<ManagementConsoleTarget>().DependsOn(new { source = m_InstanceName })
                    );
@@ -71,9 +242,9 @@ namespace Inceptum.AppServer.Hosting
                 GlobalDiagnosticsContext.Set("logfolder",logFolder);
                 ConfigurationItemFactory.Default.Targets.RegisterDefinition("ManagementConsole", typeof(ManagementConsoleTarget));
                 var createInstanceOriginal = ConfigurationItemFactory.Default.CreateInstance;
-                ConfigurationItemFactory.Default.CreateInstance = type => m_Container.Kernel.HasComponent(type) ? m_Container.Resolve(type) : createInstanceOriginal(type);
+                ConfigurationItemFactory.Default.CreateInstance = type => container.Kernel.HasComponent(type) ? container.Resolve(type) : createInstanceOriginal(type);
 
-                m_Container
+                container
                     .AddFacility<LoggingFacility>(f => f.LogUsing(new GenericsAwareNLoggerFactory(
                         null,//Path.Combine(m_Context.BaseDirectory, "nlog.config"),
                         updateLoggingConfig)))
@@ -93,11 +264,11 @@ namespace Inceptum.AppServer.Hosting
                                      }
                                  })
                     )
-                    .Install(FromAssembly.Instance(typeof(TApp).Assembly, new PluginInstallerFactory()))
-                    .Register(Component.For<IHostedApplication>().ImplementedBy<TApp>());
+                    .Install(FromAssembly.Instance(appType.Assembly, new PluginInstallerFactory()))
+                    .Register(Component.For<IHostedApplication>().ImplementedBy(appType));
 
 
-                m_HostedApplication = m_Container.Resolve<IHostedApplication>();
+                m_HostedApplication = container.Resolve<IHostedApplication>();
                 var allowedTypes = new []{typeof(string),typeof(int),typeof(DateTime),typeof(decimal),typeof(bool)};
                 var commands =
                     m_HostedApplication.GetType()
@@ -106,15 +277,16 @@ namespace Inceptum.AppServer.Hosting
                                      .Where(m => m.GetParameters().All(p => allowedTypes.Contains(p.ParameterType)))
                                      .Select(m => new InstanceCommand( m.Name,m.GetParameters().Select(p => new InstanceCommandParam{Name = p.Name,Type = p.ParameterType.Name}).ToArray()));
                 m_HostedApplication.Start();
+                m_Container = container;
                 return commands.ToArray();
             }
             catch (Exception e)
             {
                 try
                 {
-                    if (m_Container != null)
+                    if (container != null)
                     {
-                        m_Container.Dispose();
+                        container.Dispose();
                         m_Container = null;
                     }
                 }
@@ -126,8 +298,10 @@ namespace Inceptum.AppServer.Hosting
                 }
                 string[] strings = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name + " " + a.GetName().Version).OrderBy(a => a).ToArray();
                 throw new ApplicationException(string.Format("Failed to start: {0}", e));
-            }
+            } 
         }
+
+
 
         private void updateLoggingConfig(LoggingConfiguration config)
         {
@@ -159,16 +333,10 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
-
-
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void Stop()
         {
-            if (m_Container == null)
-                throw new InvalidOperationException("Host is not started");
-            m_Container.Dispose();
-            m_Container = null;
-            m_HostedApplication = null;
+            m_StopEvent.Set();
         }
 
         public string Execute(InstanceCommand command)
@@ -189,59 +357,5 @@ namespace Inceptum.AppServer.Hosting
         }
 
         #endregion
-
-        
-
-        private class InstanceAwareConfigurationProviderWrapper:IConfigurationProvider
-        {
-            private readonly IConfigurationProvider m_ConfigurationProvider;
-            private readonly IDictionary<string, string> m_InstanceParams;
-            private readonly Regex m_InstanceParamRegex;
-
-            public InstanceAwareConfigurationProviderWrapper(IConfigurationProvider configurationProvider, object instanceParams)
-            {
-                if (configurationProvider == null) throw new ArgumentNullException("configurationProvider");
-                if (instanceParams == null) throw new ArgumentNullException("instanceParams");
-                m_ConfigurationProvider = configurationProvider;
-                m_InstanceParams = extractParamValues(instanceParams);
-                m_InstanceParamRegex = createRegex(m_InstanceParams);
-            }
-
-            //TODO[MT]: methods (replaceParams, createRegex and extractParamValues) should be moved to some internal "Utils" namespace (same logic is used inside ConfigurationFacility)
-            private static Regex createRegex(IDictionary<string, string> paramsDictionary)
-            {
-                var r = string.Format("^{0}$", string.Join("|", paramsDictionary.Keys.Select(x => "\\{" + x + "\\}")));
-                return new Regex(r, RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnoreCase);
-            }
-
-            private static Dictionary<string, string> extractParamValues(object values)
-            {
-                var vals = values
-                    .GetType()
-                    .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(property => property.CanRead)
-                    .Select(property => new { key = property.Name, value = property.GetValue(values, null) });
-
-
-                return vals.ToDictionary(o => o.key, o => (o.value ?? "").ToString());
-            }
-
-            private string replaceParams(string paramName, bool strict = true)
-            {
-                if (!strict && (m_InstanceParamRegex == null || !m_InstanceParamRegex.IsMatch(paramName)))
-                    return paramName;
-                return m_InstanceParams.Aggregate(paramName,
-                                          (current, param) =>
-                                          current.Replace(string.Format("{{{0}}}", param.Key), param.Value));
-            }
-
-            public string GetBundle(string configuration, string bundleName, params string[] parameters)
-            {
-                var extraParams = parameters.Select(x => replaceParams(x)).ToArray();
-                bundleName = replaceParams(bundleName, false);
-
-                return m_ConfigurationProvider.GetBundle(configuration, bundleName, extraParams);
-            }
-        }
     }
 }

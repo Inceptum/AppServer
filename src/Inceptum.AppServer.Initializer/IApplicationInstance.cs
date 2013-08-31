@@ -10,7 +10,10 @@ namespace Inceptum.AppServer.Hosting
     public interface IApplicationInstance
     {
         [OperationContract]
-        void RegisterApplicationHost(string uri);
+        void RegisterApplicationHost(string uri, InstanceCommand[] instanceCommands);
+   
+        [OperationContract]
+        void ReportFailure(string error);
    
         [OperationContract]
         InstanceParams GetInstanceParams();

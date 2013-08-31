@@ -33,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>Inceptum.AppServer.Initializer.Application</StartupObject>
+    <StartupObject>Inceptum.AppServer.Initializer.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Castle.Core, Version=3.2.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
@@ -66,11 +66,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppDomainInitializer.cs" />
-    <Compile Include="Application.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="ApplicationHost.cs" />
     <Compile Include="IApplicationHost.cs" />
     <Compile Include="IApplicationInstance.cs" />
     <Compile Include="ILogCache.cs" />
+    <Compile Include="InstanceAwareConfigurationProviderWrapper.cs" />
     <Compile Include="ManagementConsoleTarget.cs" />
     <Compile Include="PluginInstallerFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
