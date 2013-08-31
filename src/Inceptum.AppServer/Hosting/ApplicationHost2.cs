@@ -24,7 +24,7 @@ using NLog.Targets.Wrappers;
 
 namespace Inceptum.AppServer.Hosting
 {
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single,IncludeExceptionDetailInFaults = true)]
     internal class ApplicationHost2<TApp> : MarshalByRefObject, IApplicationHost2 where TApp : IHostedApplication
     {
         private WindsorContainer m_Container;
@@ -105,6 +105,15 @@ namespace Inceptum.AppServer.Hosting
                             });
                             config.AddTarget("logFile", logFile);
                             var rule = new LoggingRule("*", LogLevel.Debug, logFile);
+                            config.LoggingRules.Add(rule);
+
+
+                            Target console = new AsyncTargetWrapper(new ConsoleTarget
+                            {
+                                Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
+                            });
+                            config.AddTarget("console", console);
+                            rule = new LoggingRule("*", LogLevel.Debug, console);
                             config.LoggingRules.Add(rule);
 
                             Target managementConsole = new ManagementConsoleTarget(m_LogCache, m_InstanceName)
