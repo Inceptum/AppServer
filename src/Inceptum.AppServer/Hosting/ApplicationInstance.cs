@@ -71,14 +71,14 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
-        public ApplicationInstance(string name, string environment, AppServerContext context, IConfigurationProvider configurationProvider,
+        public ApplicationInstance(string name, string environment, AppServerContext context, IConfigurationProvider remoteConfigurationProvider,
                                    ILogCache logCache, ILogger logger)
         {
             m_LogCache = logCache;
             Name = name;
             Environment = environment;
             Logger = logger;
-            m_ConfigurationProvider = configurationProvider;
+            m_ConfigurationProvider = remoteConfigurationProvider;
             m_Context = context;
             IsMisconfigured = true;
         }

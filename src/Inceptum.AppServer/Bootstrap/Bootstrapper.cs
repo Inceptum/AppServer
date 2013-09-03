@@ -58,11 +58,13 @@ namespace Inceptum.AppServer.Bootstrap
                     Component.For<IConfigurationProvider, IManageableConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>().Named("localStorageConfigurationProvider")
                                   .DependsOn(new { configFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration") }));
 
+
+
                 //If remote configuration source is provided in app.config use it by default
                 if (setup.ConfSvcUrl != null)
                     container.Register(Component.For<IConfigurationProvider>().ImplementedBy<CachingRemoteConfigurationProvider>()
                         .DependsOn(new { serviceUrl = setup.ConfSvcUrl, path = "." })
-                        .IsDefault());
+                        .Named("remoteConfigurationProvider"));
 
 
                 //SignalR and Castle integraion
@@ -72,8 +74,10 @@ namespace Inceptum.AppServer.Bootstrap
                     .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
                                                                  .Params(new { environment = setup.Environment, machineName = Environment.MachineName })
                                                                  .ConfigureTransports(new Dictionary<string, JailStrategy> { { "Environment", JailStrategy.Custom(() => setup.Environment) } },
-                                                                                      "server.transports", "{environment}", "{machineName}"))
-                    //messaging
+                                                                                      "server.transports", "{environment}", "{machineName}"));
+
+                //messaging
+                container
                     .AddFacility<MessagingFacility>(f => { })
                     //Management
                     .Register(                        
