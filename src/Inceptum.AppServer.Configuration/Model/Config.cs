@@ -38,7 +38,7 @@ namespace Inceptum.AppServer.Configuration.Model
             get
             {
                 string value;
-                m_Map.TryGetValue(name, out value);
+                m_Map.TryGetValue(name.ToLower(), out value);
                 return value;
             }
             set
