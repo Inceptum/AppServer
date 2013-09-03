@@ -24,6 +24,8 @@ namespace Inceptum.AppServer.Management.OpenRasta
                 ResourceSpace.Has.ResourcesOfType<ServerError>().WithoutUri.TranscodedBy<NewtonsoftJsonCodec>();
                 ResourceSpace.Has.ResourcesOfType<InstanceCommand>().WithoutUri.TranscodedBy<NewtonsoftJsonCodec>();
                 ResourceSpace.Has.ResourcesOfType<string>().WithoutUri.TranscodedBy<UtfTextPlainCodec>();
+                ResourceSpace.Uses.UriDecorator<SplitParamsUriDecorator>();
+
 
                 ResourceSpace.Has
                     .ResourcesOfType<Application[]>()
@@ -93,6 +95,11 @@ namespace Inceptum.AppServer.Management.OpenRasta
                     .And.AtUri("api/configurations/{configuration}/import").Named("import")
                     .HandledBy<ConfigurationsHandler>()
                     .TranscodedBy<ApplicationOctetStreamCodec>(); 
+
+                ResourceSpace.Has.ResourcesOfType<object>()
+                    .AtUri("/configuration/{configuration}/{bundle}").Named("configBundle")
+                    .And.AtUri("/configuration/{configuration}/{bundle}/{overrides}").Named("configBundleWithOverrides")
+                    .HandledBy<ConfigurationsHandler>();
             }
         }
 

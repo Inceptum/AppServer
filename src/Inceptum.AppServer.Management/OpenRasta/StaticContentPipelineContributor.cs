@@ -21,7 +21,7 @@ namespace Inceptum.AppServer.Management.OpenRasta
         {
             try
             {
-                if(context.Request.Uri.Segments.Count()>=2 && context.Request.Uri.Segments[1].ToLower()=="api/")
+                if(context.Request.Uri.Segments.Count()>=2 && (context.Request.Uri.Segments[1].ToLower()=="api/" || context.Request.Uri.Segments[1].ToLower()=="configuration/"))
                     return PipelineContinuation.Continue;
 
                 var path = context.Request.Uri.AbsolutePath.TrimStart(new []{'/','\\'});
