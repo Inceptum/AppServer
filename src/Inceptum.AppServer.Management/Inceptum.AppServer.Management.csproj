@@ -54,6 +54,7 @@
       <HintPath>..\libs\OpenRasta.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -75,6 +76,7 @@
     <Compile Include="OpenRasta\Configurator.cs" />
     <Compile Include="OpenRasta\Constants.cs" />
     <Compile Include="OpenRasta\ErrorHandlingOperationInterceptor.cs" />
+    <Compile Include="OpenRasta\SplitParamsUriDecorator .cs" />
     <Compile Include="OpenRasta\StaticContentPipelineContributor.cs" />
     <Compile Include="OpenRasta\CrossDomainPipelineContributor.cs" />
     <Compile Include="OpenRasta\HttpListenerHostWithConfiguration.cs" />

@@ -292,7 +292,9 @@ namespace Inceptum.AppServer.Hosting
              }
 
 
-             var assembliesToLoad = new Dictionary<string, string>(applicationParams.AssembliesToLoad)
+
+
+             var assembliesToLoad = new Dictionary<string, string>()
                 {
                     {typeof (AppInfo).Assembly.GetName().FullName, typeof (AppInfo).Assembly.Location},
                     //{typeof (ApplicationInstance).Assembly.GetName().FullName, typeof (ApplicationInstance).Assembly.Location},
@@ -302,6 +304,12 @@ namespace Inceptum.AppServer.Hosting
                     {typeof (WindsorContainer).Assembly.GetName().FullName, typeof (WindsorContainer).Assembly.Location},
                     {typeof (NLogFactory).Assembly.GetName().FullName, typeof (NLogFactory).Assembly.Location}
                 };
+             foreach (var assm in applicationParams.AssembliesToLoad)
+            {
+                if(!assembliesToLoad.ContainsKey(assm.Key))
+                    assembliesToLoad.Add(assm.Key,assm.Value);
+            }
+
             return new InstanceParams
             {
                 ApplicationParams = new ApplicationParams
