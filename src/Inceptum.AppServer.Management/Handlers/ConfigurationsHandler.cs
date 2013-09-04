@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Castle.Core.Logging;
 using ICSharpCode.SharpZipLib.Core;
@@ -129,6 +130,31 @@ namespace Inceptum.AppServer.Management.Handlers
                 return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.ToString(), Title = "Error" };
             }
         }
+
+        [HttpOperation(HttpMethod.GET, ForUriName = "configBundle")]
+        public OperationResult Get(string configuration, string bundle)
+        {
+            return Get(configuration, bundle,null);
+        }
+
+
+        [HttpOperation(HttpMethod.GET, ForUriName = "configBundleWithOverrides")]
+         public OperationResult Get(string configuration, string bundle, [Optional, DefaultParameterValue(null)]string overrides)
+         {
+             try
+             {
+                 var bundleContent = m_Provider.GetBundle(configuration, bundle, overrides == null ? new string[0] : overrides.Split(new[] { ':' }));
+                 return new OperationResult.OK { ResponseResource = bundleContent };
+             }
+             catch (BundleNotFoundException e)
+             {
+                 return new OperationResult.NotFound { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
+             }
+             catch (Exception e)
+             {
+                 return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
+             }
+         }
 
     }
 }
