@@ -35,6 +35,8 @@ namespace Inceptum.AppServer.Model
         public string[] NativeDllToLoad { get; set; }
         [DataMember]
         public Dictionary<string, string> AssembliesToLoad { get; private set; }
+        [DataMember]
+        public bool Debug { get; set; }
 
         public ApplicationParams(string appType, string configFile, string[] nativeDllToLoad, Dictionary<string, string> assembliesToLoad)
         {

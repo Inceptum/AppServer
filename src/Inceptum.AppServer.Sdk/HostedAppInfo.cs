@@ -40,6 +40,7 @@ namespace Inceptum.AppServer
         public Version Version { get; set; }
 
         public string[] NativeDllToLoad { get; private set; }
+        public bool Debug { get; set; }
 
         public override string ToString()
         {

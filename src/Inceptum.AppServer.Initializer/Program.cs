@@ -24,9 +24,10 @@ namespace Inceptum.AppServer.Initializer
 
         public static void Main(params string[] args)
         {
-#if DEBUG
-            Debugger.Launch();
+#if !DEBUG
+            if (args.Length == 2 && args[1] == "-debug")
 #endif
+                Debugger.Launch();
             var name = args[0];
             AppDomain.CurrentDomain.SetData("AppServer.Application",name);
             IntPtr handle = Process.GetCurrentProcess().MainWindowHandle;

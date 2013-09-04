@@ -112,7 +112,8 @@ namespace Inceptum.AppServer.AppDiscovery
                     config =app.file+".config";
                 yield return new HostedAppInfo(app.name, app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, assembliesToLoad, new string[0])
                     {
-                        ConfigFile = config
+                        ConfigFile = config,
+                        Debug=true
                     };
             }
         }
