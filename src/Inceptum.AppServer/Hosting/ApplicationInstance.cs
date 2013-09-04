@@ -194,15 +194,17 @@ namespace Inceptum.AppServer.Hosting
 
         private void createHost()
         {
-            //TODO: store to kill on instance stopp
-            m_Process = Process.Start(new ProcessStartInfo
+            var procSetup = new ProcessStartInfo
             {
                 FileName = "Inceptum.AppServer.Initializer.exe",
-                Arguments = Name,
-                /*,
-                UseShellExecute = false,
-                CreateNoWindow = true*/
-            });
+                Arguments = m_ApplicationParams.Debug ? Name + " -debug" : Name,
+            };
+            if (!m_ApplicationParams.Debug)
+            {
+                procSetup.UseShellExecute = false;
+                procSetup.CreateNoWindow = true;
+            }
+            m_Process = Process.Start(procSetup);
 
             m_JobObject.AddProcess(m_Process);
         }

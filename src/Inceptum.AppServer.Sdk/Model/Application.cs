@@ -33,6 +33,9 @@ namespace Inceptum.AppServer.Model
                         appInfo.AssembliesToLoad==null
                                 ?null
                                 :new ApplicationParams(appInfo.AppType, appInfo.ConfigFile, appInfo.NativeDllToLoad, appInfo.AssembliesToLoad)
+                                {
+                                    Debug = appInfo.Debug
+                                }
                         );
             }
         }
