@@ -25,23 +25,30 @@ namespace Inceptum.AppServer.Initializer
         public static void Main(params string[] args)
         {
 #if !DEBUG
-            if (args.Length == 3 && args[2] == "-debug")
+            if (args.Length == 2 && args[1] == "-debug")
 #endif
-                Debugger.Launch();
-            AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", args[1]);
+            Debugger.Launch();
+
+            string appConfigPath = Path.GetFullPath("app.config");
+            if (File.Exists(appConfigPath))
+            {
+                AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", appConfigPath);
+            }
+
+
 
             var name = args[0];
-            AppDomain.CurrentDomain.SetData("AppServer.Application",name);
+            AppDomain.CurrentDomain.SetData("AppServer.Application", name);
             IntPtr handle = Process.GetCurrentProcess().MainWindowHandle;
 
-            SetConsoleTitle("AppServer - " + name); 
+            SetConsoleTitle("AppServer - " + name);
             SetWindowText(handle, "AppServer - " + name);
 
             var applicationHost = new ApplicationHost(name);
             applicationHost.Run();
         }
 
-         
+
     }
 
 

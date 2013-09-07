@@ -194,14 +194,24 @@ namespace Inceptum.AppServer.Hosting
 
         private void createHost()
         {
-            var args = Name + " " + m_ApplicationParams.ConfigFile;
+            string path = Path.GetFullPath(new[] { m_Context.AppsDirectory, Name }.Aggregate(Path.Combine));
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+            var args = Name;
+
+            string appConfigPath = Path.Combine(path, "app.config");
+            if (m_ApplicationParams.ConfigFile != null && File.Exists(m_ApplicationParams.ConfigFile) && !File.Exists(appConfigPath))
+            {
+                File.Copy(m_ApplicationParams.ConfigFile, appConfigPath);
+            }
 
             if (m_ApplicationParams.Debug)
                 args += " -debug";
             var procSetup = new ProcessStartInfo
             {
-                FileName = "Inceptum.AppServer.Initializer.exe",
+                FileName = Path.GetFullPath("Inceptum.AppServer.Initializer.exe"),
                 Arguments = args,
+                WorkingDirectory = path
             };
 
 #if !DEBUG
