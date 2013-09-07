@@ -199,16 +199,9 @@ namespace Inceptum.AppServer.Hosting
                 Directory.CreateDirectory(path);
             var args = Name;
 
-            string appConfigPath = Path.Combine(path, "app.config");
-            if (m_ApplicationParams.ConfigFile != null && File.Exists(m_ApplicationParams.ConfigFile) && !File.Exists(appConfigPath))
+            foreach (var configFile in m_ApplicationParams.ConfigFiles)
             {
-                File.Copy(m_ApplicationParams.ConfigFile, appConfigPath);
-            }
-
-            string nlogConfigPath = Path.Combine(path, "nlog.config");
-            if (m_ApplicationParams.NLogConfigFile != null && File.Exists(m_ApplicationParams.NLogConfigFile) && !File.Exists(nlogConfigPath))
-            {
-                File.Copy(m_ApplicationParams.NLogConfigFile, nlogConfigPath);
+                copyConfig(path, configFile, Path.GetFileName(configFile));
             }
 
             if (m_ApplicationParams.Debug)
@@ -232,6 +225,18 @@ namespace Inceptum.AppServer.Hosting
 
             m_JobObject.AddProcess(m_Process);
         }
+
+         private void copyConfig(string path, string providedConfig, string configFileName)
+         {
+             string configPath = Path.Combine(path, configFileName);
+             string defaultConfigPath = Path.Combine(path, configFileName+".default");
+             if (providedConfig != null && File.Exists(providedConfig))
+             {
+                 if (!File.Exists(configPath))
+                     File.Copy(providedConfig, configPath);
+                 File.Copy(providedConfig, defaultConfigPath, true);
+             }
+         }
 
          public void ReportFailure(string error)
          {
@@ -341,9 +346,8 @@ namespace Inceptum.AppServer.Hosting
                 ApplicationParams = new ApplicationParams
                                         (
                                             applicationParams.AppType,
-                                            applicationParams.ConfigFile,
-                                            applicationParams.NLogConfigFile,
-                                            applicationParams.NativeDllToLoad,
+                                            applicationParams.ConfigFiles.ToArray(),
+                                            applicationParams.NativeDllToLoad.ToArray(),
                                             assembliesToLoad
                                         ),
                 AppServerContext = m_Context,
