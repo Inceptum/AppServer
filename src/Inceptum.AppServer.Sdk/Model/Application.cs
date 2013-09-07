@@ -32,7 +32,7 @@ namespace Inceptum.AppServer.Model
                         new ApplicationVersion { Description = appInfo.Description, Version = appInfo.Version,Browser=appInfo.Browser },
                         appInfo.AssembliesToLoad==null
                                 ?null
-                                :new ApplicationParams(appInfo.AppType, appInfo.ConfigFile,  appInfo.NLogConfigFile, appInfo.NativeDllToLoad, appInfo.AssembliesToLoad)
+                                :new ApplicationParams(appInfo.AppType, appInfo.ConfigFiles, appInfo.NativeDllToLoad, appInfo.AssembliesToLoad)
                                 {
                                     Debug = appInfo.Debug
                                 }

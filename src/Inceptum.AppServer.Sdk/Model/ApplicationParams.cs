@@ -30,33 +30,31 @@ namespace Inceptum.AppServer.Model
         [DataMember]
         public string AppType { get; set; }
         [DataMember]
-        public string ConfigFile { get; set; }
+        public string[] ConfigFiles { get; set; }
         [DataMember]
         public string[] NativeDllToLoad { get; set; }
         [DataMember]
         public Dictionary<string, string> AssembliesToLoad { get; private set; }
         [DataMember]
         public bool Debug { get; set; }
-        [DataMember]
-        public string NLogConfigFile { get; set; }
+       
 
-        public ApplicationParams(string appType, string configFile, string nlogConfigFile, string[] nativeDllToLoad, Dictionary<string, string> assembliesToLoad)
+        public ApplicationParams(string appType, string[] configFiles,   string[] nativeDllToLoad, Dictionary<string, string> assembliesToLoad)
         {
-            NLogConfigFile = nlogConfigFile;
             AppType = appType;
-            ConfigFile = configFile;
+            ConfigFiles = configFiles;
             NativeDllToLoad = nativeDllToLoad;
             AssembliesToLoad = assembliesToLoad.ToDictionary(p => p.Key, p => p.Value);
         }
-        public ApplicationParams(string appType, string configFile, string nlogConfigFile, string[] nativeDllToLoad, Dictionary<AssemblyName, string> assembliesToLoad)
-            : this(appType, configFile,nlogConfigFile, nativeDllToLoad, assembliesToLoad.ToDictionary(p => p.Key.FullName, p => p.Value))
+        public ApplicationParams(string appType, string[] configFiles,  string[] nativeDllToLoad, Dictionary<AssemblyName, string> assembliesToLoad)
+            : this(appType, configFiles,  nativeDllToLoad, assembliesToLoad.ToDictionary(p => p.Key.FullName, p => p.Value))
         {
          
         }
 
         protected bool Equals(ApplicationParams other)
         {
-            return string.Equals(AppType, other.AppType) && string.Equals(ConfigFile, other.ConfigFile) && Equals(NativeDllToLoad, other.NativeDllToLoad) && Equals(AssembliesToLoad, other.AssembliesToLoad) && Debug.Equals(other.Debug) && string.Equals(NLogConfigFile, other.NLogConfigFile);
+            return string.Equals(AppType, other.AppType) && string.Equals(ConfigFiles, other.ConfigFiles) && Equals(NativeDllToLoad, other.NativeDllToLoad) && Equals(AssembliesToLoad, other.AssembliesToLoad) && Debug.Equals(other.Debug);
         }
 
         public override bool Equals(object obj)
@@ -72,11 +70,10 @@ namespace Inceptum.AppServer.Model
             unchecked
             {
                 var hashCode = (AppType != null ? AppType.GetHashCode() : 0);
-                hashCode = (hashCode*397) ^ (ConfigFile != null ? ConfigFile.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (ConfigFiles != null ? ConfigFiles.GetHashCode() : 0);
                 hashCode = (hashCode*397) ^ (NativeDllToLoad != null ? NativeDllToLoad.GetHashCode() : 0);
                 hashCode = (hashCode*397) ^ (AssembliesToLoad != null ? AssembliesToLoad.GetHashCode() : 0);
                 hashCode = (hashCode*397) ^ Debug.GetHashCode();
-                hashCode = (hashCode*397) ^ (NLogConfigFile != null ? NLogConfigFile.GetHashCode() : 0);
                 return hashCode;
             }
         }
@@ -93,7 +90,7 @@ namespace Inceptum.AppServer.Model
 
         public ApplicationParams Clone()
         {
-            return new ApplicationParams(AppType, ConfigFile, NLogConfigFile ,NativeDllToLoad.ToArray(), new Dictionary<string, string>(AssembliesToLoad));
+            return new ApplicationParams(AppType, ConfigFiles, NativeDllToLoad.ToArray(), new Dictionary<string, string>(AssembliesToLoad));
         }
 
         

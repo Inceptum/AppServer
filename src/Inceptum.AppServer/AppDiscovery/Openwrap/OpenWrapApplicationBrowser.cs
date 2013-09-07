@@ -139,7 +139,7 @@ namespace Inceptum.AppServer.AppDiscovery.Openwrap
             return new HostedAppInfo(appExport.Name,appExport.Vendor, appExport.Version, appExport.Type,
                                      assembliesTooLoad.ToDictionary(a => a.AssemblyName, a => a.File.Path.FullPath), nativeDllsToLoad)
                        {
-                           ConfigFile = appConfig == null ? null : appConfig.File.Path.FullPath,
+                           ConfigFiles = appConfig == null ? new string[0] : new[]{appConfig.File.Path.FullPath},
                            Vendor=appExport.Vendor,Description = appExport.Vendor+"© "+appExport.Name+" v"+appExport.Version
                            
                        };
