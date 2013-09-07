@@ -194,16 +194,24 @@ namespace Inceptum.AppServer.Hosting
 
         private void createHost()
         {
+            var args = Name + " " + m_ApplicationParams.ConfigFile;
+
+            if (m_ApplicationParams.Debug)
+                args += " -debug";
             var procSetup = new ProcessStartInfo
             {
                 FileName = "Inceptum.AppServer.Initializer.exe",
-                Arguments = m_ApplicationParams.Debug ? Name + " -debug" : Name,
+                Arguments = args,
             };
+
+#if !DEBUG
             if (!m_ApplicationParams.Debug)
             {
                 procSetup.UseShellExecute = false;
                 procSetup.CreateNoWindow = true;
             }
+#endif
+
             m_Process = Process.Start(procSetup);
 
             m_JobObject.AddProcess(m_Process);

@@ -46,10 +46,7 @@ namespace Inceptum.AppServer.Initializer
 
         public void Initialize(string workingDirectory, Dictionary<AssemblyName, string> assembliesToLoad, IEnumerable<string> nativeDllToLoad, AppDomainCrashHandler crashHandler)
         {
-            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
-            {
-                crashHandler.Handle(args.ExceptionObject.ToString());
-            };
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) => crashHandler.Handle(args.ExceptionObject.ToString());
             IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
 
             m_LoadedAssemblies = assembliesToLoad.Where(asm => loadedAssemblies.All(a => a.Name != asm.Key.Name))

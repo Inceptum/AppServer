@@ -110,6 +110,8 @@ namespace Inceptum.AppServer.Hosting
             var factory = new ChannelFactory<IApplicationInstance>(new NetNamedPipeBinding(), new EndpointAddress(uri));
             m_Instance = factory.CreateChannel();
             var instanceParams = m_Instance.GetInstanceParams();
+
+            
             AppDomain.CurrentDomain.UnhandledException += onUnhandledException;
 
             
