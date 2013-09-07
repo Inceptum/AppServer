@@ -109,10 +109,15 @@ namespace Inceptum.AppServer.AppDiscovery
                 if (File.Exists(app.file + ".config"))
                     config =app.file+".config";
                 if(File.Exists(Path.Combine(folder,"app.config")))
-                    config =app.file+".config";
+                    config = Path.Combine(folder, "app.config");
+
+                string nlogConfig = null;
+                if(File.Exists(Path.Combine(folder,"nlog.config")))
+                    nlogConfig = Path.Combine(folder, "nlog.config");
                 yield return new HostedAppInfo(app.name, app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, assembliesToLoad, new string[0])
                     {
                         ConfigFile = config,
+                        NLogConfigFile = nlogConfig,
                         Debug=true
                     };
             }

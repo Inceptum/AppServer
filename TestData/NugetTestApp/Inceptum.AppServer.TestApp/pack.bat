@@ -1,1 +1,1 @@
-..\.nuget\nuget pack Inceptum.AppServer.TestApp.csproj -Version 1.0.0.18
+..\.nuget\nuget pack Inceptum.AppServer.TestApp.csproj -Version 1.0.0.21

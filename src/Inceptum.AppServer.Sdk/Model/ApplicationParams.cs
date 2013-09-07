@@ -37,35 +37,33 @@ namespace Inceptum.AppServer.Model
         public Dictionary<string, string> AssembliesToLoad { get; private set; }
         [DataMember]
         public bool Debug { get; set; }
+        [DataMember]
+        public string NLogConfigFile { get; set; }
 
-        public ApplicationParams(string appType, string configFile, string[] nativeDllToLoad, Dictionary<string, string> assembliesToLoad)
+        public ApplicationParams(string appType, string configFile, string nlogConfigFile, string[] nativeDllToLoad, Dictionary<string, string> assembliesToLoad)
         {
+            NLogConfigFile = nlogConfigFile;
             AppType = appType;
             ConfigFile = configFile;
             NativeDllToLoad = nativeDllToLoad;
             AssembliesToLoad = assembliesToLoad.ToDictionary(p => p.Key, p => p.Value);
         }
-        public ApplicationParams(string appType, string configFile, string[] nativeDllToLoad, Dictionary<AssemblyName, string> assembliesToLoad)
-            : this(appType, configFile, nativeDllToLoad, assembliesToLoad.ToDictionary(p => p.Key.FullName, p => p.Value))
+        public ApplicationParams(string appType, string configFile, string nlogConfigFile, string[] nativeDllToLoad, Dictionary<AssemblyName, string> assembliesToLoad)
+            : this(appType, configFile,nlogConfigFile, nativeDllToLoad, assembliesToLoad.ToDictionary(p => p.Key.FullName, p => p.Value))
         {
          
         }
 
-        public bool Equals(ApplicationParams other)
+        protected bool Equals(ApplicationParams other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Equals(other.AppType, AppType) 
-                && Equals(other.ConfigFile, ConfigFile) 
-                && other.NativeDllToLoad.OrderBy(x => x).SequenceEqual(NativeDllToLoad.OrderBy(x => x))
-                && other.AssembliesToLoad.Select(x => x.Key + "|" + x.Value).OrderBy(x => x).SequenceEqual(AssembliesToLoad.Select(x => x.Key + "|" + x.Value).OrderBy(x => x));
+            return string.Equals(AppType, other.AppType) && string.Equals(ConfigFile, other.ConfigFile) && Equals(NativeDllToLoad, other.NativeDllToLoad) && Equals(AssembliesToLoad, other.AssembliesToLoad) && Debug.Equals(other.Debug) && string.Equals(NLogConfigFile, other.NLogConfigFile);
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != typeof (ApplicationParams)) return false;
+            if (obj.GetType() != this.GetType()) return false;
             return Equals((ApplicationParams) obj);
         }
 
@@ -73,30 +71,31 @@ namespace Inceptum.AppServer.Model
         {
             unchecked
             {
-                int result = (AppType != null ? AppType.GetHashCode() : 0);
-                result = (result*397) ^ (ConfigFile != null ? ConfigFile.GetHashCode() : 0);
-                result = (result*397) ^ (NativeDllToLoad != null ? NativeDllToLoad.GetHashCode() : 0);
-                result = (result*397) ^ (AssembliesToLoad != null ? AssembliesToLoad.GetHashCode() : 0);
-                return result;
+                var hashCode = (AppType != null ? AppType.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (ConfigFile != null ? ConfigFile.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (NativeDllToLoad != null ? NativeDllToLoad.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (AssembliesToLoad != null ? AssembliesToLoad.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ Debug.GetHashCode();
+                hashCode = (hashCode*397) ^ (NLogConfigFile != null ? NLogConfigFile.GetHashCode() : 0);
+                return hashCode;
             }
+        }
+
+        public static bool operator ==(ApplicationParams left, ApplicationParams right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(ApplicationParams left, ApplicationParams right)
+        {
+            return !Equals(left, right);
         }
 
         public ApplicationParams Clone()
         {
-            return new ApplicationParams(AppType, ConfigFile, NativeDllToLoad.ToArray(), new Dictionary<string, string>(AssembliesToLoad));
+            return new ApplicationParams(AppType, ConfigFile, NLogConfigFile ,NativeDllToLoad.ToArray(), new Dictionary<string, string>(AssembliesToLoad));
         }
 
-        public static bool operator ==(ApplicationParams p1,ApplicationParams p2)
-        {
-            if(ReferenceEquals(p1,null)) 
-                return ReferenceEquals(p2,null);
-
-            return p1.Equals(p2);
-        }
-
-        public static bool operator !=(ApplicationParams p1, ApplicationParams p2)
-        {
-            return !(p1 == p2);
-        }
+        
     }
 }

@@ -110,6 +110,9 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             string appConfig = package.GetFiles().Where(f => f.Path.ToLower() == @"config\app.config")
                                       .Select(c => Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(package), c.Path))
                                       .Select(Path.GetFullPath).FirstOrDefault();
+            string nlogConfig = package.GetFiles().Where(f => f.Path.ToLower() == @"config\nlog.config")
+                                      .Select(c => Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(package), c.Path))
+                                      .Select(Path.GetFullPath).FirstOrDefault();
             Logger.Debug("Assemblies to load: "+string.Join(Environment.NewLine,assembliesToLoad.Select(a=>a.path).ToArray()));
 
 
@@ -129,7 +132,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                     assemblies.Add(new AssemblyName(assembly.Name.Name),a.path);
                 }
             }
-            return new ApplicationParams(getAppType(packageAssemblies), appConfig, nativesToLoad, assemblies);
+            return new ApplicationParams(getAppType(packageAssemblies), appConfig,nlogConfig, nativesToLoad, assemblies);
         }
 
         public IEnumerable<HostedAppInfo> GetAvailabelApps()

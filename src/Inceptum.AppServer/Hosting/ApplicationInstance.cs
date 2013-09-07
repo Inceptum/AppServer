@@ -205,6 +205,12 @@ namespace Inceptum.AppServer.Hosting
                 File.Copy(m_ApplicationParams.ConfigFile, appConfigPath);
             }
 
+            string nlogConfigPath = Path.Combine(path, "nlog.config");
+            if (m_ApplicationParams.NLogConfigFile != null && File.Exists(m_ApplicationParams.NLogConfigFile) && !File.Exists(nlogConfigPath))
+            {
+                File.Copy(m_ApplicationParams.NLogConfigFile, nlogConfigPath);
+            }
+
             if (m_ApplicationParams.Debug)
                 args += " -debug";
             var procSetup = new ProcessStartInfo
@@ -336,6 +342,7 @@ namespace Inceptum.AppServer.Hosting
                                         (
                                             applicationParams.AppType,
                                             applicationParams.ConfigFile,
+                                            applicationParams.NLogConfigFile,
                                             applicationParams.NativeDllToLoad,
                                             assembliesToLoad
                                         ),
