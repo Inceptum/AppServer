@@ -32,7 +32,7 @@ namespace Inceptum.AppServer.Hosting
         private ApplicationParams m_ApplicationParams;
         private Version m_ActualVersion;
         private ServiceHost m_ServiceHost;
-        private JobObject m_JobObject;
+        private readonly JobObject m_JobObject;
         private Process m_Process;
          private ChannelFactory<IApplicationHost> m_AppHostFactory;
 

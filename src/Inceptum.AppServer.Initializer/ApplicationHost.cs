@@ -66,7 +66,7 @@ namespace Inceptum.AppServer.Hosting
         private string m_Environment;
         private readonly string m_InstanceName;
         private AppServerContext m_Context;
-        ManualResetEvent m_StopEvent=new ManualResetEvent(false);
+        readonly ManualResetEvent m_StopEvent=new ManualResetEvent(false);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr LoadLibrary(string lpFileName);
@@ -82,16 +82,7 @@ namespace Inceptum.AppServer.Hosting
             m_InstanceName = instanceName;
         }
 
-     /*   public ApplicationHost(ILogCache logCache, IConfigurationProvider configurationProvider, string environment, string instanceName, AppServerContext context)
-        {
-            m_LogCache = logCache;
-            m_ConfigurationProvider = configurationProvider;
-            m_Environment = environment;
-            m_InstanceName = instanceName;
-            m_Context = context;
-        }
-*/
-
+    
         #region Initialization
 
         public void Run()
@@ -140,6 +131,7 @@ namespace Inceptum.AppServer.Hosting
 
 
             var instanceCommands = initContainer(Type.GetType(instanceParams.ApplicationParams.AppType));
+            
             m_Instance.RegisterApplicationHost(address, instanceCommands);
 
             m_StopEvent.WaitOne();
