@@ -14,5 +14,6 @@
   </metadata>
   <files> 
     <file src="App.config" target="config" /> 
+    <file src="nlog.config" target="config" /> 
   </files>
 </package>

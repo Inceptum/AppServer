@@ -9,7 +9,7 @@ namespace Inceptum.AppServer.TestApp
     {
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            container.AddFacility<ConfigurationFacility>(f=>f.Configuration("ibank"))
+            container.AddFacility<ConfigurationFacility>(f => f.Configuration("TestApp"))
                 .Register(Component.For<TestConf>().FromConfiguration("test",""));
         }
     }

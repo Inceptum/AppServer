@@ -41,6 +41,7 @@ namespace Inceptum.AppServer
 
         public string[] NativeDllToLoad { get; private set; }
         public bool Debug { get; set; }
+        public string NLogConfigFile { get; set; }
 
         public override string ToString()
         {

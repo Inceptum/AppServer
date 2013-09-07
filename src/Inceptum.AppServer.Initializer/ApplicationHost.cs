@@ -246,9 +246,12 @@ namespace Inceptum.AppServer.Hosting
                 var createInstanceOriginal = ConfigurationItemFactory.Default.CreateInstance;
                 ConfigurationItemFactory.Default.CreateInstance = type => container.Kernel.HasComponent(type) ? container.Resolve(type) : createInstanceOriginal(type);
 
+                string nlogConfigPath = Path.GetFullPath("nlog.config");
+                if (!File.Exists(nlogConfigPath))
+                    nlogConfigPath = null;
                 container
                     .AddFacility<LoggingFacility>(f => f.LogUsing(new GenericsAwareNLoggerFactory(
-                        null,//Path.Combine(m_Context.BaseDirectory, "nlog.config"),
+                        nlogConfigPath,
                         updateLoggingConfig)))
                     .Register(
                         Component.For<AppServerContext>().Instance(m_Context),

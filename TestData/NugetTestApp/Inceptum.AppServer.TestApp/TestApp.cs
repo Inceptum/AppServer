@@ -39,11 +39,16 @@ namespace Inceptum.AppServer.TestApp
             m_Logger.InfoFormat("Value from config: '{0}'", m_Config.Value);
             m_Logger.InfoFormat("Value from app.config: '{0}'", ConfigurationManager.AppSettings["appConfigSetting"]);
             m_JObject = JObject.Parse("{}");
-            new Thread(() => {
-                m_Logger.Error("FAIL!!!");
-                throw new Exception();
-            }).Start();
-            m_Logger.InfoFormat("1");
+            bool fail;
+            if (bool.TryParse(ConfigurationManager.AppSettings["fail"], out fail) && fail)
+            {
+                new Thread(() =>
+                {
+                    m_Logger.Error("FAIL!!!");
+                    throw new Exception();
+                }).Start();
+            }
+            m_Logger.InfoFormat("log record");
         }
 
         public string DoSomething(DateTime dateValue, string stringValue, int intValue, decimal decimalValue, bool boolValue)
