@@ -19,6 +19,7 @@
     <style>
         html, body {
             height: 100%;
+			min-width:1024px;
         }
 
         .container-fluid {
@@ -69,15 +70,17 @@
             border-radius: 0 4px 4px 0;
         }
 
-        #main {
-            padding-left: 400px;
-        }
+ 
 
-
-        .sidebar {
-            padding-top: 60px;
-            float: left;
+    /*    .sidebar {
+			width:400px;
+			position:fixed;
+			top:60px;
         }
+		*/
+		.main {padding-left:400px;}
+		.sidebar {width:380px; float:left;margin-top:60px; }
+		 
 
     </style>
     <script type="text/javascript">
@@ -90,14 +93,36 @@
 <body>
 
 <div id="header"></div>
-<div class="sidebar span5  hidden-phone" id="sidebar">
 
+
+<div class="sidebar span4"  id="sidebar">
 </div>
-<div class="container-fluid" id="main">
-    <div class="span7" id="content">
+<div class="main">
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span12" id="content"></div>
+        </div>
     </div>
 </div>
 
+
+<!--
+<div class="sidebar span4">
+    
+</div>
+<div class="container-fluid " id="main">
+<div class="row-fluid">
+	<div class="span3">
+		<div class="sidebar-nav sidebar" id="sidebar">
+		</div>
+	</div>
+
+    <div class="span9" id="content">
+    </div>
+	
+</div>	
+</div>
+-->
 
 </body>
 </html>
