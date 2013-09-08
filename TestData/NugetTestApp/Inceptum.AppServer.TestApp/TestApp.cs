@@ -48,6 +48,12 @@ namespace Inceptum.AppServer.TestApp
                     throw new Exception();
                 }).Start();
             }
+
+            bool hangOnStart;
+            if (bool.TryParse(ConfigurationManager.AppSettings["hangOnStart"], out hangOnStart) && hangOnStart)
+            {
+                Console.ReadLine();
+            }
             m_Logger.InfoFormat("log record");
         }
 

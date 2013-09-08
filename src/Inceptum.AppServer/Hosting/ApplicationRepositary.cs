@@ -65,8 +65,7 @@ namespace Inceptum.AppServer.Hosting
             var app = Applications.FirstOrDefault(a => a.Name == application);
             if(app==null)
                 throw new InvalidOperationException(string.Format("Application {0}  not found",application));
-            app.EnsureLoadParams(version, browser =>
-                { return m_ApplicationBrowsers.FirstOrDefault(x => x.Name == browser).GetApplicationParams(application, version); });
+            app.EnsureLoadParams(version, browser => m_ApplicationBrowsers.FirstOrDefault(x => x.Name == browser).GetApplicationParams(application, version));
         }
     }
 }

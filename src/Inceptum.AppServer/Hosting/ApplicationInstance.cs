@@ -112,28 +112,19 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-        public void UpdateApplicationParams(ApplicationParams applicationParams, Version actualVersion)
+        public void SetVersion(Version actualVersion)
         {
             m_ActualVersion = actualVersion;
-            lock (m_SyncRoot)
-            {
-                if(m_ApplicationParams==applicationParams)
-                    return;
-                m_ApplicationParams = applicationParams;
-                IsMisconfigured = applicationParams == null;
-                HasToBeRecreated = !IsMisconfigured && Status==HostedAppStatus.Starting || Status==HostedAppStatus.Started;
-            }
+            
         }
 
 
 
 
-        public void Start()
+        public void Start(Func<ApplicationParams> paramsGetter)
         {
             lock (m_SyncRoot)
             {
-                if (IsMisconfigured)
-                    throw new ConfigurationErrorsException("Instance is misconfigured");
                 if (m_IsDisposing)
                     throw new ObjectDisposedException("Instance is being disposed");
                 if (Status == HostedAppStatus.Starting || Status == HostedAppStatus.Stopping)
@@ -144,9 +135,19 @@ namespace Inceptum.AppServer.Hosting
 
                 Logger.InfoFormat("Starting instance '{0}'", Name);
                 m_CurrentTask = Task.Factory.StartNew(() =>
-                                                          {
+                {
+                    
                                                               try
-                                                              {              
+                                                              {
+                                                                  var applicationParams = paramsGetter();
+                                                                  lock (m_SyncRoot)
+                                                                  {
+                                                                      m_ApplicationParams = applicationParams;
+                                                                      IsMisconfigured = applicationParams == null;
+                                                                  }
+                                                                  if (IsMisconfigured)
+                                                                      throw new ConfigurationErrorsException("Instance is misconfigured");
+
                                                                   createHost();
                                                               }
                                                               catch (Exception e)

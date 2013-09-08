@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using Inceptum.AppServer.Model;
 using Mono.Cecil;
@@ -55,7 +56,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             get { return "Nuget"; }
         }
 
-
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public ApplicationParams GetApplicationParams(string application, Version version)
         {
             IPackageRepository appsRepo = PackageRepositoryFactory.Default.CreateRepository(m_ApplicationRepository);
@@ -86,7 +87,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                 manager.InstallPackage(remotePackage, false, true);
                 package = new PackageWrapper(manager.LocalRepository.FindPackage(application, new SemanticVersion(version)), dependencyRepo);
                 //TODO: find out why null is in array
-                dependencies = getDependencies(package, manager.LocalRepository).Distinct().Where(p=>p!=null).ToArray();
+                dependencies = getDependencies(package, manager.LocalRepository).Distinct().ToArray();
                 Logger.WarnFormat("Installed {0}", string.Join(",",dependencies.Select(p=>p.Id)));
             }
 
@@ -140,7 +141,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                                                   package.Id,
                                                   string.Join(", ", package.Authors),
                                                   package.Version.Version
-                                                  ));
+                                                  )).ToArray();
         }
 
         private string getAppType(IEnumerable<string> packageAssemblies)

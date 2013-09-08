@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
@@ -20,7 +21,7 @@ namespace Inceptum.AppServer.Configuration.Model
         public Config(IConfigurationPersister persister, IContentProcessor contentProcessor, string name, Dictionary<string, string> bundles = null)
             : base(contentProcessor, null, name)
         {
-            m_Map = new SortedDictionary<string, string>();
+            m_Map = new SortedDictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             m_Persister = persister;
             if (bundles == null)
                 return;
