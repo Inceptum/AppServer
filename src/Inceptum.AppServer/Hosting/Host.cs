@@ -34,24 +34,15 @@ namespace Inceptum.AppServer.Hosting
         private readonly ApplicationRepositary m_ApplicationRepositary;
         private ServiceHost m_ConfigurationProviderServiceHost;
         private ServiceHost m_LogCacheServiceHost;
-        private JobObject m_JobObject;
-        private ILogCache m_LogCache;
+        private readonly object m_ServiceHostLock=new object();
+        private readonly JobObject m_JobObject;
+        private readonly ILogCache m_LogCache;
 
         public Host(ILogCache logCache,IManageableConfigurationProvider configurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepositary applicationRepositary, ILogger logger = null, string name = null)
         {
             m_LogCache = logCache;
             m_JobObject = new JobObject();
-            m_ConfigurationProviderServiceHost = new ServiceHost(configurationProvider, new[] { new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id) });
-            m_ConfigurationProviderServiceHost.AddServiceEndpoint(typeof(IConfigurationProvider), new NetNamedPipeBinding(), "ConfigurationProvider");
-            //m_ConfigurationProviderServiceHost.Faulted += new EventHandler(this.IpcHost_Faulted);
-            m_ConfigurationProviderServiceHost.Open();
-
-            m_LogCacheServiceHost = new ServiceHost(logCache, new[] { new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id) });
-            m_LogCacheServiceHost.AddServiceEndpoint(typeof(ILogCache), new NetNamedPipeBinding(), "LogCache");
-            //m_LogCacheServiceHost.Faulted += new EventHandler(this.IpcHost_Faulted);
-            m_LogCacheServiceHost.Open();
-
-
+ 
 
             m_ApplicationRepositary = applicationRepositary;
             m_ConfigurationProvider = configurationProvider;
@@ -65,8 +56,53 @@ namespace Inceptum.AppServer.Hosting
                 AppsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "apps"),
                 BaseDirectory = AppDomain.CurrentDomain.BaseDirectory
             };
+            resetConfigurationProviderServiceHost();
+            resetLogCacheServiceHost();
         }
 
+
+        private void resetConfigurationProviderServiceHost()
+        {
+            lock (m_ServiceHostLock)
+            {
+                if (m_ConfigurationProviderServiceHost != null)
+                {
+                    m_ConfigurationProviderServiceHost.Close();
+                    m_ConfigurationProviderServiceHost = null;
+                }
+                var serviceHost = new ServiceHost(m_ConfigurationProvider, new[] { new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id) });
+                serviceHost.AddServiceEndpoint(typeof(IConfigurationProvider), new NetNamedPipeBinding{ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue}, "ConfigurationProvider");
+
+                serviceHost.Faulted += (o, args) =>
+                {
+                    Logger.DebugFormat("Creating ConfigurationProvider service host.");
+                    resetConfigurationProviderServiceHost();
+                };
+                serviceHost.Open();
+                m_ConfigurationProviderServiceHost = serviceHost;
+            }
+        }
+    
+        private void resetLogCacheServiceHost()
+        {
+            lock (m_ServiceHostLock)
+            {
+                if (m_LogCacheServiceHost != null)
+                {
+                    m_LogCacheServiceHost.Close();
+                    m_LogCacheServiceHost = null;
+                }
+                var serviceHost = new ServiceHost(m_LogCache, new[] { new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id) });
+                serviceHost.AddServiceEndpoint(typeof(ILogCache), new NetNamedPipeBinding { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue }, "LogCache");
+                serviceHost.Faulted += (o, args) =>
+                {
+                    Logger.DebugFormat("Creating LogCache service host.");
+                    resetLogCacheServiceHost();
+                };
+                serviceHost.Open();
+                m_LogCacheServiceHost = serviceHost;
+            }
+        }
 
      
         public string MachineName
