@@ -299,29 +299,33 @@ namespace Inceptum.AppServer.Hosting
                 lock (m_SyncRoot)
                 {
                     instance = m_Instances.FirstOrDefault(i => i.Name == name);
-
-                    if (instance == null)
-                        throw new ConfigurationErrorsException(string.Format("Instance '{0}' not found", name));
-
-                    var config = m_InstancesConfiguration.FirstOrDefault(i => i.Name == name);
-                    if (config == null)
-                        throw new InvalidOperationException(string.Format("Configuration of instance {0} not found", name));
-                    var application = m_ApplicationRepositary.Applications.FirstOrDefault(a => a.Name == config.ApplicationId);
-                    if (application == null)
-                        throw new InvalidOperationException(string.Format("Application {0} not found", config.ApplicationId));
-
-                    var version = config.Version ?? application.Versions.Select(v => v.Version).OrderByDescending(v => v).FirstOrDefault();
-
-                    m_ApplicationRepositary.EnsureLoadParams(config.ApplicationId, version);
-                    instance.UpdateApplicationParams(application.GetLoadParams(version), version);
                 }
+                if (instance == null)
+                    throw new ConfigurationErrorsException(string.Format("Instance '{0}' not found", name));
 
-                instance.Start();
+                var config = m_InstancesConfiguration.FirstOrDefault(i => i.Name == name);
+                if (config == null)
+                    throw new InvalidOperationException(string.Format("Configuration of instance {0} not found", name));
+                var application = m_ApplicationRepositary.Applications.FirstOrDefault(a => a.Name == config.ApplicationId);
+                if (application == null)
+                    throw new InvalidOperationException(string.Format("Application {0} not found", config.ApplicationId));
+
+                var version = config.Version ?? application.Versions.Select(v => v.Version).OrderByDescending(v => v).FirstOrDefault();
+
+
+                instance.SetVersion(version);
+
+
+                instance.Start(() =>
+                {
+                    m_ApplicationRepositary.EnsureLoadParams(config.ApplicationId, version);
+                    return application.GetLoadParams(version);
+                });
             }
             catch (Exception e)
             {
                 Logger.WarnFormat(e, "Failed to start instance {0}", name);
-                if(!safe)
+                if (!safe)
                     throw;
             }
         }

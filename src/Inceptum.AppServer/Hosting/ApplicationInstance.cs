@@ -83,20 +83,14 @@ namespace Inceptum.AppServer.Hosting
             IsMisconfigured = true;
         }
 
-        public void UpdateApplicationParams(ApplicationParams applicationParams, Version actualVersion)
+        public void SetVersion(Version actualVersion)
         {
             m_ActualVersion = actualVersion;
-            lock (m_SyncRoot)
-            {
-                if(m_ApplicationParams==applicationParams)
-                    return;
-                m_ApplicationParams = applicationParams;
-                IsMisconfigured = applicationParams == null;
-                HasToBeRecreated = !IsMisconfigured && Status==HostedAppStatus.Starting || Status==HostedAppStatus.Started;
-            }
+
         }
 
-        public void Start()
+
+        public void Start(Func<ApplicationParams> paramsGetter)
         {
             lock (m_SyncRoot)
             {
@@ -114,7 +108,15 @@ namespace Inceptum.AppServer.Hosting
                 m_CurrentTask = Task.Factory.StartNew(() =>
                                                           {
                                                               try
-                                                              {              
+                                                              {
+                                                                  var applicationParams = paramsGetter();
+                                                                  lock (m_SyncRoot)
+                                                                  {
+                                                                      m_ApplicationParams = applicationParams;
+                                                                      IsMisconfigured = applicationParams == null;
+                                                                  }
+                                                                  if (IsMisconfigured)
+                                                                      throw new ConfigurationErrorsException("Instance is misconfigured");
                                                                   createHost();
                                                                   //TODO: may be it is better to move wrapping with MarshalableProxy to castle
                                                                   Commands=m_ApplicationHost.Start(

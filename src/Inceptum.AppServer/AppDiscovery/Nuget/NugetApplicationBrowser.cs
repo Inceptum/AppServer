@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using Inceptum.AppServer.Model;
 using Mono.Cecil;
@@ -55,7 +56,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             get { return "Nuget"; }
         }
 
-
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public ApplicationParams GetApplicationParams(string application, Version version)
         {
             IPackageRepository appsRepo = PackageRepositoryFactory.Default.CreateRepository(m_ApplicationRepository);
