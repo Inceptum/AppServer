@@ -32,6 +32,7 @@ namespace Inceptum.AppServer.Hosting
         private ApplicationParams m_ApplicationParams;
         private Version m_ActualVersion;
         private ServiceHost m_ServiceHost;
+        private readonly object m_ServiceHostLock=new object();
         private readonly JobObject m_JobObject;
         private Process m_Process;
          private ChannelFactory<IApplicationHost> m_AppHostFactory;
@@ -85,11 +86,31 @@ namespace Inceptum.AppServer.Hosting
             Logger = logger;
             m_Context = context;
             IsMisconfigured = true;
-            m_ServiceHost = new ServiceHost(this);
-            m_ServiceHost.AddServiceEndpoint(typeof(IApplicationInstance), new NetNamedPipeBinding(), new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/instances/" + Name));
-            //m_ConfigurationProviderServiceHost.Faulted += new EventHandler(this.IpcHost_Faulted);
-            m_ServiceHost.Open();
+            resetIpcHost();
         }
+
+        private void resetIpcHost()
+        {
+            lock (m_ServiceHostLock)
+            {
+                if (m_ServiceHost != null)
+                {
+                    m_ServiceHost.Close();
+                    m_ServiceHost = null;
+                }
+                var serviceHost = new ServiceHost(this);
+                serviceHost.AddServiceEndpoint(typeof(IApplicationInstance), new NetNamedPipeBinding { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue }, new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/instances/" + Name));
+                serviceHost.Faulted += (o, args) =>
+                {
+                    Logger.DebugFormat("Creating Host.");
+                    resetIpcHost();
+                };
+                serviceHost.Open();
+                m_ServiceHost = serviceHost;
+            }
+        }
+
+
 
         public void UpdateApplicationParams(ApplicationParams applicationParams, Version actualVersion)
         {
@@ -103,6 +124,9 @@ namespace Inceptum.AppServer.Hosting
                 HasToBeRecreated = !IsMisconfigured && Status==HostedAppStatus.Starting || Status==HostedAppStatus.Started;
             }
         }
+
+
+
 
         public void Start()
         {
