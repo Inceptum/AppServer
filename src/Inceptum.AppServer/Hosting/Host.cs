@@ -303,10 +303,9 @@ namespace Inceptum.AppServer.Hosting
         {
             try
             {
-                ApplicationInstance instance;
                 lock (m_SyncRoot)
                 {
-                    instance = m_Instances.FirstOrDefault(i => i.Name == name);
+                    ApplicationInstance instance = m_Instances.FirstOrDefault(i => i.Name == name);
                     if (instance == null)
                         return null;
                     return instance.ExecuteCommand(command);
@@ -356,29 +355,33 @@ namespace Inceptum.AppServer.Hosting
                 lock (m_SyncRoot)
                 {
                     instance = m_Instances.FirstOrDefault(i => i.Name == name);
-
-                    if (instance == null)
-                        throw new ConfigurationErrorsException(string.Format("Instance '{0}' not found", name));
-
-                    var config = m_InstancesConfiguration.FirstOrDefault(i => i.Name == name);
-                    if (config == null)
-                        throw new InvalidOperationException(string.Format("Configuration of instance {0} not found", name));
-                    var application = m_ApplicationRepositary.Applications.FirstOrDefault(a => a.Name == config.ApplicationId);
-                    if (application == null)
-                        throw new InvalidOperationException(string.Format("Application {0} not found", config.ApplicationId));
-
-                    var version = config.Version ?? application.Versions.Select(v => v.Version).OrderByDescending(v => v).FirstOrDefault();
-
-                    m_ApplicationRepositary.EnsureLoadParams(config.ApplicationId, version);
-                    instance.UpdateApplicationParams(application.GetLoadParams(version), version);
                 }
+                if (instance == null)
+                    throw new ConfigurationErrorsException(string.Format("Instance '{0}' not found", name));
 
-                instance.Start();
+                var config = m_InstancesConfiguration.FirstOrDefault(i => i.Name == name);
+                if (config == null)
+                    throw new InvalidOperationException(string.Format("Configuration of instance {0} not found", name));
+                var application = m_ApplicationRepositary.Applications.FirstOrDefault(a => a.Name == config.ApplicationId);
+                if (application == null)
+                    throw new InvalidOperationException(string.Format("Application {0} not found", config.ApplicationId));
+
+                var version = config.Version ?? application.Versions.Select(v => v.Version).OrderByDescending(v => v).FirstOrDefault();
+
+                
+                instance.SetVersion(version);
+
+
+                instance.Start(() =>
+                {
+                    m_ApplicationRepositary.EnsureLoadParams(config.ApplicationId, version);
+                    return application.GetLoadParams(version);
+                });
             }
             catch (Exception e)
             {
                 Logger.WarnFormat(e, "Failed to start instance {0}", name);
-                if(!safe)
+                if (!safe)
                     throw;
             }
         }
@@ -395,20 +398,6 @@ namespace Inceptum.AppServer.Hosting
                 {
                     createInstance(config);
                 }
-               /* var instanceParams = from config in m_InstancesConfiguration
-                                     join app in m_ApplicationRepositary.Applications on config.ApplicationId equals app.Name into matchedApp
-                                     from application in matchedApp.DefaultIfEmpty()
-                                     where application!=null
-                                     let version = config.Version ?? application.Versions.Select(v => v.Version).OrderByDescending(v => v).FirstOrDefault()
-                                     join instance in m_Instances on config.Name equals instance.Name into matchedInstance
-                                     from instance in matchedInstance.DefaultIfEmpty()
-                                     select new { config.Name, application, version, instance = instance ?? createInstance(config) };
-
-                foreach (var instanceParam in instanceParams)
-                {
-                    m_ApplicationRepositary.EnsureLoadParams(instanceParam.application.Name,instanceParam.version);
-                    instanceParam.instance.UpdateApplicationParams(instanceParam.application!=null?instanceParam.application.GetLoadParams(instanceParam.version):null, instanceParam.version);
-                }*/
                 notefyInstancesChanged();
             }
         }
