@@ -94,8 +94,6 @@ namespace Inceptum.AppServer.Hosting
         {
             lock (m_SyncRoot)
             {
-                if (IsMisconfigured)
-                    throw new ConfigurationErrorsException("Instance is misconfigured");
                 if (m_IsDisposing)
                     throw new ObjectDisposedException("Instance is being disposed");
                 if (Status == HostedAppStatus.Starting || Status == HostedAppStatus.Stopping)
