@@ -51,6 +51,7 @@ namespace Inceptum.AppServer
                         if (i < args.Length)
                             setup.Repository = args[i];
                         break;
+
                     case "-debug-wrap":
                         i++;
                         if (i < args.Length)
@@ -79,6 +80,13 @@ namespace Inceptum.AppServer
                         if (i < args.Length)
                             setup.DebugFolders.Add(args[i]);
                         break;
+
+                    case "-withNativeDll":
+                        i++;
+                        if (i < args.Length)
+                            setup.DebugNativeDlls.Add(args[i]);
+                        break;
+
                     default:
                         Console.WriteLine("Unknown arg: " + args[i]);
                         return;

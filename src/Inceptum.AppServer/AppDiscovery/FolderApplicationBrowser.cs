@@ -39,19 +39,23 @@ namespace Inceptum.AppServer.AppDiscovery
     {
         private readonly string[] m_Folders;
         private ILogger m_Logger = NullLogger.Instance;
+        private string[] m_NativeDlls;
 
         public string Name
         {
             get { return "FileSystem"; }
         }
 
-        public FolderApplicationBrowser(string[] folders)
+        public FolderApplicationBrowser(string[] folders, string[] nativeDlls)
         {
             if (folders == null) throw new ArgumentNullException("folders");
             foreach (var folder in folders)
             {
                 if (!Directory.Exists(folder)) throw new ArgumentException("folder", string.Format("Folder '{0}' not found", folder));
             }
+
+
+            m_NativeDlls = nativeDlls;
 
             m_Folders = folders.Select(folder => Path.GetFullPath(folder)).ToArray();
         }
@@ -110,9 +114,10 @@ namespace Inceptum.AppServer.AppDiscovery
                     config =app.file+".config";
                 if(File.Exists(Path.Combine(folder,"app.config")))
                     config =app.file+".config";
-                yield return new HostedAppInfo(app.name, app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, assembliesToLoad, new string[0])
+                yield return new HostedAppInfo(app.name, app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName,
+                    assembliesToLoad, m_NativeDlls.Where(dll => File.Exists(Path.Combine(folder, dll))).ToArray())
                     {
-                        ConfigFile = config
+                        ConfigFile = config 
                     };
             }
         }
