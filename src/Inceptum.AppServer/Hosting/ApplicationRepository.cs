@@ -56,7 +56,7 @@ namespace Inceptum.AppServer.Hosting
             get
             {
                 lock(m_SyncRoot)
-                    return m_Applications.ToArray();
+                    return m_Applications.OrderBy(a=>Tuple.Create(a.Vendor,a.Name)).ToArray();
             }
         }
 
