@@ -14,6 +14,7 @@ using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Notification;
+using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.Windsor;
 using Newtonsoft.Json;
 
@@ -31,20 +32,21 @@ namespace Inceptum.AppServer.Hosting
         private readonly IEnumerable<IHostNotificationListener> m_Listeners;
         private readonly IManageableConfigurationProvider m_ConfigurationProvider;
         private readonly object m_SyncRoot = new object();
-        private readonly ApplicationRepositary m_ApplicationRepositary;
+        private readonly ApplicationRepository m_ApplicationRepository;
         private ServiceHost m_ConfigurationProviderServiceHost;
         private ServiceHost m_LogCacheServiceHost;
         private readonly object m_ServiceHostLock=new object();
         private readonly JobObject m_JobObject;
         private readonly ILogCache m_LogCache;
+        private PeriodicalBackgroundWorker m_InstanceChecker;
 
-        public Host(ILogCache logCache,IManageableConfigurationProvider configurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepositary applicationRepositary, ILogger logger = null, string name = null)
+        public Host(ILogCache logCache,IManageableConfigurationProvider configurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepository applicationRepository, ILogger logger = null, string name = null)
         {
             m_LogCache = logCache;
             m_JobObject = new JobObject();
  
 
-            m_ApplicationRepositary = applicationRepositary;
+            m_ApplicationRepository = applicationRepository;
             m_ConfigurationProvider = configurationProvider;
             m_Listeners = listeners;
             m_InstanceFactory = instanceFactory;
@@ -56,8 +58,22 @@ namespace Inceptum.AppServer.Hosting
                 AppsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "apps"),
                 BaseDirectory = AppDomain.CurrentDomain.BaseDirectory
             };
+            m_InstanceChecker = new PeriodicalBackgroundWorker("InstanceChecker",1000,checkInstances);
             resetConfigurationProviderServiceHost();
             resetLogCacheServiceHost();
+        }
+
+        private void checkInstances()
+        {
+            ApplicationInstance[] instances;
+            lock (m_Instances)
+            {
+                instances = m_Instances.ToArray();
+            }
+            foreach (var instance in instances)
+            {
+                instance.VerifySate();
+            }
         }
 
 
@@ -113,7 +129,7 @@ namespace Inceptum.AppServer.Hosting
         public Application[] Applications
         {
             get {
-                return m_ApplicationRepositary.Applications;
+                return m_ApplicationRepository.Applications;
             }
         }
 
@@ -163,7 +179,7 @@ namespace Inceptum.AppServer.Hosting
 
         public void RediscoverApps()
         {
-            m_ApplicationRepositary.RediscoverApps();
+            m_ApplicationRepository.RediscoverApps();
             notefyApplicationsChanged();
         }
 
@@ -187,7 +203,7 @@ namespace Inceptum.AppServer.Hosting
             if (string.IsNullOrEmpty(config.Environment))
                 throw new ArgumentException("Instance environment is not provided");
 
-            if (m_ApplicationRepositary.Applications.All(x => x.Name != config.ApplicationId && x.Vendor==config.ApplicationVendor))
+            if (m_ApplicationRepository.Applications.All(x => x.Name != config.ApplicationId && x.Vendor==config.ApplicationVendor))
                 throw new ArgumentException("Application '" + config.ApplicationVendor+"(c) "+config.ApplicationId + "' not found");
 
         }
@@ -362,7 +378,7 @@ namespace Inceptum.AppServer.Hosting
                 var config = m_InstancesConfiguration.FirstOrDefault(i => i.Name == name);
                 if (config == null)
                     throw new InvalidOperationException(string.Format("Configuration of instance {0} not found", name));
-                var application = m_ApplicationRepositary.Applications.FirstOrDefault(a => a.Name == config.ApplicationId);
+                var application = m_ApplicationRepository.Applications.FirstOrDefault(a => a.Name == config.ApplicationId);
                 if (application == null)
                     throw new InvalidOperationException(string.Format("Application {0} not found", config.ApplicationId));
 
@@ -374,7 +390,7 @@ namespace Inceptum.AppServer.Hosting
 
                 instance.Start(() =>
                 {
-                    m_ApplicationRepositary.EnsureLoadParams(config.ApplicationId, version);
+                    m_ApplicationRepository.EnsureLoadParams(config.ApplicationId, version);
                     return application.GetLoadParams(version);
                 });
             }
@@ -412,6 +428,7 @@ namespace Inceptum.AppServer.Hosting
 
         public void Dispose()
         {
+            m_InstanceChecker.Dispose();
             m_JobObject.Dispose();
             Logger.InfoFormat("Host is disposed");
         }

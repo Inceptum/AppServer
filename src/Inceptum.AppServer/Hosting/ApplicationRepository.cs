@@ -7,14 +7,14 @@ using Inceptum.AppServer.Model;
 
 namespace Inceptum.AppServer.Hosting
 {
-    public class ApplicationRepositary
+    public class ApplicationRepository
     {
         private readonly IEnumerable<IApplicationBrowser> m_ApplicationBrowsers;
         private readonly object m_SyncRoot=new object();
         private List<Application> m_Applications;
         private ILogger Logger { get; set; }
 
-        public ApplicationRepositary(IEnumerable<IApplicationBrowser> browsers, ILogger logger = null)
+        public ApplicationRepository(IEnumerable<IApplicationBrowser> browsers, ILogger logger = null)
         {
             Logger = logger;
             m_ApplicationBrowsers = browsers;
