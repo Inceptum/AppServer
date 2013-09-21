@@ -14,7 +14,6 @@ using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.Windsor;
 using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.AppDiscovery.Nuget;
-using Inceptum.AppServer.AppDiscovery.Openwrap;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Providers;
 using Inceptum.AppServer.Hosting;
@@ -103,9 +102,6 @@ namespace Inceptum.AppServer.Bootstrap
                 if (setup.DebugFolders.Any())
                     container.Register(Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(new {folders = setup.DebugFolders.ToArray()}));
 
-                //HeartBeats
-                if (setup.SendHb)
-                    container.Register(Component.For<HbSender>().DependsOn(new { environment = setup.Environment, hbInterval = setup.HbInterval }));
             }
             catch (Exception e)
             {

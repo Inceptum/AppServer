@@ -13,12 +13,6 @@ using System.Threading;
 using Inceptum.AppServer.Bootstrap;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Hosting;
-using OpenWrap.Build;
-using OpenWrap.Commands;
-using OpenWrap.Commands.Wrap;
-using OpenWrap.IO.Packaging;
-using OpenWrap.PackageModel;
-using OpenWrap.Services;
 
 namespace Inceptum.AppServer
 {
@@ -39,7 +33,6 @@ namespace Inceptum.AppServer
 
             var setup = new AppServerSetup
                             {
-                                SendHb = false,
                                 Environment = ConfigurationManager.AppSettings["Environment"],
                                 ConfSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"]
                             };
@@ -54,39 +47,17 @@ namespace Inceptum.AppServer
                             setup.AppsToStart = args[i].Split(',');
                         break;
 
-                    case "-repository":
-                        i++;
-                        if (i < args.Length)
-                            setup.Repository = args[i];
-                        break;
-                    case "-debug-wrap":
-                        i++;
-                        if (i < args.Length)
-                        {
-                            var wraps = args[i].Split(',').Select(w => w.Trim());
-                            foreach (var wrap in wraps)
-                            {
-                                if (Path.GetExtension(wrap).ToLower() != ".wrap")
-                                {
-                                    Console.WriteLine("-debug-wrap should be followed with comma separated list pf .wrap files");
-                                    Environment.Exit(1);
-                                }
-                                if (!File.Exists(wrap))
-                                {
-                                    Console.WriteLine(wrap + " could not be found");
-                                    Environment.Exit(1);
-                                }
-
-
-                            }
-                            setup.DebugWraps =wraps.Select(Path.GetFullPath).ToArray();
-                        }
-                        break;
                     case "-debug-folder": 
                         i++;
                         if (i < args.Length)
                             setup.DebugFolders.Add(args[i]);
                         break;
+                    case "-withNativeDll":
+                        i++;
+                        if (i < args.Length)
+                            setup.DebugNativeDlls.Add(args[i]);
+                        break;
+
                     default:
                         Console.WriteLine("Unknown arg: " + args[i]);
                         return;
