@@ -143,6 +143,7 @@ namespace Inceptum.AppServer.Hosting
                         return (from cfg in m_InstancesConfiguration
                                 join instance in m_Instances on cfg.Name equals instance.Name into t
                                 from instance in t
+                                orderby Tuple.Create(cfg.Environment,cfg.Name)
                                 select new ApplicationInstanceInfo
                                            {
                                                Name = cfg.Name,

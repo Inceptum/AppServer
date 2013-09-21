@@ -7,7 +7,7 @@ namespace Inceptum.AppServer.Configuration.Model
 {
     public abstract class BundleCollectionBase : IEnumerable<Bundle>
     {
-        private readonly Dictionary<string, Bundle> m_ChildBundles = new Dictionary<string, Bundle>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly SortedDictionary<string, Bundle> m_ChildBundles = new SortedDictionary<string, Bundle>(StringComparer.InvariantCultureIgnoreCase);
         private readonly IContentProcessor m_ContentProcessor;
         private readonly string m_Name;
         private readonly IBundleEventTracker m_EventTracker;

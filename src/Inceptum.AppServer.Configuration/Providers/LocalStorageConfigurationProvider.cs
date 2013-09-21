@@ -44,7 +44,7 @@ namespace Inceptum.AppServer.Configuration.Providers
             m_ConfigurationsLock.EnterReadLock();
             try
             {
-                return m_Configurations.Select(config => new ConfigurationInfo(getBundlesInfo(config, config.Name)) { Name = config.Name }).ToArray();
+                return m_Configurations.Select(config => new ConfigurationInfo(getBundlesInfo(config, config.Name)) { Name = config.Name }).OrderBy(c => c.Name).ToArray();
             }
             finally
             {
