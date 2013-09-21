@@ -7,6 +7,7 @@ namespace Inceptum.AppServer
         public AppServerSetup()
         {
             DebugFolders = new List<string>();
+            DebugNativeDlls = new List<string>();
         }
         public string ConfSvcUrl { get; set; }
         public string[] AppsToStart { get; set; }

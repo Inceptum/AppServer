@@ -100,7 +100,12 @@ namespace Inceptum.AppServer.Bootstrap
                             );
 
                 if (setup.DebugFolders.Any())
-                    container.Register(Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(new {folders = setup.DebugFolders.ToArray()}));
+                    container.Register(Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(
+                        new
+                        {
+                            folders = setup.DebugFolders.ToArray(),
+                            nativeDlls=setup.DebugNativeDlls.ToArray()
+                        }));
 
             }
             catch (Exception e)

@@ -6,8 +6,12 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
+using System.Security;
+using System.Security.Cryptography;
 using System.ServiceModel;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web.Security;
 using System.Xml.Schema;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
@@ -36,6 +40,8 @@ namespace Inceptum.AppServer.Hosting
         private readonly JobObject m_JobObject;
         private Process m_Process;
          private ChannelFactory<IApplicationHost> m_AppHostFactory;
+         private string m_User;
+         private string m_Password;
 
          public string Name { get; set; }
         public string Environment { get; set; }
@@ -76,20 +82,20 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
+ 
 
-        public ApplicationInstance(string name, string environment, AppServerContext context,  
-                                    ILogger logger,JobObject jobObject)
+         public ApplicationInstance(string name, AppServerContext context,
+                                    ILogger logger, JobObject jobObject)
         {
             m_JobObject = jobObject;
             Name = name;
-            Environment = environment;
             Logger = logger;
             m_Context = context;
             IsMisconfigured = true;
             resetIpcHost();
         }
 
-        private void resetIpcHost()
+         private void resetIpcHost()
         {
             lock (m_ServiceHostLock)
             {
@@ -112,9 +118,12 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-        public void SetVersion(Version actualVersion)
+         public void UpdateConfig(Version actualVersion, string environment, string user, string password)
         {
             m_ActualVersion = actualVersion;
+            m_Password = password;
+            m_User = user;
+            Environment = environment;
             
         }
 
@@ -235,10 +244,22 @@ namespace Inceptum.AppServer.Hosting
                 WorkingDirectory = path
             };
 
+            if (!string.IsNullOrWhiteSpace(m_User))
+            {
+                procSetup.UserName = m_User;
+                var decryptedBytes = ProtectedData.Unprotect(Convert.FromBase64String(m_Password), new byte[0], DataProtectionScope.LocalMachine);
+                var pass = new SecureString();
+                foreach (var c in Encoding.UTF8.GetString(decryptedBytes))
+                {
+                    pass.AppendChar(c);
+                }
+                procSetup.Password = pass;
+                procSetup.UseShellExecute = false;
+            }
+
 #if !DEBUG
             if (!m_ApplicationParams.Debug)
             {
-                procSetup.UseShellExecute = false;
                 procSetup.CreateNoWindow = true;
             }
 #endif
