@@ -87,7 +87,7 @@ namespace Inceptum.AppServer.Bootstrap
                     .Register(
                         Component.For<IApplicationInstanceFactory>().AsFactory(),
                         Component.For<ApplicationInstance>().LifestyleTransient(),
-                        Component.For<ApplicationRepositary>(),
+                        Component.For<ApplicationRepository>(),
                         Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
                         Component.For<IApplicationBrowser>().ImplementedBy<NugetApplicationBrowser>().DependsOnBundle("server.host", "nuget", "{environment}", "{machineName}")/*,                        
                         Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(

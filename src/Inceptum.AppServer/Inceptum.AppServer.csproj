@@ -202,7 +202,7 @@
     <Compile Include="AppDiscovery\Openwrap\NativeDllExporter.cs" />
     <Compile Include="AppDiscovery\Openwrap\OpenWrapApplicationBrowser.cs" />
     <Compile Include="AppDiscovery\Openwrap\HostedApplicationExporter.cs" />
-    <Compile Include="Hosting\ApplicationRepositary.cs" />
+    <Compile Include="Hosting\ApplicationRepository.cs" />
     <Compile Include="Hosting\Host.cs" />
     <Compile Include="Bootstrap\Bootstrapper.cs" />
     <Compile Include="HbSender.cs" />

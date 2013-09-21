@@ -380,6 +380,16 @@ namespace Inceptum.AppServer.Hosting
             }; 
          }
 
+         public void VerifySate()
+         {
+             lock (m_SyncRoot)
+             {
+                 if (Status != HostedAppStatus.Started || !m_Process.HasExited) 
+                     return;
+                 Logger.ErrorFormat("Instance '{0}' process has unexpectedly stopped", Name);
+                 stop(true);
+             }
+         }
     }
 
 
