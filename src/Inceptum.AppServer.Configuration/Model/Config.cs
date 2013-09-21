@@ -110,7 +110,7 @@ namespace Inceptum.AppServer.Configuration.Model
 
         private void populateMap()
         {
-            var map = new SortedDictionary<string, string>();
+            var map = new SortedDictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             Visit(b => map[b.Name] = b.Content);
             Interlocked.Exchange(ref m_Map, map);
         }
