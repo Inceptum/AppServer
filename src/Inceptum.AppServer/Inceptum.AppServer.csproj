@@ -142,10 +142,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\openwrap\OpenFileSystem.dll</HintPath>
     </Reference>
-    <Reference Include="OpenWrap, Version=2.0.0.40798, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\libs\openwrap\OpenWrap.dll</HintPath>
-    </Reference>
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
       <Private>True</Private>
@@ -186,26 +182,16 @@
       <Link>Properties\VersionInfo.cs</Link>
     </Compile>
     <Compile Include="AppDiscovery\Nuget\NugetApplicationBrowser.cs" />
+    <Compile Include="AppDiscovery\Nuget\PackageWrapper.cs" />
     <Compile Include="AppServerSetup.cs" />
     <Compile Include="Hosting\JobObject.cs" />
     <Compile Include="Utils\AppDomainRenderer.cs" />
     <Compile Include="Bootstrap\LoggingInstaller.cs" />
     <Compile Include="Hosting\ApplicationInstance.cs" />
     <Compile Include="AppDiscovery\FolderApplicationBrowser.cs" />
-    <Compile Include="AppDiscovery\Openwrap\AppConfig.cs" />
-    <Compile Include="AppDiscovery\Openwrap\AppConfigExporter.cs" />
-    <Compile Include="AppDiscovery\Openwrap\HostedApplicationExport.cs" />
-    <Compile Include="AppDiscovery\Openwrap\IAppConfig.cs" />
-    <Compile Include="AppDiscovery\Openwrap\IHostedApplicationExport.cs" />
-    <Compile Include="AppDiscovery\Openwrap\INativeDll.cs" />
-    <Compile Include="AppDiscovery\Openwrap\NativeDll.cs" />
-    <Compile Include="AppDiscovery\Openwrap\NativeDllExporter.cs" />
-    <Compile Include="AppDiscovery\Openwrap\OpenWrapApplicationBrowser.cs" />
-    <Compile Include="AppDiscovery\Openwrap\HostedApplicationExporter.cs" />
     <Compile Include="Hosting\ApplicationRepository.cs" />
     <Compile Include="Hosting\Host.cs" />
     <Compile Include="Bootstrap\Bootstrapper.cs" />
-    <Compile Include="HbSender.cs" />
     <Compile Include="AppDiscovery\IApplicationBrowser.cs" />
     <Compile Include="Logging\LogCache.cs" />
     <Compile Include="Logging\LogConnection.cs" />

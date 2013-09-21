@@ -44,10 +44,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Castle.Windsor.3.2.1\lib\net40\Castle.Windsor.dll</HintPath>
     </Reference>
-    <Reference Include="Inceptum.DataBus, Version=1.0.5.96, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Inceptum.DataBus.1.0.5.96\lib\net40\Inceptum.DataBus.dll</HintPath>
-    </Reference>
     <Reference Include="Inceptum.Messaging, Version=1.0.5.96, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Inceptum.Messaging.1.0.5.96\lib\net40\Inceptum.Messaging.dll</HintPath>
@@ -113,10 +109,6 @@
     <Compile Include="Model\ApplicationVersion.cs" />
     <Compile Include="Model\InstanceCommand.cs" />
     <Compile Include="Model\InstanceConfig.cs" />
-    <Compile Include="Monitoring\HbFeedProvider.cs" />
-    <Compile Include="Monitoring\HostHbMessage.cs" />
-    <Compile Include="Monitoring\InstanceInfo.cs" />
-    <Compile Include="Monitoring\ServiceMonitor.cs" />
     <Compile Include="Configuration\ComponentRegistrationExtentions.cs" />
     <Compile Include="Configuration\ConfigurationFacility.cs" />
     <Compile Include="Configuration\ConnectionString.cs" />
