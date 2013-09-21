@@ -108,7 +108,7 @@ namespace Inceptum.AppServer
                 return;
             }
 
-            using (createHost(setup))
+            using (var host = createHost(setup))
             {
                 Console.ReadLine();
                 

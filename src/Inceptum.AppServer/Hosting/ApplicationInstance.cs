@@ -165,12 +165,9 @@ namespace Inceptum.AppServer.Hosting
 
         internal InstanceCommand[] Commands { get; private set; }
 
-        public void Stop()
-        {
-            stop(false);
-        }
+      
 
-        private void stop(bool abort)
+        public void Stop(bool abort)
         {
             lock (m_SyncRoot)
             {
@@ -266,7 +263,7 @@ namespace Inceptum.AppServer.Hosting
          public void ReportFailure(string error)
          {
              Logger.ErrorFormat("Instance '{0}' crashed: {1}", Name,error);
-             stop(true);
+             Stop(true);
          }
  
 
@@ -387,7 +384,7 @@ namespace Inceptum.AppServer.Hosting
                  if (Status != HostedAppStatus.Started || !m_Process.HasExited) 
                      return;
                  Logger.ErrorFormat("Instance '{0}' process has unexpectedly stopped", Name);
-                 stop(true);
+                 Stop(true);
              }
          }
     }

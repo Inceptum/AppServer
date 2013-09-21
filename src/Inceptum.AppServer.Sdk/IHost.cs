@@ -17,6 +17,7 @@ namespace Inceptum.AppServer
 
         void RediscoverApps();
         void Start();
+        void Stop();
         void StartInstance(string name);
         void StopInstance(string name);
         void AddInstance(ApplicationInstanceInfo config);
