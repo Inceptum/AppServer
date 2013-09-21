@@ -6,8 +6,11 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.ServiceModel;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web.Security;
 using Castle.Core.Logging;
 using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.Logging;
@@ -155,7 +158,9 @@ namespace Inceptum.AppServer.Hosting
                                                Version = cfg.Version,
                                                AutoStart = cfg.AutoStart,
                                                ActualVersion=instance.ActualVersion,
-                                               Commands = instance.Commands
+                                               Commands = instance.Commands,
+                                               User = cfg.User,
+                                               Password = cfg.Password,
                                            }).ToArray();
                     }
             }
@@ -192,7 +197,7 @@ namespace Inceptum.AppServer.Hosting
 
         private ApplicationInstance createInstance(InstanceConfig config)
         {
-            var instance = m_InstanceFactory.Create(config.Name, config.Environment, m_Context);
+            var instance = m_InstanceFactory.Create(config.Name,  m_Context);
             m_Instances.Add(instance);
             instance.Subscribe(status => notefyInstancesChanged(instance.Name + ":" + instance.Status));
             return instance;
@@ -290,7 +295,9 @@ namespace Inceptum.AppServer.Hosting
                     ApplicationId = config.ApplicationId,
                     ApplicationVendor = config.ApplicationVendor,
                     Environment =  config.Environment,
-                    AutoStart = config.AutoStart
+                    AutoStart = config.AutoStart,
+                    User = config.User,
+                    Password = Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(config.Password ?? ""), new byte[0], DataProtectionScope.LocalMachine)) 
                 };
 
                 instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(c => c.Name != config.Id).Concat(new[] { cfg }).ToArray(), Formatting.Indented);
@@ -413,7 +420,7 @@ namespace Inceptum.AppServer.Hosting
                 var version = config.Version ?? application.Versions.Select(v => v.Version).OrderByDescending(v => v).FirstOrDefault();
 
                 
-                instance.SetVersion(version);
+                instance.UpdateConfig(version,config.Environment,config.User,config.Password);
 
 
                 instance.Start(() =>

@@ -26,5 +26,8 @@ namespace Inceptum.AppServer.Model
         public string Environment { get; set; }
 
         public InstanceCommand[] Commands { get; set; }
+
+        public string User { get; set; }
+        public string Password { get; set; }
     }
 }

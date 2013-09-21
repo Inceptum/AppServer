@@ -6,7 +6,7 @@ namespace Inceptum.AppServer.Windsor
 {
     interface IApplicationInstanceFactory:IDisposable
     {
-        ApplicationInstance Create(string name, string environment, AppServerContext context);
+        ApplicationInstance Create(string name, AppServerContext context);
         void Release(ApplicationInstance instance);
     }
 }
