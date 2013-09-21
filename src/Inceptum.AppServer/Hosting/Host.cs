@@ -39,6 +39,7 @@ namespace Inceptum.AppServer.Hosting
         private readonly JobObject m_JobObject;
         private readonly ILogCache m_LogCache;
         private PeriodicalBackgroundWorker m_InstanceChecker;
+        private bool m_IsStopped=true;
 
         public Host(ILogCache logCache,IManageableConfigurationProvider configurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepository applicationRepository, ILogger logger = null, string name = null)
         {
@@ -162,6 +163,7 @@ namespace Inceptum.AppServer.Hosting
 
         public void Start()
         {
+            m_IsStopped = false;
             RediscoverApps();
             Logger.InfoFormat("Reading instances config");
             updateInstances();
@@ -179,6 +181,9 @@ namespace Inceptum.AppServer.Hosting
 
         public void RediscoverApps()
         {
+            if (m_IsStopped)
+                throw new ObjectDisposedException("Host is disposed");
+
             m_ApplicationRepository.RediscoverApps();
             notefyApplicationsChanged();
         }
@@ -242,6 +247,9 @@ namespace Inceptum.AppServer.Hosting
             string instances;
             lock (m_SyncRoot)
             {
+                if (m_IsStopped)
+                    throw new ObjectDisposedException("Host is disposed");
+
                 validateInstanceConfig(config);
                 if (m_InstancesConfiguration.Any(x => x.Name == config.Name))
                     throw new ConfigurationErrorsException(string.Format("Instance named '{0}' already exists", config.Name));
@@ -265,6 +273,9 @@ namespace Inceptum.AppServer.Hosting
             string instances;
             lock (m_SyncRoot)
             {
+                if (m_IsStopped)
+                    throw new ObjectDisposedException("Host is disposed");
+
                 //TODO: rename app and logs folders on rename
                 validateInstanceConfig(config);
                 if (m_InstancesConfiguration.All(x => x.Name != config.Id))
@@ -293,6 +304,9 @@ namespace Inceptum.AppServer.Hosting
         {
             try
             {
+                if (m_IsStopped)
+                    throw new ObjectDisposedException("Host is disposed");
+
                 ApplicationInstance instance;
                 lock (m_SyncRoot)
                 {
@@ -321,6 +335,9 @@ namespace Inceptum.AppServer.Hosting
             {
                 lock (m_SyncRoot)
                 {
+                    if (m_IsStopped)
+                        throw new ObjectDisposedException("Host is disposed");
+
                     ApplicationInstance instance = m_Instances.FirstOrDefault(i => i.Name == name);
                     if (instance == null)
                         return null;
@@ -337,23 +354,30 @@ namespace Inceptum.AppServer.Hosting
 
         public void StopInstance(string name)
         {
+            ApplicationInstance instance;
+            lock (m_SyncRoot)
+            {
+                if (m_IsStopped)
+                    throw new ObjectDisposedException("Host is disposed");
+                instance = m_Instances.FirstOrDefault(i => i.Name == name);
+            }
+
+            if (instance == null)
+                throw new ConfigurationErrorsException(string.Format("Instance '{0}' not found", name));
+
+            stopInstance(instance);
+        }
+
+        public void stopInstance(ApplicationInstance instance,bool abort=false)
+        {
             try
             {
-                ApplicationInstance instance;
-                lock (m_SyncRoot)
-                {
-                    instance = m_Instances.FirstOrDefault(i => i.Name == name);
-                }
-
-                if (instance == null)
-                    throw new ConfigurationErrorsException(string.Format("Instance '{0}' not found", name));
-                
-                instance.Stop();
+                instance.Stop(abort);
 
             }
             catch (Exception e)
             {
-                Logger.WarnFormat(e, "Failed to stop instance {0}",name);                
+                Logger.WarnFormat(e, "Failed to stop instance {0}", instance.Name);
                 throw;
             }
         }
@@ -370,6 +394,9 @@ namespace Inceptum.AppServer.Hosting
                 ApplicationInstance instance;
                 lock (m_SyncRoot)
                 {
+                    if (m_IsStopped)
+                        throw new ObjectDisposedException("Host is disposed");
+
                     instance = m_Instances.FirstOrDefault(i => i.Name == name);
                 }
                 if (instance == null)
@@ -426,11 +453,33 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
+        public void Stop()
+        {
+            if(m_IsStopped)
+                throw new ObjectDisposedException("Host not started");
+             Logger.InfoFormat("Host is stopping");
+            m_IsStopped= true;
+            IEnumerable<Task> tasks;
+            lock (m_SyncRoot)
+            {
+                Logger.InfoFormat("Stopping instances");
+                tasks = m_Instances.Where(instance=>instance.Status!=HostedAppStatus.Stopped&& instance.Status!=HostedAppStatus.Stopping)
+                    .Select(instance => Task.Factory.StartNew(() => stopInstance(instance,true)));
+            }
+
+            Task.WaitAll(tasks.ToArray());
+            foreach (var instance in m_Instances)
+            {
+                m_InstanceFactory.Release(instance);
+            }
+            m_Instances.Clear();
+            Logger.InfoFormat("Host is stopped");
+       }
         public void Dispose()
         {
+           
             m_InstanceChecker.Dispose();
             m_JobObject.Dispose();
-            Logger.InfoFormat("Host is disposed");
         }
     }
 }

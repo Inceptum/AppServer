@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reflection;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
@@ -24,6 +25,7 @@ using Inceptum.AppServer.Windsor;
 using Inceptum.Messaging;
 using Inceptum.Messaging.Castle;
 using Microsoft.AspNet.SignalR;
+using Disposable = Microsoft.Owin.Hosting.Utilities.Disposable;
 
 namespace Inceptum.AppServer.Bootstrap
 {
@@ -114,14 +116,18 @@ namespace Inceptum.AppServer.Bootstrap
              
             logger.Info("Starting application host");
             var sw = Stopwatch.StartNew();
-            container.Resolve<IHost>().Start();
+            var host = container.Resolve<IHost>();
+            host.Start();
             logger.InfoFormat("Initialization complete in {0}ms",sw.ElapsedMilliseconds);
 #if DEBUG            
     //        container.Resolve<UiNotificationHub>();
 #endif
+            return new CompositeDisposable
+            {
+                System.Reactive.Disposables.Disposable.Create(host.Stop),
+                container
+            };
 
-            return container;
-        
         }
     } 
 }
