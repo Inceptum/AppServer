@@ -21,10 +21,7 @@ using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Management;
 using Inceptum.AppServer.Notification;
 using Inceptum.AppServer.Windsor;
-using Inceptum.Messaging;
-using Inceptum.Messaging.Castle;
 using Microsoft.AspNet.SignalR;
-using Disposable = Microsoft.Owin.Hosting.Utilities.Disposable;
 
 namespace Inceptum.AppServer.Bootstrap
 {
