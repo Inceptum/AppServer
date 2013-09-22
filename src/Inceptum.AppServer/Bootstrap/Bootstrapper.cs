@@ -73,10 +73,11 @@ namespace Inceptum.AppServer.Bootstrap
                 container
                     .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
                                                                  .Params(new { environment = setup.Environment, machineName = Environment.MachineName })
-                                                                 .ConfigureTransports(new Dictionary<string, JailStrategy> { { "Environment", JailStrategy.Custom(() => setup.Environment) } },
-                                                                                      "server.transports", "{environment}", "{machineName}"))
+        /*                                                         .ConfigureTransports(new Dictionary<string, JailStrategy> { { "Environment", JailStrategy.Custom(() => setup.Environment) } },
+                                                                                      "server.transports", "{environment}", "{machineName}")*/
+                                                        )
                     //messaging
-                    .AddFacility<MessagingFacility>(f => { })
+                    //.AddFacility<MessagingFacility>(f => { })
                     //Management
                     .Register(                        
                        // Component.For<IDependencyResolver>().Instance(new WindsorToSignalRAdapter(container.Kernel)),
