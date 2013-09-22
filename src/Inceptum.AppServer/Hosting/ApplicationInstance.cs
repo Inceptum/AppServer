@@ -191,7 +191,7 @@ namespace Inceptum.AppServer.Hosting
                     {
                         try
                         {
-                            if(m_ApplicationHost!=null)
+                            if (m_ApplicationHost != null && !m_Process.HasExited)
                                 m_ApplicationHost.Stop();
                             if(m_AppHostFactory!=null)
                                 m_AppHostFactory.Close();
