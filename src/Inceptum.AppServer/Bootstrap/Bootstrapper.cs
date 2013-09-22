@@ -120,9 +120,6 @@ namespace Inceptum.AppServer.Bootstrap
             var host = container.Resolve<IHost>();
             host.Start();
             logger.InfoFormat("Initialization complete in {0}ms",sw.ElapsedMilliseconds);
-#if DEBUG            
-    //        container.Resolve<UiNotificationHub>();
-#endif
             return new CompositeDisposable
             {
                 System.Reactive.Disposables.Disposable.Create(host.Stop),

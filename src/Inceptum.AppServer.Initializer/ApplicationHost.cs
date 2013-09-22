@@ -302,11 +302,12 @@ namespace Inceptum.AppServer.Hosting
             config.AddTarget("console", console);
             rule = new LoggingRule("*", LogLevel.Debug, console);
             config.LoggingRules.Add(rule);
-
+            
             Target managementConsole = new ManagementConsoleTarget(m_LogCache, m_InstanceName)
             {
-                Layout = @"${gdc:AppServer.Instance}: ${date:format=HH\:mm\:ss.fff} ${level} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
+                Layout = @"${pad:padCharacter= :padding=-20:inner=${gdc:AppServer.Instance}}: ${date:format=HH\:mm\:ss.fff} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
             };
+            
             config.AddTarget("managementConsole", managementConsole);
             rule = new LoggingRule("*", LogLevel.Debug, managementConsole);
             config.LoggingRules.Add(rule);
