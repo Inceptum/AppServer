@@ -93,12 +93,12 @@ namespace Inceptum.AppServer.Hosting
                 var serviceHost = new ServiceHost(m_ConfigurationProvider, new[] { new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id) });
                 serviceHost.AddServiceEndpoint(typeof(IConfigurationProvider), new NetNamedPipeBinding{ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue}, "ConfigurationProvider");
 
+                serviceHost.Open();
                 serviceHost.Faulted += (o, args) =>
                 {
                     Logger.DebugFormat("Creating ConfigurationProvider service host.");
                     resetConfigurationProviderServiceHost();
                 };
-                serviceHost.Open();
                 m_ConfigurationProviderServiceHost = serviceHost;
             }
         }
