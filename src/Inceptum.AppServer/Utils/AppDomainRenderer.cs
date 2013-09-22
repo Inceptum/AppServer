@@ -17,7 +17,7 @@ namespace Inceptum.AppServer.Utils
         public static void Register()
         {
             ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("app_domain", typeof (AppDomainRendererImpl));
-            ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("appServer_app", typeof(AppDomainDataRendererImpl));
+            ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("appServer.instance", typeof(AppDomainDataRendererImpl));
         }
 
     }

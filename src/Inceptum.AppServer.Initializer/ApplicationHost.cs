@@ -17,6 +17,7 @@ using Inceptum.AppServer.Initializer;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Windsor;
 using NLog;
+using NLog.Conditions;
 using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
@@ -24,38 +25,7 @@ using NLog.Targets.Wrappers;
 namespace Inceptum.AppServer.Hosting
 {
 
-    class AppContainer : WindsorContainer
-    {
-
-        public static void updateLoggingConfig(LoggingConfiguration config, string baseDirectory, string instanceName, ILogCache logCache)
-        {
-            Target logFile = new AsyncTargetWrapper(new FileTarget
-            {
-                FileName = Path.Combine(baseDirectory, "logs", instanceName, "${shortdate}.log"),
-                Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
-            });
-            config.AddTarget("logFile", logFile);
-            var rule = new LoggingRule("*", LogLevel.Debug, logFile);
-            config.LoggingRules.Add(rule);
-
-
-            Target console = new AsyncTargetWrapper(new ConsoleTarget
-            {
-                Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
-            });
-            config.AddTarget("console", console);
-            rule = new LoggingRule("*", LogLevel.Debug, console);
-            config.LoggingRules.Add(rule);
-
-            Target managementConsole = new ManagementConsoleTarget(logCache, instanceName)
-            {
-                Layout = @"${date:format=HH\:mm\:ss.fff} ${level} [${threadid}][${threadname}] [" + instanceName + ".${logger:shortName=true}] ${message} ${exception:format=tostring}"
-            };
-            config.AddTarget("managementConsole", managementConsole);
-            rule = new LoggingRule("*", LogLevel.Debug, managementConsole);
-            config.LoggingRules.Add(rule);
-        }
-    }
+    
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single,IncludeExceptionDetailInFaults = true)]
     internal class ApplicationHost : IApplicationHost 
     {
@@ -310,23 +280,38 @@ namespace Inceptum.AppServer.Hosting
             config.AddTarget("logFile", logFile);
             var rule = new LoggingRule("*", LogLevel.Debug, logFile);
             config.LoggingRules.Add(rule);
+            
 
-
-            Target console = new AsyncTargetWrapper(new ConsoleTarget
+            var coloredConsoleTarget = new ColoredConsoleTarget
             {
-                Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
-            });
+                Layout = @"${date:format=HH\:mm\:ss.fff} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}",
+                UseDefaultRowHighlightingRules = false
+            };
+            coloredConsoleTarget.RowHighlightingRules.Add(
+                new ConsoleRowHighlightingRule { Condition = "level == LogLevel.Debug", ForegroundColor = ConsoleOutputColor.DarkGray });
+            coloredConsoleTarget.RowHighlightingRules.Add(
+                new ConsoleRowHighlightingRule { Condition = "level == LogLevel.Info", ForegroundColor = ConsoleOutputColor.White });
+            coloredConsoleTarget.RowHighlightingRules.Add(
+                new ConsoleRowHighlightingRule { Condition = "level == LogLevel.Warn", ForegroundColor = ConsoleOutputColor.Yellow });
+            coloredConsoleTarget.RowHighlightingRules.Add(
+                new ConsoleRowHighlightingRule { Condition = "level == LogLevel.Error", ForegroundColor = ConsoleOutputColor.Red });
+            coloredConsoleTarget.RowHighlightingRules.Add(
+                new ConsoleRowHighlightingRule { Condition = "level == LogLevel.Fatal", ForegroundColor = ConsoleOutputColor.Red, BackgroundColor = ConsoleOutputColor.White });
+
+            Target console = new AsyncTargetWrapper(coloredConsoleTarget);
             config.AddTarget("console", console);
             rule = new LoggingRule("*", LogLevel.Debug, console);
             config.LoggingRules.Add(rule);
 
             Target managementConsole = new ManagementConsoleTarget(m_LogCache, m_InstanceName)
             {
-                Layout = @"${date:format=HH\:mm\:ss.fff} ${level} [${threadid}][${threadname}] [" + m_InstanceName + ".${logger:shortName=true}] ${message} ${exception:format=tostring}"
+                Layout = @"${gdc:AppServer.Instance}: ${date:format=HH\:mm\:ss.fff} ${level} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
             };
             config.AddTarget("managementConsole", managementConsole);
             rule = new LoggingRule("*", LogLevel.Debug, managementConsole);
             config.LoggingRules.Add(rule);
+
+            GlobalDiagnosticsContext.Set("AppServer.Instance", m_InstanceName);
         }
 
 

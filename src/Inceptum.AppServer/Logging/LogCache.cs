@@ -42,7 +42,12 @@ namespace Inceptum.AppServer.Logging
                     m_Cache.RemoveRange(0, m_Cache.Count - m_Capacity);
             }
             if (message.Source != "Server")
-                Logger.Info("[{0}] {1}",message.Source,message.Message);
+            {
+                var ev=new LogEventInfo(LogLevel.FromString(message.Level), Logger.Name, message.Message);
+                ev.Properties["Source"] = message.Source;
+          //      Logger.Log(LogLevel.FromString(message.Level), message.Message);
+                Logger.Log(ev);
+            }
             var context = GlobalHost.ConnectionManager.GetConnectionContext<LogConnection>();
             context.Connection.Broadcast(message);
         }

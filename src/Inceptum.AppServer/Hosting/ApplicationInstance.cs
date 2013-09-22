@@ -163,10 +163,7 @@ namespace Inceptum.AppServer.Hosting
                                                               {
                                                                   Commands=new InstanceCommand[0];
                                                                   Logger.ErrorFormat(e, "Instance '{0}' failed to start", Name);
-                                                                  lock (m_SyncRoot)
-                                                                  {
-                                                                      Status = HostedAppStatus.Stopped;
-                                                                  }
+                                                                  Stop(true);
                                                               }
                                                           });
             }
@@ -371,8 +368,7 @@ namespace Inceptum.AppServer.Hosting
              var assembliesToLoad = new Dictionary<string, string>()
                 {
                     {typeof (AppInfo).Assembly.GetName().FullName, typeof (AppInfo).Assembly.Location},
-                    //{typeof (ApplicationInstance).Assembly.GetName().FullName, typeof (ApplicationInstance).Assembly.Location},
-                    //AppServer is loaded not from package, so it dependencies used in appDOmain plugin should be provided aswell
+                    //AppServer is loaded not from package, so it dependencies used in appDomain plugin should be provided aswell
                     {typeof (LoggingFacility).Assembly.GetName().FullName, typeof (LoggingFacility).Assembly.Location},
                     {typeof (ILogger).Assembly.GetName().FullName, typeof (ILogger).Assembly.Location},
                     {typeof (WindsorContainer).Assembly.GetName().FullName, typeof (WindsorContainer).Assembly.Location},
@@ -402,8 +398,7 @@ namespace Inceptum.AppServer.Hosting
          {
              lock (m_SyncRoot)
              {
-                 if (Status != HostedAppStatus.Started || !m_Process.HasExited) 
-                     return;
+                 if ((Status != HostedAppStatus.Started && Status != HostedAppStatus.Starting) || m_Process == null || !m_Process.HasExited) return;
                  Logger.ErrorFormat("Instance '{0}' process has unexpectedly stopped", Name);
                  Stop(true);
              }
