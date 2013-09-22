@@ -2,6 +2,11 @@ define(['jquery', 'backbone', 'underscore','models/instance','context'], functio
     var Collection = Backbone.Collection.extend({
         model:instanceModel,
         url:context.httpUrl('/api/instances'),
+        comparator: function (config) {
+            console.log([config.get("Environment"),config.get("Name")]);
+            return [config.get("Environment"),config.get("Name")];
+        }
+
     });
 
     return new Collection();
