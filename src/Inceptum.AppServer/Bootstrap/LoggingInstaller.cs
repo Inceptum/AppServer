@@ -9,8 +9,6 @@ using Castle.Windsor;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Notification;
 using Inceptum.AppServer.Utils;
-using Inceptum.Core.Utils;
-using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using NLog;
 using NLog.Config;
