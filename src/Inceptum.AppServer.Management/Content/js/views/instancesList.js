@@ -24,14 +24,16 @@ define([
                 _.each(filtered,function(instance){
                     self.add(instance);
                 });
-                this.instances.bind('add', this.add);
-                this.instances.bind('remove', this.remove);
+                this.instances.bind('add', this.reset);
+                this.instances.bind('remove', this.reset);
                 this.instances.bind('reset', this.reset);
                 this.rendered=false;
             },
             add : function(instance) {
                 if(this.filter && (instance.get("ApplicationId")!=this.filter.ApplicationId || instance.get("ApplicationVendor")!=this.filter.ApplicationVendor))
                     return;
+
+
                 var view = new instanceView({
                     tagName : 'tr',
                     model : instance
