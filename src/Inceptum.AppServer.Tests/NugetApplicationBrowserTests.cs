@@ -20,7 +20,7 @@ namespace Inceptum.AppServer.Tests
             Directory.SetCurrentDirectory(baseDir);
 
             var browser = new NugetApplicationBrowser(NullLogger.Instance,"..\\..\\..\\..\\TestData\\NugetRepo", "https://nuget.org/api/v2/");
-            var hostedAppInfos = browser.GetAvailabelApps().ToArray();
+            var hostedAppInfos = browser.GetAvailableApps().ToArray();
             Console.WriteLine("");
         }
     }

@@ -27,7 +27,7 @@ namespace Inceptum.AppServer.Hosting
             var appInfos = m_ApplicationBrowsers.SelectMany(x =>
                 {
                     Logger.InfoFormat("Loading apps from {0}",x.Name);
-                    return x.GetAvailabelApps().Select(i =>
+                    return x.GetAvailableApps().Select(i =>
                         {
                             i.Browser = x.Name;
                             return i;

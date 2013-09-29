@@ -130,7 +130,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             return new ApplicationParams(getAppType(packageAssemblies), appConfigs, nativesToLoad, assemblies);
         }
 
-        public IEnumerable<HostedAppInfo> GetAvailabelApps()
+        public IEnumerable<HostedAppInfo> GetAvailableApps()
         {
             IPackageRepository appsRepo = PackageRepositoryFactory.Default.CreateRepository(m_ApplicationRepository);
             var packages = from p in appsRepo.GetPackages() where p.Tags != null && p.Tags.Contains("Inceptum.AppServer.Application") orderby p.Id select p;

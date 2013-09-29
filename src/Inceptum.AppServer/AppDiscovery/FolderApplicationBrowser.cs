@@ -68,7 +68,7 @@ namespace Inceptum.AppServer.AppDiscovery
 
         #region IApplicationBrowser Members
 
-        public IEnumerable<HostedAppInfo> GetAvailabelApps()
+        public IEnumerable<HostedAppInfo> GetAvailableApps()
         {
             return m_Folders.SelectMany(GetAvailabelAppsInFolder);
         }
