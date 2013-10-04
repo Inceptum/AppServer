@@ -21,13 +21,25 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
         private readonly string m_ApplicationRepository;
         private readonly string[] m_DependenciesRepositories;
 
-        public NugetApplicationBrowser(ILogger logger,string applicationRepository, params string[] dependenciesRepositories)
+        public NugetApplicationBrowser(ILogger logger, string applicationRepository, params string[] dependenciesRepositories)
         {
-            applicationRepository=Path.Combine(AppDomain.CurrentDomain.BaseDirectory, applicationRepository);
             Logger = logger;
-            m_DependenciesRepositories = dependenciesRepositories.Select(
-                r => Directory.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, r)) ? Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, r)) : r).ToArray();
-            m_ApplicationRepository = Directory.Exists(applicationRepository) ? Path.GetFullPath(applicationRepository) : applicationRepository;
+            m_DependenciesRepositories = dependenciesRepositories.Select(getRepositoryPath).ToArray();
+            m_ApplicationRepository = getRepositoryPath(applicationRepository);
+        }
+
+        private string getRepositoryPath(string repository)
+        {
+            if (!Uri.IsWellFormedUriString(repository, UriKind.RelativeOrAbsolute))
+            {
+                repository = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, repository);
+            }
+            var uri = new Uri(repository);
+            if (uri.IsFile && !Directory.Exists(uri.AbsolutePath))
+            {
+                throw new Exception(string.Format("Failed to find folder at '{0}'", uri.AbsolutePath));
+            }
+            return repository;
         }
 
         private IEnumerable<IPackage> getDependencies(IPackage package, IPackageRepository repository)
