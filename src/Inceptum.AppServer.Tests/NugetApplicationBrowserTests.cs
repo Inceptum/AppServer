@@ -47,7 +47,7 @@ namespace Inceptum.AppServer.Tests
             Directory.SetCurrentDirectory(baseDir);
 
             var browser = new NugetApplicationBrowser(new ConsoleLogger(), "http://nuget.it.unistreambank.ru/nuget/DEV.Apps", "http://nuget.it.unistreambank.ru/nuget/DEV.Libs");
-            var hostedAppInfos = browser.GetAvailabelApps().ToArray();
+            var hostedAppInfos = browser.GetAvailableApps().ToArray();
             foreach (var hostedAppInfo in hostedAppInfos)
             {
                 Console.WriteLine(hostedAppInfo.Name);
