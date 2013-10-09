@@ -91,7 +91,10 @@ namespace Inceptum.AppServer.AppDiscovery
                         select new { assembly = asm, file, name, vendor });
 
             var assemblies =
-                from file in Directory.GetFiles(Path.GetFullPath(folder), "*.dll").Concat(Directory.GetFiles(Path.GetFullPath(folder), "*.exe"))
+                from file in 
+                        Directory.GetFiles(Path.GetFullPath(folder), "*.dll")
+                        .Concat(Directory.GetFiles(Path.GetFullPath(folder), "*.exe"))
+                        .Concat(Directory.GetDirectories(folder).SelectMany(dir => Directory.GetFiles(dir,"*.resources.dll")))
                 let asm = CeceilExtencions.TryReadAssembly(file)
                 where asm != null
                 select new {assemblyName = asm.FullName, file};

@@ -53,14 +53,18 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                                    }).Concat(new []{package});
         }
 
-        private IEnumerable<IPackageAssemblyReference> getAssemblies(IPackage package)
+        private IEnumerable<IPackageFile> getAssemblies(IPackage package)
         {
-            IEnumerable<IPackageAssemblyReference> refs;
+            IEnumerable<IPackageFile> refs;
             if (!VersionUtility.TryGetCompatibleItems(NET40, package.AssemblyReferences, out refs))
             {
                 throw new ConfigurationErrorsException(string.Format("Failed to load package {0} since it is not compartible with .Net 4.0",package.Id));
             }
-            return refs;
+
+            IEnumerable<IPackageFile> satellites;
+            VersionUtility.TryGetCompatibleItems(NET40, package.GetLibFiles(), out satellites);
+            var packageFiles = satellites.ToArray();
+            return refs.Concat(packageFiles);
         }
         
         public string Name
@@ -109,9 +113,11 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                 select
                     new
                         {
-                            name = new AssemblyName(a.Name),
+                            //name = new AssemblyName(a.Name),
                             path = Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(p), a.Path)
                         };
+
+          
 
             var nativesToLoad =
                 (from p in dependencies
