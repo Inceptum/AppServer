@@ -34,10 +34,11 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             {
                 repository = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, repository);
             }
+
             var uri = new Uri(repository);
-            if (uri.IsFile && !Directory.Exists(uri.AbsolutePath))
+            if (uri.IsFile && !Directory.Exists(uri.LocalPath))
             {
-                throw new Exception(string.Format("Failed to find folder at '{0}'", uri.AbsolutePath));
+                throw new Exception(string.Format("Failed to find folder at '{0}'", uri.LocalPath));
             }
             return repository;
         }
