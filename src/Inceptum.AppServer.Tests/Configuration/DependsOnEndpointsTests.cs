@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Inceptum.AppServer.Configuration;
+using Inceptum.Messaging.Configuration;
 using Inceptum.Messaging.Contract;
 using NUnit.Framework;
 
