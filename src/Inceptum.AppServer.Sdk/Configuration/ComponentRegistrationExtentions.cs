@@ -49,13 +49,6 @@ namespace Inceptum.AppServer.Configuration
 			
         }
 
-        public static ComponentRegistration<T> WithEndpoints<T>(this ComponentRegistration<T> r, object endpoints)
-             where T : class
-        {
-            //endpointNames extended property is used to resolve endpoint with EndpointResolver
-            return with<T, Endpoint>(r, dictionary => new { endpointNames = dictionary }, endpoints);
-        }
-
         public static ComponentRegistration<T> WithConnectionStrings<T>(this ComponentRegistration<T> r, object connectionStrings)
              where T : class
         {
