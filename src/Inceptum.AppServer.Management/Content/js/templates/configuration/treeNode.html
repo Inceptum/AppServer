@@ -2,9 +2,9 @@
     <span>
     <%if(model.isFolder){%>
         <a href="#" data-toggle="collapse" data-target="#<%= model.uiid%>"><i class="<%=model.imgClass%>"></i></a>
-        <a href="#/configurations/<%=model.Configuration%>/bundles/<%=model.id%>"><%= model.Name%></a>
+        <a href="#/configurations/<%=model.Configuration%>/bundles/<%=model.id%>"  data-id="<%= model.id%>" class="bundleName"><%= model.Name%></a>
     <%} else {%>
-        <i class="icon-file"></i><a href="#/configurations/<%=model.Configuration%>/bundles/<%=model.id%>"><%= model.Name%></a>
+        <i class="icon-file"></i><a href="#/configurations/<%=model.Configuration%>/bundles/<%=model.id%>"  data-id="<%= model.id%>" class="bundleName"><%= model.Name%></a>
     <%} %>
         </span>
     <span style="margin-left:20px;">
