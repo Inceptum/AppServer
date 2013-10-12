@@ -100,12 +100,14 @@ define([
                 this.template = _.template( template, { model: Configurations.toJSON() } );
                 _.bindAll(this,"dispose","deleteBundle");
 
-                var bundleToExpand="";
-                var config=Configurations.get(this.activeItem);
-                _.each(this.activeBundle.split('.'), function(current){
-                    bundleToExpand=(bundleToExpand==""?"":bundleToExpand+".")+current;
-                    config.getBundle(bundleToExpand).expanded=true;
-                });
+                if(!(typeof this.activeBundle === 'undefined')){
+                    var bundleToExpand="";
+                    var config=Configurations.get(this.activeItem);
+                    _.each(this.activeBundle.split('.'), function(current){
+                        bundleToExpand=(bundleToExpand==""?"":bundleToExpand+".")+current;
+                        config.getBundle(bundleToExpand).expanded=true;
+                    });
+                }
 
             },
             events:{
