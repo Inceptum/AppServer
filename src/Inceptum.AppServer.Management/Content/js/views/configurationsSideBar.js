@@ -96,8 +96,17 @@ define([
             el:'#sidebar',
             initialize: function(options){
                 this.activeItem=options.active;
+                this.activeBundle=options.activeBundle;
                 this.template = _.template( template, { model: Configurations.toJSON() } );
                 _.bindAll(this,"dispose","deleteBundle");
+
+                var bundleToExpand="";
+                var config=Configurations.get(this.activeItem);
+                _.each(this.activeBundle.split('.'), function(current){
+                    bundleToExpand=(bundleToExpand==""?"":bundleToExpand+".")+current;
+                    config.getBundle(bundleToExpand).expanded=true;
+                });
+
             },
             events:{
                 "click .create":"createConfig"
@@ -160,6 +169,8 @@ define([
                 var menuItem= $(this.el).find('*[data-id="'+this.activeItem+'"]').addClass("active");
                 this.treeView = new TreeView({model:Configurations.get(this.activeItem),visible:true});
                 menuItem.append(this.treeView.render().el);
+
+                var menuItem= $(this.el).find('a.bundleName[data-id="'+this.activeBundle+'"]').addClass("active");
                 this.importDialog=$("#importDialog");
                 $('#fakeInputFile').val("").next().click(function(){$('#inputFile').click();});
                 this.treeView.bind("delete", this.deleteBundle);

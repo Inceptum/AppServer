@@ -133,7 +133,7 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
         },
         'bundle': function(config,bundle){
             var views = [
-                new ConfigurationsSideBarView({active:config})
+                new ConfigurationsSideBarView({active:config, activeBundle:bundle})
             ];
             var c = Configurations.get(config);
             if(c){
