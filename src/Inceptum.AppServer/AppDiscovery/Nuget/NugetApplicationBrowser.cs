@@ -63,7 +63,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             }
 
             IEnumerable<IPackageFile> satellites;
-            VersionUtility.TryGetCompatibleItems(NET40, package.GetLibFiles(), out satellites);
+            VersionUtility.TryGetCompatibleItems(NET40, package.GetLibFiles().Where(f=>f.EffectivePath.EndsWith(".resources.dll",StringComparison.InvariantCultureIgnoreCase)), out satellites);
             var packageFiles = satellites.ToArray();
             return refs.Concat(packageFiles);
         }

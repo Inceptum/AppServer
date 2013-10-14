@@ -205,7 +205,7 @@ namespace Inceptum.AppServer.Hosting
                         finally
                         {
                             Logger.InfoFormat("Instance '{0}' stopped", Name);
-                            if (!m_Process.HasExited)
+                            if (m_Process!=null && !m_Process.HasExited)
                                 m_Process.WaitForExit();
                                 
                             m_Process = null;
