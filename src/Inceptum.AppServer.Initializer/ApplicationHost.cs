@@ -126,7 +126,7 @@ namespace Inceptum.AppServer.Hosting
 
         private static Assembly loadAssembly(string path)
         {
-            byte[] assemblyBytes = File.ReadAllBytes(path);
+/*            byte[] assemblyBytes = File.ReadAllBytes(path);
             var pdb = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path) + ".pdb");
             if (File.Exists(pdb))
             {
@@ -134,7 +134,8 @@ namespace Inceptum.AppServer.Hosting
                 return Assembly.Load(assemblyBytes, pdbBytes);
             }
 
-            return Assembly.Load(assemblyBytes);
+            return Assembly.Load(assemblyBytes);*/
+            return Assembly.Load(path);
         }
 
         private Assembly onAssemblyResolve(object sender, ResolveEventArgs args)
@@ -152,7 +153,6 @@ namespace Inceptum.AppServer.Hosting
                         where asm.Key.Name == new AssemblyName(args.Name).Name
                         orderby asm.Key.Version descending
                         select asm.Value.Value).FirstOrDefault();
-
 
             return assembly;
         }
