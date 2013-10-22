@@ -126,7 +126,8 @@ namespace Inceptum.AppServer.Hosting
 
         private static Assembly loadAssembly(string path)
         {
-            if (Path.GetFileName(path).Contains("Raven"))
+            return Assembly.LoadFile(path);
+           /* if (Path.GetFileName(path).Contains("Raven.Database"))
             {
                 return Assembly.LoadFile(path);
             }
@@ -138,7 +139,7 @@ namespace Inceptum.AppServer.Hosting
                 return Assembly.Load(assemblyBytes, pdbBytes);
             }
 
-            return Assembly.Load(assemblyBytes);
+            return Assembly.Load(assemblyBytes);*/
         }
 
         private Assembly onAssemblyResolve(object sender, ResolveEventArgs args)
