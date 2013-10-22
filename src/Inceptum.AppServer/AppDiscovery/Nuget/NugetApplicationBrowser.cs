@@ -213,5 +213,11 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                         break;
             }
         }
+
+
+        public FileConflictResolution ResolveFileConflict(string message)
+        {
+            return FileConflictResolution.Ignore;
+        }
     }
 }
