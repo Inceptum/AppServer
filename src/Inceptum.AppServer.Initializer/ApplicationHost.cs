@@ -126,6 +126,10 @@ namespace Inceptum.AppServer.Hosting
 
         private static Assembly loadAssembly(string path)
         {
+            if (Path.GetFileName(path).Contains("Raven"))
+            {
+                return Assembly.LoadFile(path);
+            }
             byte[] assemblyBytes = File.ReadAllBytes(path);
             var pdb = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path) + ".pdb");
             if (File.Exists(pdb))
