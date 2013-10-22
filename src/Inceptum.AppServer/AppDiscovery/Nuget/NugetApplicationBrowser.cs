@@ -58,15 +58,21 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
         private IEnumerable<IPackageFile> getAssemblies(IPackage package)
         {
             IEnumerable<IPackageFile> refs;
+            if (!VersionUtility.TryGetCompatibleItems(NET40, package.GetLibFiles().Where(f => f.EffectivePath.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase)), out refs))
+            {
+                throw new ConfigurationErrorsException(string.Format("Failed to load package {0} since it is not compartible with .Net 4.0",package.Id));
+            }
+ /*
             if (!VersionUtility.TryGetCompatibleItems(NET40, package.AssemblyReferences, out refs))
             {
                 throw new ConfigurationErrorsException(string.Format("Failed to load package {0} since it is not compartible with .Net 4.0",package.Id));
             }
-
             IEnumerable<IPackageFile> satellites;
             VersionUtility.TryGetCompatibleItems(NET40, package.GetLibFiles().Where(f=>f.EffectivePath.EndsWith(".resources.dll",StringComparison.InvariantCultureIgnoreCase)), out satellites);
             var packageFiles = satellites.ToArray();
             return refs.Concat(packageFiles);
+ */
+            return refs.ToArray();
         }
         
         public string Name
