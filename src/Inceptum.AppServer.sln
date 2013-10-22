@@ -17,8 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		VersionInfo.cs = VersionInfo.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NugetTestApp", "NugetTestApp\NugetTestApp.csproj", "{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{19CC6CB8-A928-4483-9313-FB50880D71A0}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
@@ -104,18 +102,6 @@ Global
 		{0F7D48A2-BAA8-4FCF-AA11-FFEA5891ED27}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{0F7D48A2-BAA8-4FCF-AA11-FFEA5891ED27}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{0F7D48A2-BAA8-4FCF-AA11-FFEA5891ED27}.Release|x86.ActiveCfg = Release|Any CPU
-		{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}.Debug|Itanium.ActiveCfg = Debug|Any CPU
-		{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}.Release|Itanium.ActiveCfg = Release|Any CPU
-		{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{5FC43A15-0F6C-43D9-8135-37E52CFB4D02}.Release|x86.ActiveCfg = Release|Any CPU
 		{D9E93ACD-AE23-423D-A48A-81A7AA2DDC0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D9E93ACD-AE23-423D-A48A-81A7AA2DDC0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9E93ACD-AE23-423D-A48A-81A7AA2DDC0A}.Debug|Itanium.ActiveCfg = Debug|Any CPU
