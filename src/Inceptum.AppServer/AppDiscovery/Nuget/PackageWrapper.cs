@@ -180,6 +180,17 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
         {
             get { return m_Package.AssemblyReferences; }
         }
+
+
+        public Version MinClientVersion
+        {
+            get { return m_Package.MinClientVersion; }
+        }
+
+        public ICollection<PackageReferenceSet> PackageAssemblyReferences
+        {
+            get { return m_Package.PackageAssemblyReferences; }
+        }
     }
 
   
