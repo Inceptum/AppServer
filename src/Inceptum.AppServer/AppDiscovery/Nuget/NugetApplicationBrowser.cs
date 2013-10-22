@@ -154,6 +154,8 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                     assemblies.Add(assemblyName, a.path);
                 }
             }
+
+            assemblies = assemblies.GroupBy(a => a.Key.FullName).ToDictionary(g =>g.First().Key,g=>g.First().Value );
             return new ApplicationParams(getAppType(packageAssemblies), appConfigs, nativesToLoad, assemblies);
         }
 
