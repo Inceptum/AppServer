@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -35,7 +36,9 @@ namespace Inceptum.AppServer.TestApp
 
         public void Start()
         {
+            File.WriteAllText("test.txt","ПЫЩ ПЫЩ ПЫЩ!!!");
             m_Logger.InfoFormat("Test App");
+            m_Logger.InfoFormat("CurrentDirectory: {0}",System.IO.Directory.GetCurrentDirectory());
             m_Logger.InfoFormat("Value from config: '{0}'", m_Config.Value);
             m_Logger.InfoFormat("Value from app.config: '{0}'", ConfigurationManager.AppSettings["appConfigSetting"]);
             m_JObject = JObject.Parse("{}");

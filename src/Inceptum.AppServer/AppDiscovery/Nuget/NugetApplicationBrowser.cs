@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -63,7 +64,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
             }
 
             IEnumerable<IPackageFile> satellites;
-            VersionUtility.TryGetCompatibleItems(NET40, package.GetLibFiles(), out satellites);
+            VersionUtility.TryGetCompatibleItems(NET40, package.GetLibFiles().Where(f=>f.EffectivePath.EndsWith(".resources.dll",StringComparison.InvariantCultureIgnoreCase)), out satellites);
             var packageFiles = satellites.ToArray();
             return refs.Concat(packageFiles);
         }
@@ -143,7 +144,14 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                 }
                 else
                 {
-                    assemblies.Add(new AssemblyName(assembly.Name.Name),a.path);
+/*
+                    if(a.path.EndsWith(".resources.dll",StringComparison.InvariantCultureIgnoreCase))
+                        assemblies.Add(new AssemblyName(assembly.FullName), a.path);
+                    else*/
+                    var assemblyName = new AssemblyName(assembly.Name.Name);
+                    if (a.path.EndsWith(".resources.dll", StringComparison.InvariantCultureIgnoreCase))
+                        assemblyName.CultureInfo = new CultureInfo(assembly.Name.Culture);
+                    assemblies.Add(assemblyName, a.path);
                 }
             }
             return new ApplicationParams(getAppType(packageAssemblies), appConfigs, nativesToLoad, assemblies);
