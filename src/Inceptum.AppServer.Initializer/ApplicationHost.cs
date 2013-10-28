@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.ServiceModel;
+using System.Text;
 using System.Threading;
 using Castle.Facilities.Logging;
 using Castle.MicroKernel.Registration;
@@ -279,6 +280,7 @@ namespace Inceptum.AppServer.Hosting
         {
             Target logFile = new AsyncTargetWrapper(new FileTarget
             {
+                Encoding = Encoding.UTF8,
                 FileName = Path.Combine(m_Context.BaseDirectory, "logs", m_InstanceName, "${shortdate}.log"),
                 Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
             });
