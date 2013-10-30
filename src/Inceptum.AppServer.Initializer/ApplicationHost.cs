@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.ServiceModel;
+using System.ServiceModel.Description;
 using System.Text;
 using System.Threading;
 using Castle.Facilities.Logging;
@@ -60,6 +61,13 @@ namespace Inceptum.AppServer.Hosting
         {
 
             m_ServiceHost = new ServiceHost(this);
+            var debug = m_ServiceHost.Description.Behaviors.Find<ServiceDebugBehavior>();
+
+            // if not found - add behavior with setting turned on 
+            if (debug == null)
+                m_ServiceHost.Description.Behaviors.Add(new ServiceDebugBehavior { IncludeExceptionDetailInFaults = true });
+            else
+                debug.IncludeExceptionDetailInFaults = true;
             var address = new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/" + m_InstanceName).ToString();
             //TODO: need to do it in better way. String based type resolving is a bug source
             m_ServiceHost.AddServiceEndpoint(typeof(IApplicationHost), new NetNamedPipeBinding(), address);

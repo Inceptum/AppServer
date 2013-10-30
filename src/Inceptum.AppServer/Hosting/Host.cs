@@ -8,6 +8,7 @@ using System.Reactive.Subjects;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.ServiceModel;
+using System.ServiceModel.Description;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Security;
@@ -90,7 +91,7 @@ namespace Inceptum.AppServer.Hosting
                     m_ConfigurationProviderServiceHost.Close();
                     m_ConfigurationProviderServiceHost = null;
                 }
-                var serviceHost = new ServiceHost(m_ConfigurationProvider, new[] { new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id) });
+                var serviceHost = createServiceHost(m_ConfigurationProvider);
                 serviceHost.AddServiceEndpoint(typeof(IConfigurationProvider), new NetNamedPipeBinding{ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue}, "ConfigurationProvider");
 
                 serviceHost.Open();
@@ -102,7 +103,20 @@ namespace Inceptum.AppServer.Hosting
                 m_ConfigurationProviderServiceHost = serviceHost;
             }
         }
-    
+
+        private ServiceHost createServiceHost(object serviceInstance)
+        {
+            var serviceHost = new ServiceHost(serviceInstance, new[] {new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id)});
+            var debug = serviceHost.Description.Behaviors.Find<ServiceDebugBehavior>();
+
+            // if not found - add behavior with setting turned on 
+            if (debug == null)
+                serviceHost.Description.Behaviors.Add(new ServiceDebugBehavior { IncludeExceptionDetailInFaults = true });
+            else
+                debug.IncludeExceptionDetailInFaults = true;
+            return serviceHost;
+        }
+
         private void resetLogCacheServiceHost()
         {
             lock (m_ServiceHostLock)
@@ -112,7 +126,7 @@ namespace Inceptum.AppServer.Hosting
                     m_LogCacheServiceHost.Close();
                     m_LogCacheServiceHost = null;
                 }
-                var serviceHost = new ServiceHost(m_LogCache, new[] { new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id) });
+                var serviceHost = createServiceHost(m_LogCache);
                 serviceHost.AddServiceEndpoint(typeof(ILogCache), new NetNamedPipeBinding { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue }, "LogCache");
                 serviceHost.Faulted += (o, args) =>
                 {
