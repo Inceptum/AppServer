@@ -151,9 +151,6 @@ namespace Inceptum.AppServer.Configuration
             if (token == null)
                 throw new ConfigurationErrorsException(string.Format("property path {0} in bundle '{1}' not found",
                                                                      jsonPath, bundleName));
-
-            /*   if(typeof(T)==typeof(Dictionary<string, object>) ||typeof(T)==typeof(IDictionary<string, object>)  )
-                   return (T)(object)deserializeToDictionary(token.ToString());*/
             return JsonConvert.DeserializeObject<T>(token.ToString());
         }
 
