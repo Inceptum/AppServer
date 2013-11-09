@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 using Castle.Core;
+using Castle.DynamicProxy;
 using Castle.MicroKernel;
 using Castle.MicroKernel.ModelBuilder.Descriptors;
 using Castle.MicroKernel.Registration;
@@ -70,6 +72,28 @@ namespace Inceptum.AppServer.Configuration
                     kernel.Resolve<IConfigurationFacility>().DeserializeFromBundle<TImpl>(null,bundleName, jsonPath, parameters));
         }
 
+
+        public static ComponentRegistration<T> FromLiveConfiguration<T>(this ComponentRegistration<T> r, string bundleName, string jsonPath, params string[] parameters) where T : class
+        {
+            return FromLiveConfiguration<T, T>(r, bundleName, jsonPath, parameters);
+        }
+
+
+
+       public static ComponentRegistration<TSvc> FromLiveConfiguration<TSvc,TImpl>(this ComponentRegistration<TSvc> r, string bundleName, string jsonPath, params string[] parameters)
+            where TImpl: class, TSvc where TSvc : class
+       {
+           if(typeof(TImpl).GetProperties().Any(p=>!p.GetGetMethod().IsVirtual))
+               throw new InvalidOperationException(string.Format("All property getters of type {0} should be virtual", typeof(TImpl)));
+
+           return r.UsingFactoryMethod(
+               kernel =>
+                   new ProxyGenerator().CreateClassProxy<TImpl>(
+                           new LiveConfigurationInterceptor<TSvc>(
+                               () => kernel.Resolve<IConfigurationFacility>().DeserializeFromBundle<TImpl>(null, bundleName, jsonPath, parameters))));
+
+       }
+
         public static ConfigurationFacility ConfigureTransports(this ConfigurationFacility facility, string bundleName, params string[] parameters)
         {
             return ConfigureTransports(facility, null, bundleName, parameters);
@@ -102,6 +126,24 @@ namespace Inceptum.AppServer.Configuration
                     kernel.Resolver.AddSubResolver(connectionStringResolver);
                 });
             return facility;
+        }
+    }
+
+
+    public class LiveConfigurationInterceptor<TService> : IInterceptor
+    {
+        private Func<TService> m_ConfigGetter;
+
+        public LiveConfigurationInterceptor(Func<TService> configGetter)
+        {
+            if (configGetter == null) throw new ArgumentNullException("configGetter");
+            m_ConfigGetter = configGetter;
+        }
+
+        public void Intercept(IInvocation invocation)
+        {
+            var config = m_ConfigGetter();
+            invocation.ReturnValue = invocation.Method.Invoke(config, invocation.Arguments);
         }
     }
 }
