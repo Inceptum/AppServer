@@ -1,1 +1,1 @@
-..\.nuget\nuget pack Inceptum.AppServer.TestApp.csproj -Version 1.0.0.21 -Verbosity detailed -Properties Configuration=Debug;Platform=AnyCPU
+..\.nuget\nuget pack Inceptum.AppServer.TestApp.csproj -Version 1.0.0.22 -Verbosity detailed -Properties Configuration=Debug;Platform=AnyCPU

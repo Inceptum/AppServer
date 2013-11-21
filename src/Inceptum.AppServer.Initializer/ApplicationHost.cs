@@ -10,6 +10,7 @@ using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.Text;
 using System.Threading;
+using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
@@ -90,7 +91,7 @@ namespace Inceptum.AppServer.Hosting
 
             m_Environment = instanceParams.Environment;
             m_Context = instanceParams.AppServerContext;
-
+            
  
             IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
 
@@ -109,7 +110,7 @@ namespace Inceptum.AppServer.Hosting
             var logCache = getLogCache();
 
 
-            var instanceCommands = initContainer(Type.GetType(instanceParams.ApplicationParams.AppType));
+            var instanceCommands = initContainer(Type.GetType(instanceParams.ApplicationParams.AppType), instanceParams.LogLevel);
             
             m_Instance.RegisterApplicationHost(address, instanceCommands);
 
@@ -194,7 +195,7 @@ namespace Inceptum.AppServer.Hosting
 
         #region IApplicationHost Members
 
-        private InstanceCommand[] initContainer(Type appType)
+        private InstanceCommand[] initContainer(Type appType, string logLevel)
         {
             if (m_Container != null)
                 throw new InvalidOperationException("Host is already started");
@@ -228,7 +229,7 @@ namespace Inceptum.AppServer.Hosting
                 container
                     .AddFacility<LoggingFacility>(f => f.LogUsing(new GenericsAwareNLoggerFactory(
                         nlogConfigPath,
-                        updateLoggingConfig)))
+                        config => updateLoggingConfig(config,logLevel))))
                     .Register(
                         Component.For<AppServerContext>().Instance(m_Context),
                         Component.For<IConfigurationProvider>().Named("ConfigurationProvider")
@@ -284,8 +285,10 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-        private void updateLoggingConfig(LoggingConfiguration config)
+        private void updateLoggingConfig(LoggingConfiguration config, string logLevel)
         {
+            var minLogLevel = mapLogLevel(logLevel);
+
             Target logFile = new AsyncTargetWrapper(new FileTarget
             {
                 Encoding = Encoding.UTF8,
@@ -293,7 +296,7 @@ namespace Inceptum.AppServer.Hosting
                 Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
             });
             config.AddTarget("logFile", logFile);
-            var rule = new LoggingRule("*", LogLevel.Debug, logFile);
+            var rule = new LoggingRule("*", minLogLevel, logFile);
             config.LoggingRules.Add(rule);
             
 
@@ -315,7 +318,7 @@ namespace Inceptum.AppServer.Hosting
 
             Target console = new AsyncTargetWrapper(coloredConsoleTarget);
             config.AddTarget("console", console);
-            rule = new LoggingRule("*", LogLevel.Debug, console);
+            rule = new LoggingRule("*", minLogLevel, console);
             config.LoggingRules.Add(rule);
             
             Target managementConsole = new ManagementConsoleTarget(m_LogCache, m_InstanceName)
@@ -324,12 +327,22 @@ namespace Inceptum.AppServer.Hosting
             };
             
             config.AddTarget("managementConsole", managementConsole);
-            rule = new LoggingRule("*", LogLevel.Debug, managementConsole);
+            rule = new LoggingRule("*", minLogLevel, managementConsole);
             config.LoggingRules.Add(rule);
 
             GlobalDiagnosticsContext.Set("AppServer.Instance", m_InstanceName);
         }
 
+        LogLevel mapLogLevel(string logLevel)
+        {
+            try
+            {
+                return LogLevel.FromString(logLevel);
+            }catch
+            {
+                return LogLevel.Debug;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void Stop()
