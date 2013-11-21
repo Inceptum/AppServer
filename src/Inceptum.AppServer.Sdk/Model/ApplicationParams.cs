@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Castle.Core.Logging;
 
 namespace Inceptum.AppServer.Model
 {
@@ -11,8 +12,17 @@ namespace Inceptum.AppServer.Model
     [DataContract]
     public class InstanceParams
     {
+        private string m_LogLevel = "Debug";
+
         [DataMember]
         public ApplicationParams ApplicationParams { get; set; }
+
+        [DataMember]
+        public string LogLevel
+        {
+            get { return m_LogLevel; }
+            set { m_LogLevel = value; }
+        }
 
         [DataMember]
 

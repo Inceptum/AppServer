@@ -1,4 +1,5 @@
 ﻿using System;
+using Castle.Core.Logging;
 using Inceptum.AppServer.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -7,6 +8,7 @@ namespace Inceptum.AppServer.Model
 {
     public class ApplicationInstanceInfo
     {
+        private LoggerLevel m_LogLevel=LoggerLevel.Debug;
         public string Name { get; set; }
         public string Id { get; set; }
         public string ApplicationId { get; set; }
@@ -29,5 +31,12 @@ namespace Inceptum.AppServer.Model
 
         public string User { get; set; }
         public string Password { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public LoggerLevel LogLevel
+        {
+            get { return m_LogLevel; }
+            set { m_LogLevel = value; }
+        }
     }
 }

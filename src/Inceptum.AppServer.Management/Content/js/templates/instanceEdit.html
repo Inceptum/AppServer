@@ -50,8 +50,55 @@
             <input type="password" id="Password" name="Password" placeholder="Password" value="<%=model.Password%>">
         </div>
     </div>
+    
+    
+    
+    <div class="control-group">
+        <label class="control-label" for="User">Log level</label>
+        <div class="controls" >
+            <select name="LogLevel">
+                <% if (model.LogLevel=="Debug") { %>
+                <option selected='selected'>Debug</option>
+                <% } 
+                else{ %>
+                <option >Debug</option>
+                <% } %>
+                <% if (model.LogLevel=="Info") { %>
+                <option selected='selected'>Info</option>
+                <% } 
+                else{ %>
+                <option >Info</option>
+                <% } %>
+                <% if (model.LogLevel=="Warn") { %>
+                <option selected='selected'>Warn</option>
+                <% } 
+                else{ %>
+                <option >Warn</option>
+                <% } %>
+                <% if (model.LogLevel=="Error") { %>
+                <option selected='selected'>Error</option>
+                <% } 
+                else{ %>
+                <option >Error</option>
+                <% } %>
+                <% if (model.LogLevel=="Fatal") { %>
+                <option selected='selected'>Fatal</option>
+                <% } 
+                else{ %>
+                <option >Fatal</option>
+                <% } %>
+                <% if (model.LogLevel=="Off") { %>
+                <option selected='selected'>Off</option>
+                <% } 
+                else{ %>
+                <option >Off</option>
+                <% } %>
 
-<!--    <div class="control-group">
+            </select>
+        </div>
+    </div>
+
+    <!--    <div class="control-group">
         <label class="control-label" for="inputAutostart">Start on server startup </label>
         <div class="controls">
             <input type="checkbox" id="inputAutostart" placeholder="Autostart">

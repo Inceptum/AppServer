@@ -42,6 +42,7 @@ namespace Inceptum.AppServer.Hosting
          private ChannelFactory<IApplicationHost> m_AppHostFactory;
          private string m_User;
          private string m_Password;
+         private LoggerLevel m_LogLevel;
 
          public string Name { get; set; }
         public string Environment { get; set; }
@@ -118,9 +119,10 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-         public void UpdateConfig(Version actualVersion, string environment, string user, string password)
+         public void UpdateConfig(Version actualVersion, string environment, string user, string password, LoggerLevel logLevel)
         {
-            m_ActualVersion = actualVersion;
+             m_LogLevel = logLevel;
+             m_ActualVersion = actualVersion;
             m_Password = password;
             m_User = user;
             Environment = environment;
@@ -390,7 +392,8 @@ namespace Inceptum.AppServer.Hosting
                                             assembliesToLoad
                                         ),
                 AppServerContext = m_Context,
-                Environment = Environment
+                Environment = Environment,
+                LogLevel = m_LogLevel.ToString() 
             }; 
          }
 

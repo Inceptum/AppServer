@@ -175,6 +175,8 @@ namespace Inceptum.AppServer.Hosting
                                                Commands = instance.Commands,
                                                User = cfg.User,
                                                Password = cfg.Password,
+                                               LogLevel = cfg.LogLevel,
+
                                            }).ToArray();
                     }
             }
@@ -311,7 +313,9 @@ namespace Inceptum.AppServer.Hosting
                     Environment =  config.Environment,
                     AutoStart = config.AutoStart,
                     User = config.User,
-                    Password = Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(config.Password ?? ""), new byte[0], DataProtectionScope.LocalMachine)) 
+                    Password = Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(config.Password ?? ""), new byte[0], DataProtectionScope.LocalMachine)) ,
+                    LogLevel = config.LogLevel
+
                 };
 
                 instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(c => c.Name != config.Id).Concat(new[] { cfg }).ToArray(), Formatting.Indented);
@@ -434,7 +438,7 @@ namespace Inceptum.AppServer.Hosting
                 var version = config.Version ?? application.Versions.Select(v => v.Version).OrderByDescending(v => v).FirstOrDefault();
 
                 
-                instance.UpdateConfig(version,config.Environment,config.User,config.Password);
+                instance.UpdateConfig(version,config.Environment,config.User,config.Password,config.LogLevel);
 
 
                 instance.Start(() =>

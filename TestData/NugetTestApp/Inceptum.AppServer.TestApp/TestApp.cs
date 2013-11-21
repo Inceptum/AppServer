@@ -58,6 +58,10 @@ namespace Inceptum.AppServer.TestApp
                 Console.ReadLine();
             }
             m_Logger.InfoFormat("log record");
+            m_Logger.DebugFormat("Debug");
+            m_Logger.Warn("Warning");
+            m_Logger.Error("Error");
+
         }
 
         public string DoSomething(DateTime dateValue, string stringValue, int intValue, decimal decimalValue, bool boolValue)
