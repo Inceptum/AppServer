@@ -41,6 +41,7 @@ namespace Inceptum.AppServer.TestApp
             m_Logger.InfoFormat("CurrentDirectory: {0}",System.IO.Directory.GetCurrentDirectory());
             m_Logger.InfoFormat("Value from config: '{0}'", m_Config.Value);
             m_Logger.InfoFormat("Value from app.config: '{0}'", ConfigurationManager.AppSettings["appConfigSetting"]);
+            m_Logger.InfoFormat("Application assembly version: '{0}'", typeof(TestApp).Assembly.GetName().Version);
             m_JObject = JObject.Parse("{}");
             bool fail;
             if (bool.TryParse(ConfigurationManager.AppSettings["fail"], out fail) && fail)

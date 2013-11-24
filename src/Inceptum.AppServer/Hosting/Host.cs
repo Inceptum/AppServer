@@ -431,7 +431,7 @@ namespace Inceptum.AppServer.Hosting
                 var config = m_InstancesConfiguration.FirstOrDefault(i => i.Name == name);
                 if (config == null)
                     throw new InvalidOperationException(string.Format("Configuration of instance {0} not found", name));
-                var application = m_ApplicationRepository.Applications.FirstOrDefault(a => a.Name == config.ApplicationId);
+                var application = m_ApplicationRepository.Applications.FirstOrDefault(a => a.Name == config.ApplicationId && a.Vendor==config.ApplicationVendor);
                 if (application == null)
                     throw new InvalidOperationException(string.Format("Application {0} not found", config.ApplicationId));
 

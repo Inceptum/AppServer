@@ -4,8 +4,8 @@
     <id>TestApp</id>
     <version>$version$</version>
     <title>TestApp</title>
-    <authors>Unknown</authors>
-    <owners>Unknown2</owners>
+    <authors>Test</authors>
+    <owners>Test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>TestApp</description>
     <releaseNotes></releaseNotes>
