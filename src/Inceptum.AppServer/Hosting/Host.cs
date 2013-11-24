@@ -21,6 +21,7 @@ using Inceptum.AppServer.Notification;
 using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.Windsor;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Inceptum.AppServer.Hosting
 {
@@ -56,7 +57,26 @@ namespace Inceptum.AppServer.Hosting
             m_Listeners = listeners;
             m_InstanceFactory = instanceFactory;
             Logger = logger;
-            Name = name??Environment.MachineName;
+            Name = name;
+            if (Name == null)
+            {
+                Name = Environment.MachineName;
+                try
+                {
+                    var bundleString = configurationProvider.GetBundle("AppServer", "server.host", "{environment}", "{machineName}");
+                    dynamic bundle = JObject.Parse(bundleString);
+                    if (bundle.name != null)
+                        Name = bundle.name;
+                    else
+                        Logger.WarnFormat("Failed to get server name from configuration , using default:{0}", Name);
+                }
+                catch (Exception e)
+                {
+                    Logger.WarnFormat(e, "Failed to get server name from configuration , using default:{0}",Name);
+                }
+            }
+
+
             m_Context = new AppServerContext
             {
                 Name = Name,
