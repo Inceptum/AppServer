@@ -78,8 +78,8 @@ namespace Inceptum.AppServer.Bootstrap
                     //Management
                     .Register(                        
                        // Component.For<IDependencyResolver>().Instance(new WindsorToSignalRAdapter(container.Kernel)),
-                        Component.For<SignalRhost>().DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
-                        Component.For<ManagementConsole>().DependsOn(new { container }).DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
+                        Component.For<SignalRhost>(),//.DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
+                        Component.For<ManagementConsole>().DependsOn(new { container }),//.DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
                         Component.For<IHostNotificationListener>().ImplementedBy<UiNotifier>()
                         )
                     //App hostoing

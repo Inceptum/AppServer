@@ -3,8 +3,10 @@ using Castle.Core;
 using Castle.Core.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
+using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Management.OpenRasta;
 using Inceptum.AppServer.Management.Handlers;
+using Newtonsoft.Json.Linq;
 using OpenRasta.Configuration;
 using OpenRasta.DI;
 using OpenRasta.Pipeline;
@@ -39,7 +41,39 @@ namespace Inceptum.AppServer.Management
         private readonly ILogger m_Logger;
         private readonly IWindsorContainer m_Container;
         private readonly string m_Uri = "http://+:9222/";
-        private readonly bool m_Enabled;
+        private readonly bool m_Enabled=true;
+
+        public ManagementConsole(IWindsorContainer container, ILogger logger,IManageableConfigurationProvider configurationProvider )
+        {
+            m_Container = container;
+            m_Logger = logger;
+
+            try
+            {
+                var bundleString = configurationProvider.GetBundle("AppServer", "server.host", "{environment}", "{machineName}");
+                dynamic bundle = JObject.Parse(bundleString).SelectToken("ManagementConsole");
+                m_Enabled = bundle.enabled;
+            }
+            catch (Exception e)
+            {
+                m_Logger.WarnFormat(e,"Failed to get management console enabled value from configuration , using default: true");
+            }
+            
+            int port=9223;
+            try
+            {
+                var bundleString = configurationProvider.GetBundle("AppServer", "server.host", "{environment}", "{machineName}");
+                dynamic bundle = JObject.Parse(bundleString).SelectToken("ManagementConsole");
+                port = bundle.port;
+            }
+            catch (Exception e)
+            {
+                m_Logger.WarnFormat(e,"Failed to get port from configuration , using default 9223");
+            }
+            m_Uri = string.Format("http://*:{0}/", port);
+            
+
+        }
 
         public ManagementConsole(IWindsorContainer container, ILogger logger, int port=9222, bool enabled=true)
         {

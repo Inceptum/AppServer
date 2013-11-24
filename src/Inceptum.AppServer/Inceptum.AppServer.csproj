@@ -222,9 +222,6 @@
     <None Include="Configuration\AppServer\server.host">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Configuration\AppServer\server.transports">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Configuration\TestApp\test.uat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
