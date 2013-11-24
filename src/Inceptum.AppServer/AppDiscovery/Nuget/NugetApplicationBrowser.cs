@@ -7,8 +7,10 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
+using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Model;
 using Mono.Cecil;
+using Newtonsoft.Json.Linq;
 using NuGet;
 using Castle.Core.Logging;
 using ILogger = Castle.Core.Logging.ILogger;
@@ -21,6 +23,19 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
         internal static readonly FrameworkName NET40= new FrameworkName(".NETFramework,Version=v4.5");
         private readonly string m_ApplicationRepository;
         private readonly string[] m_DependenciesRepositories;
+
+
+        public NugetApplicationBrowser(ILogger logger, IManageableConfigurationProvider configurationProvider)
+        {
+            Logger = logger;
+
+            var bundleString = configurationProvider.GetBundle("AppServer", "server.host", "{environment}", "{machineName}");
+            dynamic bundle = JObject.Parse(bundleString).SelectToken("nuget");
+            var applicationRepository = (string)bundle.applicationRepository;
+            var dependenciesRepositories =(JArray) bundle.dependenciesRepositories;
+            m_DependenciesRepositories = dependenciesRepositories.Select(t=>t.ToString()).Select(getRepositoryPath).ToArray();
+            m_ApplicationRepository = getRepositoryPath(applicationRepository);
+        }
 
         public NugetApplicationBrowser(ILogger logger, string applicationRepository, params string[] dependenciesRepositories)
         {
