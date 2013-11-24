@@ -1,7 +1,10 @@
 using System;
 using Castle.Core;
+using Castle.Core.Logging;
+using Inceptum.AppServer.Configuration;
 using Microsoft.AspNet.SignalR;
 using Microsoft.Owin.Hosting;
+using Newtonsoft.Json.Linq;
 using Owin;
 
 namespace Inceptum.AppServer.Logging
@@ -23,7 +26,26 @@ namespace Inceptum.AppServer.Logging
     {
         private readonly string m_Url;
         private IDisposable m_Server;
-        
+        private ILogger m_Logger;
+
+
+        public SignalRhost(ILogger logger,IManageableConfigurationProvider configurationProvider)
+        {
+            m_Logger = logger;
+            int port = 9223;
+            try
+            {
+                var bundleString = configurationProvider.GetBundle("AppServer", "server.host", "{environment}", "{machineName}");
+                dynamic bundle = JObject.Parse(bundleString).SelectToken("ManagementConsole");
+                port = bundle.port;
+            }
+            catch (Exception e)
+            {
+                m_Logger.WarnFormat(e, "Failed to get port from configuration , using default 9223");
+            }
+            m_Url = string.Format("http://*:{0}/sr/", port);
+        }
+
         public SignalRhost(int port)
         {
             m_Url= string.Format("http://*:{0}/sr/", port);
