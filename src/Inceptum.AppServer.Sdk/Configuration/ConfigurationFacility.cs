@@ -198,7 +198,7 @@ namespace Inceptum.AppServer.Configuration
 
             m_Params = vals.ToDictionary(o => o.key, o => (o.value??"").ToString());
 
-            string r = string.Format("^{0}$", string.Join("|", m_Params.Keys.Select(x => "\\{" + x + "\\}")));
+            string r = string.Format("{0}", string.Join("|", m_Params.Keys.Select(x => "\\{" + x + "\\}")));
             m_ParamRegex = new Regex(r, RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnoreCase);
             return this;
         }

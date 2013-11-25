@@ -25,7 +25,7 @@ namespace Inceptum.AppServer.Hosting
         //TODO[MT]: methods (replaceParams, createRegex and extractParamValues) should be moved to some internal "Utils" namespace (same logic is used inside ConfigurationFacility)
         private static Regex createRegex(IDictionary<string, string> paramsDictionary)
         {
-            var r = String.Format("^{0}$", String.Join("|", paramsDictionary.Keys.Select(x => "\\{" + x + "\\}")));
+            var r = String.Format("{0}", String.Join("|", paramsDictionary.Keys.Select(x => "\\{" + x + "\\}")));
             return new Regex(r, RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnoreCase);
         }
 
