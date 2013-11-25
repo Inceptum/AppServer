@@ -35,7 +35,8 @@ namespace Inceptum.AppServer.Hosting
         private readonly IApplicationInstanceFactory m_InstanceFactory;
         private readonly AppServerContext m_Context;
         private readonly IEnumerable<IHostNotificationListener> m_Listeners;
-        private readonly IManageableConfigurationProvider m_ConfigurationProvider;
+        private readonly IManageableConfigurationProvider m_ServerConfigurationProvider;
+        private readonly IConfigurationProvider m_ApplicationConfigurationProvider;
         private readonly object m_SyncRoot = new object();
         private readonly ApplicationRepository m_ApplicationRepository;
         private ServiceHost m_ConfigurationProviderServiceHost;
@@ -43,27 +44,28 @@ namespace Inceptum.AppServer.Hosting
         private readonly object m_ServiceHostLock=new object();
         private readonly JobObject m_JobObject;
         private readonly ILogCache m_LogCache;
-        private PeriodicalBackgroundWorker m_InstanceChecker;
+        private readonly PeriodicalBackgroundWorker m_InstanceChecker;
         private bool m_IsStopped=true;
 
-        public Host(ILogCache logCache,IManageableConfigurationProvider configurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepository applicationRepository, ILogger logger = null, string name = null)
+        public Host(ILogCache logCache, IManageableConfigurationProvider serverConfigurationProvider, IConfigurationProvider applicationConfigurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepository applicationRepository, ILogger logger = null, string name = null)
         {
             m_LogCache = logCache;
             m_JobObject = new JobObject();
  
 
             m_ApplicationRepository = applicationRepository;
-            m_ConfigurationProvider = configurationProvider;
+            m_ServerConfigurationProvider = serverConfigurationProvider;
+            m_ApplicationConfigurationProvider = applicationConfigurationProvider;
             m_Listeners = listeners;
             m_InstanceFactory = instanceFactory;
-            Logger = logger;
+            Logger = logger ?? NullLogger.Instance;
             Name = name;
             if (Name == null)
             {
                 Name = Environment.MachineName;
                 try
                 {
-                    var bundleString = configurationProvider.GetBundle("AppServer", "server.host", "{environment}", "{machineName}");
+                    var bundleString = serverConfigurationProvider.GetBundle("AppServer", "server.host", "{environment}", "{machineName}");
                     dynamic bundle = JObject.Parse(bundleString);
                     if (bundle.name != null)
                         Name = bundle.name;
@@ -111,7 +113,7 @@ namespace Inceptum.AppServer.Hosting
                     m_ConfigurationProviderServiceHost.Close();
                     m_ConfigurationProviderServiceHost = null;
                 }
-                var serviceHost = createServiceHost(m_ConfigurationProvider);
+                var serviceHost = createServiceHost(m_ApplicationConfigurationProvider);
                 serviceHost.AddServiceEndpoint(typeof(IConfigurationProvider), new NetNamedPipeBinding{ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue}, "ConfigurationProvider");
 
                 serviceHost.Open();
@@ -235,7 +237,7 @@ namespace Inceptum.AppServer.Hosting
         {
             var instance = m_InstanceFactory.Create(config.Name,  m_Context);
             m_Instances.Add(instance);
-            instance.Subscribe(status => notefyInstancesChanged(instance.Name + ":" + instance.Status));
+            instance.Subscribe(status => notifyInstancesChanged(instance.Name + ":" + instance.Status));
             return instance;
         }
 
@@ -256,7 +258,7 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
-        private void notefyInstancesChanged(string comment=null)
+        private void notifyInstancesChanged(string comment=null)
         {
             foreach (var listener in m_Listeners)
             {
@@ -306,7 +308,7 @@ namespace Inceptum.AppServer.Hosting
                 };
                 instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Concat(new[] { cfg }).ToArray(), Formatting.Indented);
             }
-            m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
+            m_ServerConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
             updateInstances();
         }
         
@@ -342,7 +344,7 @@ namespace Inceptum.AppServer.Hosting
                 m_Instances.First(i => i.Name == config.Id).Rename(cfg.Name);
             }
 
-            m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
+            m_ServerConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
             updateInstances();
         }
 
@@ -364,7 +366,7 @@ namespace Inceptum.AppServer.Hosting
                 }
                 //TODO: cleanup instance folder.
                 var instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(i => i.Name != name).ToArray(), Formatting.Indented);
-                m_ConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
+                m_ServerConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
                 updateInstances();
                 instance.Dispose();
             }
@@ -477,7 +479,7 @@ namespace Inceptum.AppServer.Hosting
 
         private  void updateInstances()
         {
-            var bundle = m_ConfigurationProvider.GetBundle("AppServer", "instances");
+            var bundle = m_ServerConfigurationProvider.GetBundle("AppServer", "instances");
             var configs = JsonConvert.DeserializeObject<InstanceConfig[]>(bundle).GroupBy(i=>i.Name).Select(g=>g.First());
 
             lock (m_SyncRoot)
@@ -487,7 +489,7 @@ namespace Inceptum.AppServer.Hosting
                 {
                     createInstance(config);
                 }
-                notefyInstancesChanged();
+                notifyInstancesChanged();
             }
         }
 

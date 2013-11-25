@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.ServiceModel;
 using Castle.Core.Logging;
 
 namespace Inceptum.AppServer.Configuration.Providers
 {
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class CachingRemoteConfigurationProvider : IConfigurationProvider
     {
         private const string CONFIG_CACHE_PATH = "ConfigsCache";
