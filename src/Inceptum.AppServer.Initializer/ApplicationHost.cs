@@ -106,7 +106,7 @@ namespace Inceptum.AppServer.Hosting
                 }
             }
             AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
-            var congigurationProvider = getCongigurationProvider();
+            var configurationProvider = getConfigurationProvider();
             var logCache = getLogCache();
 
 
@@ -118,8 +118,8 @@ namespace Inceptum.AppServer.Hosting
             if (m_Container == null)
                 throw new InvalidOperationException("Host is not started");
             m_Container.Dispose();
-            if(congigurationProvider!=null)
-                congigurationProvider.Close();
+            if(configurationProvider!=null)
+                configurationProvider.Close();
             if(logCache!=null)
                 logCache.Close();
             m_Container = null;
@@ -173,7 +173,7 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
-        private   ChannelFactory<IConfigurationProvider> getCongigurationProvider()
+        private   ChannelFactory<IConfigurationProvider> getConfigurationProvider()
         {
             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/ConfigurationProvider";
             var factory = new ChannelFactory<IConfigurationProvider>(new NetNamedPipeBinding(),
