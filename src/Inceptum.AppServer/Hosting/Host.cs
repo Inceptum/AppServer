@@ -8,6 +8,7 @@ using System.Reactive.Subjects;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.Text;
 using System.Threading.Tasks;
@@ -60,6 +61,8 @@ namespace Inceptum.AppServer.Hosting
             m_InstanceFactory = instanceFactory;
             Logger = logger ?? NullLogger.Instance;
             Name = name;
+ 
+
             if (Name == null)
             {
                 Name = Environment.MachineName;
@@ -114,7 +117,9 @@ namespace Inceptum.AppServer.Hosting
                     m_ConfigurationProviderServiceHost = null;
                 }
                 var serviceHost = createServiceHost(m_ApplicationConfigurationProvider);
-                serviceHost.AddServiceEndpoint(typeof(IConfigurationProvider), new NetNamedPipeBinding{ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue}, "ConfigurationProvider");
+
+
+                serviceHost.AddServiceEndpoint(typeof(IConfigurationProvider), WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), "ConfigurationProvider");
 
                 serviceHost.Open();
                 serviceHost.Faulted += (o, args) =>
@@ -130,6 +135,7 @@ namespace Inceptum.AppServer.Hosting
         {
             var serviceHost = new ServiceHost(serviceInstance, new[] {new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id)});
             var debug = serviceHost.Description.Behaviors.Find<ServiceDebugBehavior>();
+            
 
             // if not found - add behavior with setting turned on 
             if (debug == null)
@@ -149,7 +155,7 @@ namespace Inceptum.AppServer.Hosting
                     m_LogCacheServiceHost = null;
                 }
                 var serviceHost = createServiceHost(m_LogCache);
-                serviceHost.AddServiceEndpoint(typeof(ILogCache), new NetNamedPipeBinding { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue }, "LogCache");
+                serviceHost.AddServiceEndpoint(typeof(ILogCache), WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), "LogCache");
                 serviceHost.Faulted += (o, args) =>
                 {
                     Logger.DebugFormat("Creating LogCache service host.");
