@@ -161,6 +161,7 @@
     <Reference Include="System.Reactive.PlatformServices">
       <HintPath>..\packages\Rx-PlatformServices.2.1.30214.0\lib\Net40\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceProcess" />
@@ -178,6 +179,9 @@
     </Compile>
     <Compile Include="..\VersionInfo.cs">
       <Link>Properties\VersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\WcfHelper.cs">
+      <Link>Utils\WcfHelper.cs</Link>
     </Compile>
     <Compile Include="AppDiscovery\Nuget\NugetApplicationBrowser.cs" />
     <Compile Include="AppDiscovery\Nuget\PackageWrapper.cs" />

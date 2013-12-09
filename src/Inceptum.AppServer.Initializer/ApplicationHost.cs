@@ -18,6 +18,7 @@ using Castle.Windsor.Installer;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Initializer;
 using Inceptum.AppServer.Logging;
+using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.Windsor;
 using NLog;
 using NLog.Conditions;
@@ -71,14 +72,14 @@ namespace Inceptum.AppServer.Hosting
                 debug.IncludeExceptionDetailInFaults = true;
             var address = new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/" + m_InstanceName).ToString();
             //TODO: need to do it in better way. String based type resolving is a bug source
-            m_ServiceHost.AddServiceEndpoint(typeof(IApplicationHost), new NetNamedPipeBinding(), address);
+            m_ServiceHost.AddServiceEndpoint(typeof(IApplicationHost), WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), address);
             //m_ConfigurationProviderServiceHost.Faulted += new EventHandler(this.IpcHost_Faulted);
             m_ServiceHost.Open();
 
 
 
             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/instances/" + m_InstanceName;
-            var factory = new ChannelFactory<IApplicationInstance>(new NetNamedPipeBinding(), new EndpointAddress(uri));
+            var factory = new ChannelFactory<IApplicationInstance>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), new EndpointAddress(uri));
             m_Instance = factory.CreateChannel();
             var instanceParams = m_Instance.GetInstanceParams();
 
@@ -176,7 +177,7 @@ namespace Inceptum.AppServer.Hosting
         private   ChannelFactory<IConfigurationProvider> getCongigurationProvider()
         {
             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/ConfigurationProvider";
-            var factory = new ChannelFactory<IConfigurationProvider>(new NetNamedPipeBinding(),
+            var factory = new ChannelFactory<IConfigurationProvider>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(),
                 new EndpointAddress(uri));
             m_ConfigurationProvider = factory.CreateChannel();
             return factory;
@@ -185,7 +186,7 @@ namespace Inceptum.AppServer.Hosting
         private   ChannelFactory<ILogCache> getLogCache()
         {
             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/LogCache";
-            var factory = new ChannelFactory<ILogCache>(new NetNamedPipeBinding(),
+            var factory = new ChannelFactory<ILogCache>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(),
                 new EndpointAddress(uri));
             m_LogCache= factory.CreateChannel();
             return factory;
