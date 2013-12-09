@@ -136,16 +136,15 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                 select
                     new
                         {
-                            //name = new AssemblyName(a.Name),
                             path = Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(p), a.Path)
                         };
 
           
 
             var nativesToLoad =
-                (from p in dependencies
+                (from p in dependencies.Union(new []{package})
                 from a in p.GetFiles("unmanaged")
-                 select Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(p), a.Path)).ToArray();
+                select Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(p), a.Path)).ToArray();
 
             IEnumerable<string> packageAssemblies = getAssemblies(package)
                 .Select(a => Path.Combine(manager.LocalRepository.Source, manager.PathResolver.GetPackageDirectory(package), a.Path));
