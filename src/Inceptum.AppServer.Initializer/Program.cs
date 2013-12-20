@@ -15,7 +15,7 @@ using Inceptum.AppServer.Model;
 
 namespace Inceptum.AppServer.Initializer
 {
-    internal static class Program
+    public static class Program
     {
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern int SetWindowText(IntPtr hWnd, string windowName);
