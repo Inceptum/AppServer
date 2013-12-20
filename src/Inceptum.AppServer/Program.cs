@@ -16,6 +16,7 @@ using Inceptum.AppServer.Hosting;
 
 namespace Inceptum.AppServer
 {
+
     internal static class Program
     {
 
