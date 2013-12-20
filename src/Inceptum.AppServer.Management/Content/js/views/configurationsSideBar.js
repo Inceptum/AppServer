@@ -68,12 +68,14 @@ define([
                 if(this.options.isLeaf)
                     el.attr("id",this.model.id);
                 var self = this;
-                this.model.bundles.each(function(node){
-                    var treeView = new TreeNodeView({model:node});
-                    el.append(treeView.render().el);
-                    treeView.bind("delete", self.deleteBundle);
-                    self.subviews.push(treeView);
-                });
+                if (this.model) {
+                    this.model.bundles.each(function(node) {
+                        var treeView = new TreeNodeView({ model: node });
+                        el.append(treeView.render().el);
+                        treeView.bind("delete", self.deleteBundle);
+                        self.subviews.push(treeView);
+                    });
+                }
                 if(this.options.visible)
                     $(el).addClass("in");
                 return this;
