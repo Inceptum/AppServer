@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Inceptum.AppServer.Initializer
+namespace Inceptum.AppServer.AppHost
 {
     public class WndUtils
     {

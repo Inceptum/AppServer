@@ -242,13 +242,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Inceptum.AppServer.AppHost\Inceptum.AppServer.AppHost.csproj">
+      <Project>{d9e93acd-ae23-423d-a48a-81a7aa2ddc0a}</Project>
+      <Name>Inceptum.AppServer.AppHost</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Inceptum.AppServer.Configuration\Inceptum.AppServer.Configuration.csproj">
       <Project>{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}</Project>
       <Name>Inceptum.AppServer.Configuration</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Inceptum.AppServer.Initializer\Inceptum.AppServer.Initializer.csproj">
-      <Project>{D9E93ACD-AE23-423D-A48A-81A7AA2DDC0A}</Project>
-      <Name>Inceptum.AppServer.Initializer</Name>
     </ProjectReference>
     <ProjectReference Include="..\Inceptum.AppServer.Management\Inceptum.AppServer.Management.csproj">
       <Project>{0F7D48A2-BAA8-4FCF-AA11-FFEA5891ED27}</Project>
@@ -275,7 +275,7 @@
   </Target>
 -->
   <Target Name="AfterBuild">
-    <CreateItem Include="$(OutDir)\*.dll;$(OutDir)\*.pdb;$(OutDir)\*.xml;" Exclude="$(OutDir)\AppServer.pdb;$(OutDir)\AppServer.xml;$(OutDir)\Inceptum.AppServer.Initializer.pdb;$(OutDir)\Inceptum.AppServer.Sdk.dll;$(OutDir)\Inceptum.AppServer.Sdk.pdb">
+    <CreateItem Include="$(OutDir)\*.dll;$(OutDir)\*.pdb;$(OutDir)\*.xml;" Exclude="$(OutDir)\AppServer.pdb;$(OutDir)\AppServer.xml;$(OutDir)\AppHost.pdb;$(OutDir)\Inceptum.AppServer.Sdk.dll;$(OutDir)\Inceptum.AppServer.Sdk.pdb">
       <Output TaskParameter="Include" ItemName="FilesToMove" />
     </CreateItem>
     <RemoveDir Directories="$(OutDir)\bin\" />
