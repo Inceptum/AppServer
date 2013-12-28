@@ -7,9 +7,7 @@ using Castle.DynamicProxy;
 using Castle.MicroKernel;
 using Castle.MicroKernel.ModelBuilder.Descriptors;
 using Castle.MicroKernel.Registration;
-/*using Inceptum.Messaging;
-using Inceptum.Messaging.Configuration;
-using Inceptum.Messaging.Contract;*/
+
 
 namespace Inceptum.AppServer.Configuration
 {
@@ -93,28 +91,7 @@ namespace Inceptum.AppServer.Configuration
                                () => kernel.Resolve<IConfigurationFacility>().DeserializeFromBundle<TImpl>(null, bundleName, jsonPath, parameters))));
 
        }
-      /*  public static ConfigurationFacility ConfigureTransports(this ConfigurationFacility facility, string bundleName, params string[] parameters)
-        {
-            return ConfigureTransports(facility, null, bundleName, parameters);
-        }
-
-
-        public static ConfigurationFacility ConfigureTransports(this ConfigurationFacility facility, IDictionary<string, JailStrategy> jailStrategies, string bundleName, params string[] parameters)
-        {
-            facility.AddInitStep(kernel =>
-            {
-                var transportResolver = Component.For<ITransportResolver>()
-                                                 .ImplementedBy<TransportResolver>()
-                                                 .DependsOnBundle(bundleName, "", parameters)
-                                                 .DependsOn(new { jailStrategies = jailStrategies});
-
-                kernel.Register(transportResolver, Component.For<IEndpointProvider>().Forward<ISubDependencyResolver>().ImplementedBy<EndpointResolver>().Named("EndpointResolver").DependsOnBundle(bundleName, "", parameters ?? new string[0]));
-                var endpointResolver = kernel.Resolve<ISubDependencyResolver>("EndpointResolver");
-                kernel.Resolver.AddSubResolver(endpointResolver);
-            });
-            return facility;
-        }
-*/
+   
 
         public static ConfigurationFacility ConfigureConnectionStrings(this ConfigurationFacility facility, string bundleName, params string[] parameters)
         {
