@@ -13,7 +13,7 @@ using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
 
-namespace Inceptum.AppServer.Initializer
+namespace Inceptum.AppServer.AppHost
 {
     public static class Program
     {

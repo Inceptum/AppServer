@@ -240,7 +240,7 @@ namespace Inceptum.AppServer.Hosting
             var directoryName = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? "";
             var procSetup = new ProcessStartInfo
             {
-                FileName = Path.Combine(directoryName, "Inceptum.AppServer.Initializer.exe"),
+                FileName = Path.Combine(directoryName, "AppHost.exe"),
                 Arguments = args,
                 WorkingDirectory = path
             };

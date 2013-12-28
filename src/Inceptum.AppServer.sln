@@ -25,7 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{19CC6C
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.Initializer", "Inceptum.AppServer.Initializer\Inceptum.AppServer.Initializer.csproj", "{D9E93ACD-AE23-423D-A48A-81A7AA2DDC0A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.AppHost", "Inceptum.AppServer.AppHost\Inceptum.AppServer.AppHost.csproj", "{D9E93ACD-AE23-423D-A48A-81A7AA2DDC0A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.Sdk.Messaging", "Inceptum.AppServer.Sdk.Messaging\Inceptum.AppServer.Sdk.Messaging.csproj", "{26B38FA9-81F0-458D-B9C8-24D3B2470A79}"
 EndProject

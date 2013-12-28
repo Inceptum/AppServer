@@ -112,7 +112,7 @@ namespace Inceptum.AppServer.Tests
                 il.EmitWriteLine("Hello World");
 
 
-                var type = Assembly.LoadFrom(@"d:\CODE\inceptum_appserver\src\Inceptum.AppServer.Tests\bin\Debug\Inceptum.AppServer.Initializer.exe").GetType("Inceptum.AppServer.Initializer.Program");
+                var type = Assembly.LoadFrom(@"d:\CODE\inceptum_appserver\src\Inceptum.AppServer.Tests\bin\Debug\AppHost.exe").GetType("Inceptum.AppServer.AppHost.Program");
                 var methodInfo = type.GetMethod("Main");
                 LocalBuilder arr = il.DeclareLocal(typeof(string));
                 

@@ -16,7 +16,7 @@ using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Castle.Windsor.Installer;
 using Inceptum.AppServer.Configuration;
-using Inceptum.AppServer.Initializer;
+using Inceptum.AppServer.AppHost;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.Windsor;
