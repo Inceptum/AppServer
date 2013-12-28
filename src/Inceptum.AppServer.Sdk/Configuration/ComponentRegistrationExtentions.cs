@@ -7,9 +7,9 @@ using Castle.DynamicProxy;
 using Castle.MicroKernel;
 using Castle.MicroKernel.ModelBuilder.Descriptors;
 using Castle.MicroKernel.Registration;
-using Inceptum.Messaging;
+/*using Inceptum.Messaging;
 using Inceptum.Messaging.Configuration;
-using Inceptum.Messaging.Contract;
+using Inceptum.Messaging.Contract;*/
 
 namespace Inceptum.AppServer.Configuration
 {
@@ -93,11 +93,11 @@ namespace Inceptum.AppServer.Configuration
                                () => kernel.Resolve<IConfigurationFacility>().DeserializeFromBundle<TImpl>(null, bundleName, jsonPath, parameters))));
 
        }
-
-        public static ConfigurationFacility ConfigureTransports(this ConfigurationFacility facility, string bundleName, params string[] parameters)
+      /*  public static ConfigurationFacility ConfigureTransports(this ConfigurationFacility facility, string bundleName, params string[] parameters)
         {
             return ConfigureTransports(facility, null, bundleName, parameters);
         }
+
 
         public static ConfigurationFacility ConfigureTransports(this ConfigurationFacility facility, IDictionary<string, JailStrategy> jailStrategies, string bundleName, params string[] parameters)
         {
@@ -114,7 +114,7 @@ namespace Inceptum.AppServer.Configuration
             });
             return facility;
         }
-
+*/
 
         public static ConfigurationFacility ConfigureConnectionStrings(this ConfigurationFacility facility, string bundleName, params string[] parameters)
         {

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Reactive.Subjects;
+//using System.Reactive.Subjects;
 using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Model;
 
@@ -12,7 +12,9 @@ namespace Inceptum.AppServer
         string MachineName { get; }
         Application[] Applications { get; }
         ApplicationInstanceInfo[] Instances { get; }
+/*
         Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged { get;  }
+*/
 
 
         void RediscoverApps();

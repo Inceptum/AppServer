@@ -76,13 +76,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Inceptum.AppServer.Sdk\Inceptum.AppServer.Sdk.csproj">
-      <Project>{CAFF34B8-90CD-46D6-BCE8-C7B275473346}</Project>
-      <Name>Inceptum.AppServer.Sdk</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\Inceptum.AppServer.Sdk\Inceptum.AppServer.Sdk.csproj">
+      <Project>{caff34b8-90cd-46d6-bce8-c7b275473346}</Project>
+      <Name>Inceptum.AppServer.Sdk</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
