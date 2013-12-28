@@ -3,7 +3,7 @@
   <metadata>
     <id>Inceptum.AppServer.Sdk.Messaging</id>
     <version>$version$</version>
-    <title>Inceptum.Messaging.RabbitMq</title>
+    <title>Inceptum.AppServer.Sdk.Messaging</title>
     <authors>InceptumSoft</authors>
     <owners>InceptumSoft</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
