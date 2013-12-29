@@ -40,6 +40,7 @@ define([
                 });
                 view.bind("destroy",this.destroy);
                 view.bind("start",this.start);
+                view.bind("restart",this.restart);
                 view.bind("stop",this.stop);
                 view.bind("command",this.command);
 
@@ -118,6 +119,15 @@ define([
                     error:function(model,response){
                         view.render();
                         alerts.show({type:"error",text:"Failed to start instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});
+                    }
+                });
+            },
+            restart:function(model,view){
+                var self=this;
+                model.restart({
+                    error:function(model,response){
+                        view.render();
+                        alerts.show({type:"error",text:"Failed to restart instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});
                     }
                 });
             },
