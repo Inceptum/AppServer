@@ -13,6 +13,7 @@ define([
             events:{
                 "click .start":"start",
                 "click .stop":"stop",
+                "click .restart":"restart",
                 "click .delete":"delete",
                 "click .command":"emitCommand"
             },
@@ -32,6 +33,11 @@ define([
                 $(this.el).find(".actions button").attr("disabled", "disabled");
                 this.trigger('start',this.model,this);
             },
+            restart:function(e){
+                e.preventDefault();
+                $(this.el).find(".actions button").attr("disabled", "disabled");
+                this.trigger('restart',this.model,this);
+            },
             emitCommand:function(e){
                 console.log($(e.target).data('command')) ;
                 e.preventDefault();
@@ -41,10 +47,11 @@ define([
             render: function(){
                 this.template = _.template( template, { model: this.model.toJSON() } );
                 $(this.el).html(this.template);
-                $(this.el).find(".actions button").attr("disabled", "disabled");
+                $(this.el).find(".actions .btn.cmd").attr("disabled", "disabled");
 
                 if(this.model.get("Status")=="Started")
                 {
+                    $(this.el).find(".restart").removeAttr("disabled");
                     $(this.el).find(".stop").removeAttr("disabled");
                     $(this.el).find(".delete").removeAttr("disabled");
                 }

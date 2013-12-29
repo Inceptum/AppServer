@@ -9,6 +9,9 @@ define(['jquery', 'backbone', 'underscore','context'], function($, Backbone, _,c
         start:function(options){
             this.action("start",options);
         },
+        restart:function(options){
+            this.action("restart",options);
+        },
         stop:function(options){
             this.action("stop",options);
         },
