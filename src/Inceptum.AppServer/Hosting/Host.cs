@@ -11,6 +11,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Security;
 using Castle.Core.Logging;
@@ -184,15 +185,19 @@ namespace Inceptum.AppServer.Hosting
             get
             {
                 lock (m_SyncRoot)
-                    {
-                        return (from cfg in m_InstancesConfiguration
+                {
+                    var serverIdentity= System.Security.Principal.WindowsIdentity.GetCurrent();
+                    string serverUserName = null;
+                    if (serverIdentity != null)
+                        serverUserName = serverIdentity.Name;
+                    return (from cfg in m_InstancesConfiguration
                                 join instance in m_Instances on cfg.Name equals instance.Name into t
                                 from instance in t
                                 orderby Tuple.Create(cfg.Environment,cfg.Name)
                                 select new ApplicationInstanceInfo
                                            {
                                                Name = cfg.Name,
-                                               Id = cfg.Name,
+                                               Id =cfg.Name,
                                                ApplicationId = cfg.ApplicationId,
                                                ApplicationVendor = cfg.ApplicationVendor,
                                                Environment = cfg.Environment,
@@ -201,12 +206,12 @@ namespace Inceptum.AppServer.Hosting
                                                AutoStart = cfg.AutoStart,
                                                ActualVersion=instance.ActualVersion,
                                                Commands = instance.Commands,
-                                               User = cfg.User,
+                                               User = string.IsNullOrEmpty(cfg.User) ? serverUserName : cfg.User,
                                                Password = cfg.Password,
                                                LogLevel = cfg.LogLevel,
 
                                            }).ToArray();
-                    }
+                }
             }
         }
 
