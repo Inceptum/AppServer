@@ -13,11 +13,9 @@ namespace Inceptum.AppServer.Sdk.Messaging
         public static MessagingFacility ConfigureFromBundle(this MessagingFacility facility, string bundleName,
             params string[] parameters)
         {
-            facility.AddInitStep(k =>
-            {
-                k.Register(Component.For<IMessagingConfiguration>().ImplementedBy<MessagingConfiguration>().DependsOnBundle(bundleName, "", parameters));
-                facility.WithConfigurationFromContainer();
-            });
+            facility.AddInitStep(k => k.Register(Component.For<IMessagingConfiguration>().ImplementedBy<MessagingConfiguration>().DependsOnBundle(bundleName, "", parameters)));
+            facility.WithConfigurationFromContainer();
+
             return facility;
         }
     }
