@@ -44,9 +44,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Castle.Windsor.3.2.1\lib\net40\Castle.Windsor.dll</HintPath>
     </Reference>
-    <Reference Include="Inceptum.Messaging, Version=1.0.5.113, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Inceptum.Messaging, Version=1.0.5.142, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Inceptum.Messaging.1.0.5.113\lib\net40\Inceptum.Messaging.dll</HintPath>
+      <HintPath>..\packages\Inceptum.Messaging.1.0.5.142\lib\net40\Inceptum.Messaging.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -123,7 +123,9 @@
     <Compile Include="StringVersionJsonConverter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
