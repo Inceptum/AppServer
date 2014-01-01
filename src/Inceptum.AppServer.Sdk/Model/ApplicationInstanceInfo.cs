@@ -30,6 +30,19 @@ namespace Inceptum.AppServer.Model
         public InstanceCommand[] Commands { get; set; }
 
         public string User { get; set; }
+
+        public string EffectiveUser
+        {
+            get
+            {
+                var serverIdentity = System.Security.Principal.WindowsIdentity.GetCurrent();
+                string serverUserName = null;
+                if (serverIdentity != null)
+                    serverUserName = serverIdentity.Name;
+                return string.IsNullOrEmpty(User) ? serverUserName : User;
+            }
+        }
+
         public string Password { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
