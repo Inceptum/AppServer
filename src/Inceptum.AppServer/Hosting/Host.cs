@@ -186,10 +186,7 @@ namespace Inceptum.AppServer.Hosting
             {
                 lock (m_SyncRoot)
                 {
-                    var serverIdentity= System.Security.Principal.WindowsIdentity.GetCurrent();
-                    string serverUserName = null;
-                    if (serverIdentity != null)
-                        serverUserName = serverIdentity.Name;
+                  
                     return (from cfg in m_InstancesConfiguration
                                 join instance in m_Instances on cfg.Name equals instance.Name into t
                                 from instance in t
@@ -206,7 +203,7 @@ namespace Inceptum.AppServer.Hosting
                                                AutoStart = cfg.AutoStart,
                                                ActualVersion=instance.ActualVersion,
                                                Commands = instance.Commands,
-                                               User = string.IsNullOrEmpty(cfg.User) ? serverUserName : cfg.User,
+                                               User = cfg.User,
                                                Password = cfg.Password,
                                                LogLevel = cfg.LogLevel,
 
