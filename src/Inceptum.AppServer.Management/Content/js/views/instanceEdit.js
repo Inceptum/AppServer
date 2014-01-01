@@ -56,8 +56,9 @@ define([
                 // Apply the change to the model
                 var target = event.target;
                 var change = {};
-                if(event.target.type=="checkbox")
-                    change[target.name] = target.value!="";
+                if(event.target.type=="checkbox") {
+                    change[target.name] = $(target).is(':checked');
+                }
                 else
                     change[target.name] = target.value;
                 this.model.set(change);
