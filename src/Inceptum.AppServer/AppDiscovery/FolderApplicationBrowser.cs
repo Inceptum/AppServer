@@ -99,6 +99,7 @@ namespace Inceptum.AppServer.AppDiscovery
                 where asm != null
                 select new {assemblyName = asm.FullName, file};
             var assembliesToLoad  = assemblies.ToDictionary(a => new AssemblyName(a.assemblyName), a => a.file);
+            string appVendor=null;
             foreach (var app in apps)
             {
 
@@ -112,9 +113,19 @@ namespace Inceptum.AppServer.AppDiscovery
                 if (appTypes.Length > 1)
                     Logger.InfoFormat("Assembly {0} contains several types implementing IHostedApplication, using {1}", app.file, appType.Name);
 
+                try
+                {
+                    appVendor =app.assembly.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof (AssemblyCompanyAttribute).FullName).ConstructorArguments[0].ToString();
+                }catch
+                {
+                    appVendor = null;
+                }
+
+
                 yield return new HostedAppInfo(app.name, app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, assembliesToLoad, m_NativeDlls.Where(dll => File.Exists(Path.Combine(folder, dll))).ToArray())
                     {
-                        ConfigFiles = Directory.GetFiles(folder, "*.config"),
+                        Vendor = appVendor,
+                ConfigFiles = Directory.GetFiles(folder, "*.config"),
                         Debug=true
                     };
             }
