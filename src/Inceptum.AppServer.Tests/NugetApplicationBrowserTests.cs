@@ -14,6 +14,7 @@ namespace Inceptum.AppServer.Tests
     public class NugetApplicationBrowserTests
     {
         [Test]
+        [Ignore]
         public void Test()
         {
             var assembly = GetType().Assembly;
@@ -26,6 +27,7 @@ namespace Inceptum.AppServer.Tests
             Console.WriteLine("");
         }
         [Test]
+        [Ignore]
         public void Test3()
         {
             IPackageRepository appsRepo = PackageRepositoryFactory.Default.CreateRepository("http://nuget.it.unistreambank.ru/nuget/DEV.Apps");
@@ -39,6 +41,7 @@ namespace Inceptum.AppServer.Tests
         }
 
         [Test]
+        [Ignore]
         public void Test2()
         {
             var assembly = GetType().Assembly;
