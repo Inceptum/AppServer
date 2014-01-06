@@ -38,11 +38,13 @@
     <Reference Include="Castle.Windsor">
       <HintPath>..\packages\Castle.Windsor.3.2.1\lib\net45\Castle.Windsor.dll</HintPath>
     </Reference>
-    <Reference Include="Inceptum.Messaging">
-      <HintPath>..\packages\Inceptum.Messaging.1.0.6.12\lib\net40\Inceptum.Messaging.dll</HintPath>
+    <Reference Include="Inceptum.Messaging, Version=1.0.7.2, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Inceptum.Messaging.1.0.7.2\lib\net40\Inceptum.Messaging.dll</HintPath>
     </Reference>
-    <Reference Include="Inceptum.Messaging.Castle">
-      <HintPath>..\packages\Inceptum.Messaging.Castle.1.0.6.12\lib\net40\Inceptum.Messaging.Castle.dll</HintPath>
+    <Reference Include="Inceptum.Messaging.Castle, Version=1.0.7.2, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Inceptum.Messaging.Castle.1.0.7.2\lib\net40\Inceptum.Messaging.Castle.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
