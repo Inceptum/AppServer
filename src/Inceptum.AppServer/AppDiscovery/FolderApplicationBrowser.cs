@@ -115,18 +115,21 @@ namespace Inceptum.AppServer.AppDiscovery
 
                 try
                 {
-                    appVendor =app.assembly.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof (AssemblyCompanyAttribute).FullName).ConstructorArguments[0].ToString();
+                    appVendor =app.assembly.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof (AssemblyCompanyAttribute).FullName).ConstructorArguments[0].Value.ToString();
                 }catch
                 {
                     appVendor = null;
                 }
 
 
-                yield return new HostedAppInfo(app.name, app.vendor, app.assembly.Name.Version, appType.FullName + ", " + app.assembly.FullName, assembliesToLoad, m_NativeDlls.Where(dll => File.Exists(Path.Combine(folder, dll))).ToArray())
+                yield return
+                    new HostedAppInfo(app.name, app.vendor, app.assembly.Name.Version,
+                        appType.FullName + ", " + app.assembly.FullName, assembliesToLoad,
+                        m_NativeDlls.Where(dll => File.Exists(Path.Combine(folder, dll))).ToArray())
                     {
                         Vendor = appVendor,
-                ConfigFiles = Directory.GetFiles(folder, "*.config"),
-                        Debug=true
+                        ConfigFiles = Directory.GetFiles(folder, "*.config"),
+                        Debug = true
                     };
             }
         }
