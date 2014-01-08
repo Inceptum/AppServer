@@ -126,7 +126,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                 manager.InstallPackage(remotePackage, false, true);
                 package = new PackageWrapper(manager.LocalRepository.FindPackage(application, new SemanticVersion(version)), dependencyRepo);
                 //TODO: find out why null is in array
-                dependencies = getDependencies(package, manager.LocalRepository).Distinct().ToArray();
+                dependencies = getDependencies(package, manager.LocalRepository).Where(p=>p!=null).Distinct().ToArray();
                 Logger.WarnFormat("Installed {0}", string.Join(",",dependencies.Select(p=>p.Id)));
             }
 
