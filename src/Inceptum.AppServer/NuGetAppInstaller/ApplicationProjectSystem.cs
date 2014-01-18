@@ -1,0 +1,108 @@
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Runtime.Versioning;
+using NuGet;
+
+namespace Inceptum.AppServer.NuGetAppInstaller
+{
+    public class ApplicationProjectSystem : PhysicalFileSystem, IProjectSystem, IFileSystem
+    {
+        public ApplicationProjectSystem(string root)
+            : base(root)
+        {
+        }
+
+        private const string BIN_DIR = "bin";
+
+        public string ProjectName
+        {
+            get
+            {
+                return  Root;
+            }
+        }
+
+        public bool IsBindingRedirectSupported { get; private set; }
+
+        public bool FileExistsInProject(string path)
+        {
+            return this.FileExists(path);
+        }
+
+        public FrameworkName TargetFramework
+        {
+            get
+            {
+                return new FrameworkName(".NETFramework,Version=v4.5");
+            }
+        }
+
+
+        public void AddReference(string referencePath, Stream stream)
+        {
+            AddFile(GetFullPath(GetReferencePath(Path.GetFileName(referencePath))), stream);
+        }
+
+
+        public void AddFrameworkReference(string name)
+        {
+            
+        }
+
+        public object GetPropertyValue(string propertyName)
+        {
+            if (propertyName == null)
+                return null;
+            if (propertyName.Equals("RootNamespace", StringComparison.OrdinalIgnoreCase))
+                return string.Empty;
+
+            return null;
+        }
+
+        public bool IsSupportedFile(string path)
+        {
+/*
+            if (!path.StartsWith("tools", StringComparison.OrdinalIgnoreCase))
+                return !Path.GetFileName(path).Equals("app.config", StringComparison.OrdinalIgnoreCase);
+*/
+            return true;
+            Console.WriteLine("NOT SUPPORTED:"+path);
+            return false;
+        }
+
+        public string ResolvePath(string path)
+        {
+            Console.WriteLine(path);
+            return path;
+        }
+
+        public void AddImport(string targetPath, ProjectImportLocation location)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveImport(string targetPath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool ReferenceExists(string name)
+        {
+            return FileExists(GetReferencePath(name));
+        }
+
+        public void RemoveReference(string name)
+        {
+            DeleteFile(GetReferencePath(name));
+            if (this.GetFiles(BIN_DIR, "*.*").Any())
+                return;
+            DeleteDirectory(BIN_DIR);
+        }
+
+        protected virtual string GetReferencePath(string name)
+        {
+            return Path.Combine(BIN_DIR, name);
+        }
+    }
+}

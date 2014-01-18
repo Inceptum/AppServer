@@ -11,8 +11,8 @@ using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Model;
 using Mono.Cecil;
 using Newtonsoft.Json.Linq;
-using NuGet;
 using Castle.Core.Logging;
+using NuGet;
 using ILogger = Castle.Core.Logging.ILogger;
 
 namespace Inceptum.AppServer.AppDiscovery.Nuget

@@ -15,6 +15,7 @@ using Castle.Windsor.Diagnostics.Extensions;
 using Inceptum.AppServer.AppDiscovery.Nuget;
 using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Model;
+using NuGet;
 using NUnit.Framework;
 using Castle.Core.Logging;
 using Castle.Facilities.Startable;
@@ -22,7 +23,6 @@ using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.Windsor;
-using NuGet;
 using ILogger = Castle.Core.Logging.ILogger;
 
 namespace Inceptum.AppServer.Tests
