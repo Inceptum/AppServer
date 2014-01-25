@@ -41,7 +41,13 @@ namespace Inceptum.AppServer.NuGetAppInstaller
 
         public void AddReference(string referencePath, Stream stream)
         {
-            AddFile(GetFullPath(GetReferencePath(Path.GetFileName(referencePath))), stream);
+            string fileName = Path.GetFileName(referencePath);
+            string fullPath = this.GetFullPath(GetReferencePath(fileName));
+/*
+            //nuget provides empty stream for references so this is the only way to get the file
+            using (var fs = new FileStream(Path.Combine(Root, "packages", referencePath), FileMode.Open))
+*/
+                AddFile(fullPath, stream);
         }
 
 

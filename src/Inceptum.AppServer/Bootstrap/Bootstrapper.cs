@@ -20,6 +20,7 @@ using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Management;
 using Inceptum.AppServer.Notification;
+using Inceptum.AppServer.NuGetAppInstaller;
 using Inceptum.AppServer.Windsor;
 using Microsoft.AspNet.SignalR;
 
@@ -97,6 +98,7 @@ namespace Inceptum.AppServer.Bootstrap
                                 debugWraps = setup.DebugWraps ?? new string[0]
                             })*/
                             );
+                container.Register(Component.For<IApplicationRepository>().ImplementedBy<NugetApplicationRepository>());
 
                 if (setup.DebugFolders.Any())
                     container.Register(Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(

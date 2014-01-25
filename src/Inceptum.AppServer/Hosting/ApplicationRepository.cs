@@ -28,16 +28,18 @@ namespace Inceptum.AppServer.Hosting
             var appInfos = m_ApplicationRepositories.SelectMany(x =>
                 {
                     Logger.InfoFormat("Loading apps from {0}", x.Name);
-                    return x.GetAvailableApps().Select(i =>
-                        {
-                            return i;
-                        });
+                    return x.GetAvailableApps().Select(a=>Tuple.Create(a,x.Name));
                 });
+            /*  var appInfos = m_ApplicationRepositories.SelectMany(x =>
+                {
+                    Logger.InfoFormat("Loading apps from {0}", x.Name);
+                    return x.GetAvailableApps();
+                });*/
             var applications = new List<Application>(
                                                     from info in appInfos
-                                                    group info by new { vendor = info.Vendor, name = info.Name }
+                                                    group info by new { vendor = info.Item1.Vendor, name = info.Item1.ApplicationId, repo=info.Item2 }
                                                         into app
-                                                        select new Application(app.Key.name, app.Key.vendor, app)
+                                                        select new Application(app.Key.repo, app.Key.name, app.Key.vendor, app.ToDictionary(a => a.Item1.Version, a => a.Item1.Description))
                                                     );
             var apps = String.Join(
                             Environment.NewLine + "\t",
@@ -55,19 +57,12 @@ namespace Inceptum.AppServer.Hosting
         {
             get
             {
-                lock(m_SyncRoot)
-                    return m_Applications.OrderBy(a=>Tuple.Create(a.Vendor,a.Name)).ToArray();
+                lock (m_SyncRoot)
+                    return m_Applications.OrderBy(a => Tuple.Create(a.Vendor, a.Name)).ToArray();
             }
         }
-
-        public void EnsureLoadParams(string application, Version version)
-        {
-            var app = Applications.FirstOrDefault(a => a.Name == application);
-            if(app==null)
-                throw new InvalidOperationException(string.Format("Application {0}  not found",application));
-            app.EnsureLoadParams(version, browser => m_ApplicationRepositories.FirstOrDefault(x => x.Name == browser).GetApplicationParams(application, version));
-        }
-/*
+        
+        /*
     public class ApplicationRepository
     {
         private readonly IEnumerable<IApplicationBrowser> m_ApplicationRepositories;
@@ -129,5 +124,11 @@ namespace Inceptum.AppServer.Hosting
             app.EnsureLoadParams(version, browser => m_ApplicationRepositories.FirstOrDefault(x => x.Name == browser).GetApplicationParams(application, version));
         }
 */
+
+        public void Install(Application application,Version version, string path)
+        {
+            var repository = m_ApplicationRepositories.Single(r=>r.Name==application.Repository);
+            repository.Install(path, new ApplicationInfo{ApplicationId = application.Name,Vendor = application.Vendor,Version = version});
+        }
     }
 }

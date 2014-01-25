@@ -20,6 +20,7 @@ using Inceptum.AppServer.AppHost;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.Windsor;
+using Mono.Cecil;
 using NLog;
 using NLog.Conditions;
 using NLog.Config;
@@ -28,7 +29,31 @@ using NLog.Targets.Wrappers;
 
 namespace Inceptum.AppServer.Hosting
 {
-
+    public static class CeceilExtencions
+    {
+        public static AssemblyDefinition TryReadAssembly(string file)
+        {
+            try
+            {
+                return AssemblyDefinition.ReadAssembly(file);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        public static AssemblyDefinition TryReadAssembly(Stream assemblyStream)
+        {
+            try
+            {
+                return AssemblyDefinition.ReadAssembly(assemblyStream);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    }
     
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single,IncludeExceptionDetailInFaults = true)]
     internal class ApplicationHost : IApplicationHost 
@@ -96,22 +121,63 @@ namespace Inceptum.AppServer.Hosting
  
             IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
 
+            var dlls = Directory.GetFiles(Path.Combine(m_Context.AppsDirectory, m_InstanceName,"bin"), "*.dll")
+                .Select(file => new {path = file, AssemblyDefinition = CeceilExtencions.TryReadAssembly(file)  }).ToArray();
+
+
+            var injectedAssemblies = instanceParams.AssembliesToLoad;
+            m_LoadedAssemblies = dlls.Where(d => d.AssemblyDefinition!=null)
+                                     .Where(asm => loadedAssemblies.All(a => a.Name != asm.AssemblyDefinition.Name.Name))
+                                     .Where(asm => injectedAssemblies.All(a => a.Key  != asm.AssemblyDefinition.Name.Name))
+                                     .ToDictionary(asm => new AssemblyName(asm.AssemblyDefinition.FullName), asm => new Lazy<Assembly>(() => loadAssembly(asm.path)));
+            foreach (var injectedAssembly in injectedAssemblies)
+            {
+                var path = injectedAssembly.Value;
+                var assemblyName = injectedAssembly.Key;
+                m_LoadedAssemblies.Add(new AssemblyName(assemblyName), new Lazy<Assembly>(() => loadAssembly(path)));
+            }
+
+/*
             m_LoadedAssemblies = instanceParams.ApplicationParams.AssembliesToLoad.Where(asm => loadedAssemblies.All(a => a.Name != new AssemblyName(asm.Key).Name))
                                                  .ToDictionary(asm => new AssemblyName(asm.Key), asm => new Lazy<Assembly>(() => loadAssembly(asm.Value)));
+*/
 
-            foreach (string dll in instanceParams.ApplicationParams.NativeDllToLoad)
+            //foreach (string dll in instanceParams.ApplicationParams.NativeDllToLoad)
+            foreach (string dll in dlls.Where(d => d.AssemblyDefinition == null).Select(d=>d.path))
             {
                 if (LoadLibrary(dll) == IntPtr.Zero)
                 {
                     throw new InvalidOperationException("Failed to load unmanaged dll " + Path.GetFileName(dll) + " from package");
                 }
             }
+
             AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
             var congigurationProvider = getCongigurationProvider();
             var logCache = getLogCache();
 
 
-            var instanceCommands = initContainer(Type.GetType(instanceParams.ApplicationParams.AppType), instanceParams.LogLevel);
+            var appAssemblies = from file in dlls
+                                let asm = file.AssemblyDefinition
+                                where asm != null
+                                let attribute = asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof (HostedApplicationAttribute).FullName)
+                                where attribute != null
+                                select asm;
+                            
+            var appTypes=appAssemblies.SelectMany(
+                                    a=>a.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof(IHostedApplication).FullName))
+                                        .Select(t => t.FullName + ", " + a.FullName)
+                                    ).ToArray();
+            string appType = appTypes.First();
+
+            if (appTypes.Length > 1)
+                throw new  InvalidOperationException(string.Format("Instance {0} bin folder contains several types implementing IHostedApplication: {1}",m_InstanceName, string.Join(",",appTypes)));
+
+
+            if (appTypes.Length == 0)
+                throw new  InvalidOperationException(string.Format("Instance {0} bin folder does not contain type implementing IHostedApplication",m_InstanceName));
+
+
+            var instanceCommands = initContainer(Type.GetType(appType), instanceParams.LogLevel);
             
             m_Instance.RegisterApplicationHost(address, instanceCommands);
 

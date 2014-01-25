@@ -317,6 +317,12 @@ namespace Inceptum.AppServer.Hosting
                 instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Concat(new[] { cfg }).ToArray(), Formatting.Indented);
             }
             m_ServerConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
+
+            var application = m_ApplicationRepository.Applications.FirstOrDefault(a => a.Name == config.ApplicationId && a.Vendor == config.ApplicationVendor);
+            if (application == null)
+                throw new InvalidOperationException(string.Format("Application {0} not found", config.ApplicationId));
+
+            m_ApplicationRepository.Install(application,config.Version??application.Versions.Last().Version,Path.Combine(m_Context.AppsDirectory,config.Name)+"\\");
             updateInstances();
         }
         
@@ -471,11 +477,7 @@ namespace Inceptum.AppServer.Hosting
                 instance.UpdateConfig(version,config.Environment,config.User,config.Password,config.LogLevel);
 
 
-                instance.Start(() =>
-                {
-                    m_ApplicationRepository.EnsureLoadParams(config.ApplicationId, version);
-                    return application.GetLoadParams(version);
-                });
+                instance.Start();
             }
             catch (Exception e)
             {

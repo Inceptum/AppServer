@@ -33,7 +33,6 @@ namespace Inceptum.AppServer.Hosting
         private Task m_CurrentTask;
         private bool m_IsDisposing;
         private HostedAppStatus m_Status;
-        private ApplicationParams m_ApplicationParams;
         private Version m_ActualVersion;
         private ServiceHost m_ServiceHost;
         private readonly object m_ServiceHostLock=new object();
@@ -132,7 +131,7 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-        public void Start(Func<ApplicationParams> paramsGetter)
+        public void Start()
         {
             lock (m_SyncRoot)
             {
@@ -150,14 +149,10 @@ namespace Inceptum.AppServer.Hosting
                     
                                                               try
                                                               {
-                                                                  var applicationParams = paramsGetter();
-                                                                  lock (m_SyncRoot)
-                                                                  {
-                                                                      m_ApplicationParams = applicationParams;
-                                                                      IsMisconfigured = applicationParams == null;
-                                                                  }
+/*
                                                                   if (IsMisconfigured)
                                                                       throw new ConfigurationErrorsException("Instance is misconfigured");
+*/
 
                                                                   createHost();
                                                               }
@@ -228,6 +223,7 @@ namespace Inceptum.AppServer.Hosting
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             var args = Name;
+/*
 
             foreach (var configFile in m_ApplicationParams.ConfigFiles)
             {
@@ -236,6 +232,7 @@ namespace Inceptum.AppServer.Hosting
 
             if (m_ApplicationParams.Debug)
                 args += " -debug";
+*/
 
             var directoryName = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? "";
             var procSetup = new ProcessStartInfo
@@ -360,10 +357,10 @@ namespace Inceptum.AppServer.Hosting
 
         public InstanceParams GetInstanceParams()
          {
-             ApplicationParams applicationParams;
+         /*    ApplicationParams applicationParams;
              lock (m_SyncRoot)
              {
-                 applicationParams = m_ApplicationParams.Clone();
+                 applicationParams = null;//m_ApplicationParams.Clone();
              }
 
 
@@ -383,19 +380,29 @@ namespace Inceptum.AppServer.Hosting
                 if(!assembliesToLoad.ContainsKey(assm.Key))
                     assembliesToLoad.Add(assm.Key,assm.Value);
             }
-
+*/
             return new InstanceParams
             {
-                ApplicationParams = new ApplicationParams
+               /* ApplicationParams = new ApplicationParams
                                         (
                                             applicationParams.AppType,
                                             applicationParams.ConfigFiles.ToArray(),
                                             applicationParams.NativeDllToLoad.ToArray(),
                                             assembliesToLoad
-                                        ),
+                                        ),*/
+
                 AppServerContext = m_Context,
                 Environment = Environment,
-                LogLevel = m_LogLevel.ToString() 
+                LogLevel = m_LogLevel.ToString() ,
+                AssembliesToLoad =   new Dictionary<string, string>()
+                {
+                    {typeof (AppInfo).Assembly.GetName().FullName, typeof (AppInfo).Assembly.Location},
+                    //AppServer is loaded not from package, so it dependencies used in appDomain plugin should be provided aswell
+                    {typeof (LoggingFacility).Assembly.GetName().FullName, typeof (LoggingFacility).Assembly.Location},
+                    {typeof (ILogger).Assembly.GetName().FullName, typeof (ILogger).Assembly.Location},
+                    {typeof (WindsorContainer).Assembly.GetName().FullName, typeof (WindsorContainer).Assembly.Location},
+                    {typeof (NLogFactory).Assembly.GetName().FullName, typeof (NLogFactory).Assembly.Location}
+                }
             }; 
          }
 

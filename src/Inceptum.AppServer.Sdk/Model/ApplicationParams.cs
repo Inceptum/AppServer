@@ -14,8 +14,7 @@ namespace Inceptum.AppServer.Model
     {
         private string m_LogLevel = "Debug";
 
-        [DataMember]
-        public ApplicationParams ApplicationParams { get; set; }
+       
 
         [DataMember]
         public string LogLevel
@@ -31,6 +30,10 @@ namespace Inceptum.AppServer.Model
 
         [DataMember]
         public string Environment { get; set; }
+
+        [DataMember]
+        public Dictionary<string, string> AssembliesToLoad { get;  set; }
+ 
     }
 
 
