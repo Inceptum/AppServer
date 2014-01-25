@@ -9,6 +9,45 @@ using NuGet.Resources;
 
 namespace Inceptum.AppServer.NuGetAppInstaller
 {
+    internal class NugetApplicationRepository : IApplicationRepository
+    {
+        public IEnumerable<ApplicationInfo> GetAvailableApps()
+        {
+            IPackageRepository appsRepo = PackageRepositoryFactory.Default.CreateRepository(@"d:\AppsTest\Repo23");
+            var packages = from p in appsRepo.GetPackages() where p.Tags != null && p.Tags.Contains("Inceptum.AppServer.Application") orderby p.Id select p;
+            return packages.ToArray().Select(package => new ApplicationInfo()
+            {
+                ApplicationId = package.Id,
+                Vendor = string.Join(", ", package.Authors),
+                Version = package.Version.Version
+            });
+        }
+
+        public string Install(string path, ApplicationInfo application)
+        {
+            string installPath = Path.Combine(path, "bin");
+            var projectManager = new ApplicationProjectManager(installPath, @"d:\AppsTest\Repo23");
+            projectManager.InstallPackage(application.ApplicationId, new SemanticVersion(application.Version));
+            return installPath;
+        }
+
+        public string Upgrade(string path, ApplicationInfo application)
+        {
+            string installPath = path;
+            var projectManager = new ApplicationProjectManager(installPath, @"d:\AppsTest\Repo30");
+
+            string packageId=application.ApplicationId;
+            var package = (from p in projectManager.GetInstalledPackages(packageId)
+                           where p.Id == packageId && p.Version == new SemanticVersion(application.Version)
+                           select p).ToList<IPackage>().FirstOrDefault<IPackage>();
+            if(package==null)
+                throw new InvalidOperationException("");
+            projectManager.UpdatePackage(package);
+            return installPath;
+        }
+    }
+
+
 
     class MyProjectManager : ProjectManager
     {

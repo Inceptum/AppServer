@@ -188,6 +188,7 @@
     <Compile Include="Hosting\JobObject.cs" />
     <Compile Include="NuGetAppInstaller\ApplicationProjectManager.cs" />
     <Compile Include="NuGetAppInstaller\ApplicationProjectSystem.cs" />
+    <Compile Include="NuGetAppInstaller\IApplicationRepository.cs" />
     <Compile Include="Utils\AppDomainRenderer.cs" />
     <Compile Include="Bootstrap\LoggingInstaller.cs" />
     <Compile Include="Hosting\ApplicationInstance.cs" />
