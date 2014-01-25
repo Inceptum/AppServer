@@ -187,7 +187,7 @@ namespace Inceptum.AppServer.AppDiscovery.Nuget
                                                   package.Id,
                                                   string.Join(", ", package.Authors),
                                                   package.Version.Version
-                                                  )).ToArray();
+                                                  ){Description = package.Description}).ToArray();
         }
 
         private string getAppType(IEnumerable<string> packageAssemblies)

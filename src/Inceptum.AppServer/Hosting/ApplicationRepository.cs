@@ -130,5 +130,12 @@ namespace Inceptum.AppServer.Hosting
             var repository = m_ApplicationRepositories.Single(r=>r.Name==application.Repository);
             repository.Install(path, new ApplicationInfo{ApplicationId = application.Name,Vendor = application.Vendor,Version = version});
         }
+
+        public void Upgrade(Application application, Version version, string path)
+        {
+            var repository = m_ApplicationRepositories.Single(r => r.Name == application.Repository);
+            repository.Upgrade(path, new ApplicationInfo { ApplicationId = application.Name, Vendor = application.Vendor, Version = version });
+
+        }
     }
 }

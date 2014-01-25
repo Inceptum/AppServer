@@ -98,7 +98,11 @@ namespace Inceptum.AppServer.Bootstrap
                                 debugWraps = setup.DebugWraps ?? new string[0]
                             })*/
                             );
-                container.Register(Component.For<IApplicationRepository>().ImplementedBy<NugetApplicationRepository>());
+                container.Register(Component.For<IApplicationRepository>().ImplementedBy<NugetApplicationRepository>().DependsOn(
+                    new
+                    {
+                        sharedRepository = Path.GetFullPath("packages\\")
+                    }));
 
                 if (setup.DebugFolders.Any())
                     container.Register(Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(

@@ -322,7 +322,9 @@ namespace Inceptum.AppServer.Hosting
             if (application == null)
                 throw new InvalidOperationException(string.Format("Application {0} not found", config.ApplicationId));
 
-            m_ApplicationRepository.Install(application,config.Version??application.Versions.Last().Version,Path.Combine(m_Context.AppsDirectory,config.Name)+"\\");
+            var version = config.Version??application.Versions.Last().Version;
+            m_ApplicationRepository.Install(application,version,Path.Combine(m_Context.AppsDirectory,config.Name)+"\\");
+
             updateInstances();
         }
         
@@ -475,6 +477,9 @@ namespace Inceptum.AppServer.Hosting
 
                 
                 instance.UpdateConfig(version,config.Environment,config.User,config.Password,config.LogLevel);
+    
+                m_ApplicationRepository.Install(application, version, Path.Combine(m_Context.AppsDirectory, config.Name) + "\\");
+
 
 
                 instance.Start();

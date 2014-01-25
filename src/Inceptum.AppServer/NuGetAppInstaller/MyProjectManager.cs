@@ -38,10 +38,13 @@ namespace Inceptum.AppServer.NuGetAppInstaller
     }
     class MyProjectManager : ProjectManager
     {
-        public MyProjectManager(IPackageRepository sourceRepository, IPackagePathResolver pathResolver, IProjectSystem project, IPackageRepository localRepository) : base(sourceRepository, pathResolver, project, localRepository)
+        private IPackageRepository m_SharedRepository;
+
+        public MyProjectManager(IPackageRepository sourceRepository, IPackagePathResolver pathResolver, IProjectSystem project, IPackageRepository localRepository, IPackageRepository sharedRepository) : base(sourceRepository, pathResolver, project, localRepository)
         {
+            m_SharedRepository = sharedRepository;
         }
-/*
+
         private void execute(IPackage package, IPackageOperationResolver resolver)
         {
             IEnumerable<PackageOperation> source = resolver.ResolveOperations(package);
@@ -52,30 +55,26 @@ namespace Inceptum.AppServer.NuGetAppInstaller
             }
             else
             {
-                if (!PackageRepositoryExtensions.Exists(this.LocalRepository, (IPackageMetadata)package))
+                if (!LocalRepository.Exists(package))
                     return;
                 this.Logger.Log(MessageLevel.Info, NuGetResources.Log_ProjectAlreadyReferencesPackage, (object)this.Project.ProjectName, (object)PackageExtensions.GetFullName((IPackageMetadata)package));
             }
         }
 
-
         public override void AddPackageReference(IPackage package, bool ignoreDependencies, bool allowPrereleaseVersions)
         {
-            InstallWalker installWalker = new InstallWalker(this.LocalRepository, this.SourceRepository, Project.TargetFramework, this.Logger, ignoreDependencies, allowPrereleaseVersions);
-            this.execute(package, (IPackageOperationResolver)installWalker);
-            base.AddPackageReference(package, ignoreDependencies, allowPrereleaseVersions);
-            /*
-                        var updateWalker = new UpdateWalker(this.LocalRepository, this.SourceRepository, (IDependentsResolver)new DependentsWalker(this.LocalRepository,Project.TargetFramework), this.ConstraintProvider, this.Project.TargetFramework, NullLogger.Instance, !ignoreDependencies, allowPrereleaseVersions)
+         //   InstallWalker walker = new InstallWalker(this.LocalRepository, this.SourceRepository, Project.TargetFramework, this.Logger, ignoreDependencies, allowPrereleaseVersions);
+            //base.AddPackageReference(package, ignoreDependencies, allowPrereleaseVersions);
+
+            var walker = new UpdateWalker(this.LocalRepository, this.SourceRepository, (IDependentsResolver)new DependentsWalker(this.LocalRepository, Project.TargetFramework), this.ConstraintProvider, this.Project.TargetFramework, NullLogger.Instance, !ignoreDependencies, allowPrereleaseVersions)
                         {
                             AcceptedTargets = PackageTargets.All
                         };
-                        this.execute(package, (IPackageOperationResolver)updateWalker);
-            #1#
-
-
+            this.execute(package, (IPackageOperationResolver)walker);
+ 
             
         }
-*/
+
 
         private void filterAssemblyReferences(List<IPackageAssemblyReference> assemblyReferences, ICollection<PackageReferenceSet> packageAssemblyReferences)
         {
@@ -201,6 +200,7 @@ namespace Inceptum.AppServer.NuGetAppInstaller
                     // if any exception occurs. This is easier than rolling back since the user can just
                     // manually uninstall things that may have failed.
                     // If this fails then the user is out of luck.
+                    m_SharedRepository.AddPackage(package);
                     LocalRepository.AddPackage(package);
                 }
             }
