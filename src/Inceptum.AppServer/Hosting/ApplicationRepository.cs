@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Castle.Core.Logging;
 using Inceptum.AppServer.AppDiscovery;
+using Inceptum.AppServer.AppDiscovery.NuGet;
 using Inceptum.AppServer.Model;
-using Inceptum.AppServer.NuGetAppInstaller;
 
 namespace Inceptum.AppServer.Hosting
 {
@@ -128,14 +128,19 @@ namespace Inceptum.AppServer.Hosting
         public void Install(Application application,Version version, string path)
         {
             var repository = m_ApplicationRepositories.Single(r=>r.Name==application.Repository);
-            repository.Install(path, new ApplicationInfo{ApplicationId = application.Name,Vendor = application.Vendor,Version = version});
+            lock (repository)
+            {
+                repository.Install(path, new ApplicationInfo { ApplicationId = application.Name, Vendor = application.Vendor, Version = version });
+            }
         }
 
         public void Upgrade(Application application, Version version, string path)
         {
             var repository = m_ApplicationRepositories.Single(r => r.Name == application.Repository);
-            repository.Upgrade(path, new ApplicationInfo { ApplicationId = application.Name, Vendor = application.Vendor, Version = version });
-
+            lock (repository)
+            {
+                repository.Upgrade(path, new ApplicationInfo {ApplicationId = application.Name, Vendor = application.Vendor, Version = version});
+            }
         }
     }
 }

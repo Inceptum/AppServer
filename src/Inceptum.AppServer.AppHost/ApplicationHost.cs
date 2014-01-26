@@ -137,12 +137,7 @@ namespace Inceptum.AppServer.Hosting
                 m_LoadedAssemblies.Add(new AssemblyName(assemblyName), new Lazy<Assembly>(() => loadAssembly(path)));
             }
 
-/*
-            m_LoadedAssemblies = instanceParams.ApplicationParams.AssembliesToLoad.Where(asm => loadedAssemblies.All(a => a.Name != new AssemblyName(asm.Key).Name))
-                                                 .ToDictionary(asm => new AssemblyName(asm.Key), asm => new Lazy<Assembly>(() => loadAssembly(asm.Value)));
-*/
-
-            //foreach (string dll in instanceParams.ApplicationParams.NativeDllToLoad)
+ 
             foreach (string dll in dlls.Where(d => d.AssemblyDefinition == null).Select(d=>d.path))
             {
                 if (LoadLibrary(dll) == IntPtr.Zero)

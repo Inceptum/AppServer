@@ -131,7 +131,7 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-        public void Start()
+        public void Start(Action beforeStart)
         {
             lock (m_SyncRoot)
             {
@@ -149,6 +149,8 @@ namespace Inceptum.AppServer.Hosting
                     
                                                               try
                                                               {
+                                                                  if (beforeStart != null)
+                                                                      beforeStart();
 /*
                                                                   if (IsMisconfigured)
                                                                       throw new ConfigurationErrorsException("Instance is misconfigured");

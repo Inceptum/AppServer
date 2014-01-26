@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Castle.Core.Logging;
 using Inceptum.AppServer.AppDiscovery.Nuget;
+using Inceptum.AppServer.AppDiscovery.Nuget.old;
 using NUnit.Framework;
 using NuGet;
 using NullLogger = Castle.Core.Logging.NullLogger;

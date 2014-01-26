@@ -14,13 +14,14 @@ using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.Windsor;
 using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.AppDiscovery.Nuget;
+using Inceptum.AppServer.AppDiscovery.NuGet;
+using Inceptum.AppServer.AppDiscovery.Nuget.old;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Providers;
 using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Management;
 using Inceptum.AppServer.Notification;
-using Inceptum.AppServer.NuGetAppInstaller;
 using Inceptum.AppServer.Windsor;
 using Microsoft.AspNet.SignalR;
 
@@ -98,19 +99,24 @@ namespace Inceptum.AppServer.Bootstrap
                                 debugWraps = setup.DebugWraps ?? new string[0]
                             })*/
                             );
-                container.Register(Component.For<IApplicationRepository>().ImplementedBy<NugetApplicationRepository>().DependsOn(
-                    new
-                    {
-                        sharedRepository = Path.GetFullPath("packages\\")
-                    }));
+                container.Register(
+                    Component.For<IApplicationRepository>().ImplementedBy<NugetApplicationRepository>()
+                    
+                    );
 
+                if (setup.DebugFolders.Any())
+                    container.Register(Component.For<IApplicationRepository>().ImplementedBy<FolderApplicationRepository>().DependsOn(
+                        new
+                        {
+                            folders = setup.DebugFolders.ToArray()
+                        }));/*
                 if (setup.DebugFolders.Any())
                     container.Register(Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(
                         new
                         {
                             folders = setup.DebugFolders.ToArray(),
                             nativeDlls=setup.DebugNativeDlls.ToArray()
-                        }));
+                        }));*/
 
             }
             catch (Exception e)

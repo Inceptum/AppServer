@@ -7,57 +7,58 @@ using System.Runtime.Versioning;
 using NuGet;
 using NuGet.Resources;
 
-namespace Inceptum.AppServer.NuGetAppInstaller
+namespace Inceptum.AppServer.AppDiscovery.NuGet
 {
 
-    static class ProjectExtensions
+    static class NugetExtensions
     {
         internal static IEnumerable<T> GetCompatibleItemsCore<T>(this IProjectSystem projectSystem, IEnumerable<T> items) where T : IFrameworkTargetable
         {
             IEnumerable<T> compatibleItems;
             if (VersionUtility.TryGetCompatibleItems<T>(projectSystem.TargetFramework, items, out compatibleItems))
                 return compatibleItems;
-            else
-                return Enumerable.Empty<T>();
+                
+            return Enumerable.Empty<T>();
         }
 
 
         internal static bool IsPortableFramework(this FrameworkName framework)
         {
-            if (framework != (FrameworkName)null)
+            if (framework != null)
                 return ".NETPortable".Equals(framework.Identifier, StringComparison.OrdinalIgnoreCase);
-            else
-                return false;
+                
+            return false;
         }
-
-        public static string GetTargetFrameworkLogString(FrameworkName targetFramework)
-        {
-            return (targetFramework == null || targetFramework == VersionUtility.EmptyFramework) ? "(not framework-specific)" : String.Empty;
-        }
+ 
 
     }
-    class MyProjectManager : ProjectManager
-    {
-        private IPackageRepository m_SharedRepository;
 
-        public MyProjectManager(IPackageRepository sourceRepository, IPackagePathResolver pathResolver, IProjectSystem project, IPackageRepository localRepository, IPackageRepository sharedRepository) : base(sourceRepository, pathResolver, project, localRepository)
+
+    class ApplicationProjectManager : ProjectManager
+    {
+        private readonly IPackageRepository m_SharedRepository;
+        private string m_PackageId;
+
+        public ApplicationProjectManager(string packageId, IPackageRepository sourceRepository, IPackagePathResolver pathResolver, IProjectSystem project, IPackageRepository localRepository, IPackageRepository sharedRepository)
+            : base(sourceRepository, pathResolver, project, localRepository)
         {
+            m_PackageId = packageId;
             m_SharedRepository = sharedRepository;
         }
 
         private void execute(IPackage package, IPackageOperationResolver resolver)
         {
             IEnumerable<PackageOperation> source = resolver.ResolveOperations(package);
-            if (Enumerable.Any<PackageOperation>(source))
+            if (source.Any())
             {
                 foreach (PackageOperation operation in source)
-                    this.Execute(operation);
+                    Execute(operation);
             }
             else
             {
                 if (!LocalRepository.Exists(package))
                     return;
-                this.Logger.Log(MessageLevel.Info, NuGetResources.Log_ProjectAlreadyReferencesPackage, (object)this.Project.ProjectName, (object)PackageExtensions.GetFullName((IPackageMetadata)package));
+                Logger.Log(MessageLevel.Info, NuGetResources.Log_ProjectAlreadyReferencesPackage, (object)this.Project.ProjectName, (object)PackageExtensions.GetFullName((IPackageMetadata)package));
             }
         }
 
@@ -66,12 +67,12 @@ namespace Inceptum.AppServer.NuGetAppInstaller
          //   InstallWalker walker = new InstallWalker(this.LocalRepository, this.SourceRepository, Project.TargetFramework, this.Logger, ignoreDependencies, allowPrereleaseVersions);
             //base.AddPackageReference(package, ignoreDependencies, allowPrereleaseVersions);
 
-            var walker = new UpdateWalker(this.LocalRepository, this.SourceRepository, (IDependentsResolver)new DependentsWalker(this.LocalRepository, Project.TargetFramework), this.ConstraintProvider, this.Project.TargetFramework, NullLogger.Instance, !ignoreDependencies, allowPrereleaseVersions)
-                        {
-                            AcceptedTargets = PackageTargets.All
-                        };
-            this.execute(package, (IPackageOperationResolver)walker);
- 
+            var walker = new UpdateWalker(LocalRepository, SourceRepository, new DependentsWalker(LocalRepository, Project.TargetFramework), ConstraintProvider,
+                Project.TargetFramework, NullLogger.Instance, !ignoreDependencies, allowPrereleaseVersions)
+            {
+                AcceptedTargets = PackageTargets.All
+            };
+            execute(package, walker);
             
         }
 
@@ -91,17 +92,17 @@ namespace Inceptum.AppServer.NuGetAppInstaller
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         protected override void ExtractPackageFilesToProject(IPackage package)
         {
-            // BUG 491: Installing a package with incompatible binaries still does a partial install.
             // Resolve assembly references and content files first so that if this fails we never do anything to the project
             List<IPackageAssemblyReference> assemblyReferences = Project.GetCompatibleItemsCore(package.AssemblyReferences).ToList();
-            List<FrameworkAssemblyReference> frameworkReferences = Project.GetCompatibleItemsCore(package.FrameworkAssemblies).ToList();
             List<IPackageFile> contentFiles = Project.GetCompatibleItemsCore(package.GetContentFiles()).ToList();
-            List<IPackageFile> buildFiles = Project.GetCompatibleItemsCore(package.GetBuildFiles()).ToList();
+            IEnumerable<IPackageFile> configItems;
+            Project.TryGetCompatibleItems(package.GetFiles("config"), out configItems);
+            var configFiles = configItems.ToArray();
+
 
             // If the package doesn't have any compatible assembly references or content files,
             // throw, unless it's a meta package.
-            if (assemblyReferences.Count == 0 && frameworkReferences.Count == 0 && contentFiles.Count == 0 && buildFiles.Count == 0 &&
-                (package.FrameworkAssemblies.Any() || package.AssemblyReferences.Any() || package.GetContentFiles().Any() || package.GetBuildFiles().Any()))
+            if (assemblyReferences.Count == 0  && contentFiles.Count == 0  &&( package.AssemblyReferences.Any() || package.GetContentFiles().Any()  ))
             {
                 // for portable framework, we want to show the friendly short form (e.g. portable-win8+net45+wp8) instead of ".NETPortable, Profile=Profile104".
                 FrameworkName targetFramework = Project.TargetFramework;
@@ -120,31 +121,14 @@ namespace Inceptum.AppServer.NuGetAppInstaller
 
             try
             {
-                if (assemblyReferences.Count > 0 || contentFiles.Count > 0 )
-                {
-                 /*   Logger.Log(MessageLevel.Debug, "For adding package '{0}' to project '{1}' that targets '{2}',", package.GetFullName(), Project.ProjectName, VersionUtility.GetShortFrameworkName(Project.TargetFramework));
-
-                    if (assemblyReferences.Count > 0)
-                    {
-                        Logger.Log(MessageLevel.Debug, NuGetResources.Debug_TargetFrameworkInfo, NuGetResources.Debug_TargetFrameworkInfo_AssemblyReferences,
-                            Path.GetDirectoryName(assemblyReferences[0].Path), VersionUtility.GetTargetFrameworkLogString(assemblyReferences[0].TargetFramework));
-                    }
-
-                    if (contentFiles.Count > 0)
-                    {
-                        Logger.Log(MessageLevel.Debug, NuGetResources.Debug_TargetFrameworkInfo, NuGetResources.Debug_TargetFrameworkInfo_ContentFiles,
-                            Path.GetDirectoryName(contentFiles[0].Path), VersionUtility.GetTargetFrameworkLogString(contentFiles[0].TargetFramework));
-                    }
-
-                    if (buildFiles.Count > 0)
-                    {
-                        Logger.Log(MessageLevel.Debug, NuGetResources.Debug_TargetFrameworkInfo, NuGetResources.Debug_TargetFrameworkInfo_BuildFiles,
-                            Path.GetDirectoryName(buildFiles[0].Path), VersionUtility.GetTargetFrameworkLogString(buildFiles[0].TargetFramework));
-                    }*/
-                }
-
                 // Add content files
-           //     Project.AddFiles(contentFiles, _fileTransformers);
+                if (m_PackageId==package.Id)
+                    Project.AddFiles(contentFiles);
+
+                // Add config files
+                var configTransformers = configFiles.Select(f => Path.GetExtension(f.Path)).Distinct().ToDictionary(e => new FileTransformExtensions(e, e), e => (IPackageFileTransformer)new ConfigTransformer(e));
+                Project.AddFiles(configFiles, configTransformers);
+    
 
                 // Add the references to the reference path
                 foreach (IPackageAssemblyReference assemblyReference in assemblyReferences)
@@ -165,44 +149,15 @@ namespace Inceptum.AppServer.NuGetAppInstaller
 
                     // The current implementation of all ProjectSystem does not use the Stream parameter at all.
                     // We can't change the API now, so just pass in a null stream.
-                    Project.AddReference(relativeReferencePath,assemblyReference.GetStream());
+                    Project.AddReference(relativeReferencePath, assemblyReference.GetStream());
                 }
 
-                // Add GAC/Framework references
-                foreach (FrameworkAssemblyReference frameworkReference in frameworkReferences)
-                {
-                    if (!Project.ReferenceExists(frameworkReference.AssemblyName))
-                    {
-                        Project.AddFrameworkReference(frameworkReference.AssemblyName);
-                    }
-                }
 
-                foreach (var importFile in buildFiles)
-                {
-                    string fullImportFilePath = Path.Combine(PathResolver.GetInstallPath(package), importFile.Path);
-                    Project.AddImport(
-                        fullImportFilePath,
-                        importFile.Path.EndsWith(".props", StringComparison.OrdinalIgnoreCase) ? ProjectImportLocation.Top : ProjectImportLocation.Bottom);
-                }
             }
             finally
             {
-/*
-                if (_packageReferenceRepository != null)
-                {
-                    // save the used project's framework if the repository supports it.
-                    _packageReferenceRepository.AddPackage(package.Id, package.Version, package.DevelopmentDependency, Project.TargetFramework);
-                }
-                else
-*/
-                {
-                    // Add package to local repository in the finally so that the user can uninstall it
-                    // if any exception occurs. This is easier than rolling back since the user can just
-                    // manually uninstall things that may have failed.
-                    // If this fails then the user is out of luck.
-                    m_SharedRepository.AddPackage(package);
-                    LocalRepository.AddPackage(package);
-                }
+                m_SharedRepository.AddPackage(package);
+                LocalRepository.AddPackage(package);
             }
         }
 
@@ -243,4 +198,30 @@ namespace Inceptum.AppServer.NuGetAppInstaller
 
 
     }
+
+     internal class ConfigTransformer : IPackageFileTransformer
+    {
+         private string m_Extension;
+
+         public ConfigTransformer(string extension)
+         {
+             m_Extension = extension;
+         }
+
+         public void TransformFile(IPackageFile file, string targetPath, IProjectSystem projectSystem)
+         {
+             var path = targetPath + m_Extension;
+             if (path.ToLower().StartsWith("config\\"))
+                 path = path.Substring(7);
+             if (projectSystem.FileExists(path))
+                projectSystem.AddFile(path + ".default", file.GetStream());
+            else
+                projectSystem.AddFile(path, file.GetStream());
+         }
+
+         public void RevertFile(IPackageFile file, string targetPath, IEnumerable<IPackageFile> matchingFiles, IProjectSystem projectSystem)
+        {
+         
+        }
+    } 
 }

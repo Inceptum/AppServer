@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
+using Inceptum.AppServer.AppDiscovery.Nuget.old;
 using NuGet;
 
 namespace Inceptum.AppServer.AppDiscovery.Nuget

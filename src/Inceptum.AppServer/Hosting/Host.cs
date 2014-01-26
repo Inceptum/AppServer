@@ -478,11 +478,11 @@ namespace Inceptum.AppServer.Hosting
                 
                 instance.UpdateConfig(version,config.Environment,config.User,config.Password,config.LogLevel);
     
-                m_ApplicationRepository.Install(application, version, Path.Combine(m_Context.AppsDirectory, config.Name) + "\\");
+                
 
 
 
-                instance.Start();
+                instance.Start(() => m_ApplicationRepository.Install(application, version, Path.Combine(m_Context.AppsDirectory, config.Name) + "\\"));
             }
             catch (Exception e)
             {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using NuGet;
 
-namespace Inceptum.AppServer.NuGetAppInstaller
+namespace Inceptum.AppServer.AppDiscovery.NuGet
 {
     public class ApplicationProjectSystem : PhysicalFileSystem, IProjectSystem, IFileSystem
     {

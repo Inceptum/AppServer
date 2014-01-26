@@ -182,14 +182,16 @@
     <Compile Include="..\WcfHelper.cs">
       <Link>Utils\WcfHelper.cs</Link>
     </Compile>
-    <Compile Include="AppDiscovery\Nuget\NugetApplicationBrowser.cs" />
-    <Compile Include="AppDiscovery\Nuget\PackageWrapper.cs" />
+    <Compile Include="AppDiscovery\FolderApplicationRepository.cs" />
+    <Compile Include="AppDiscovery\Nuget.old\NugetApplicationBrowser.cs" />
+    <Compile Include="AppDiscovery\Nuget.old\PackageWrapper.cs" />
     <Compile Include="AppServerSetup.cs" />
     <Compile Include="Hosting\JobObject.cs" />
-    <Compile Include="NuGetAppInstaller\ApplicationProjectManager.cs" />
-    <Compile Include="NuGetAppInstaller\ApplicationProjectSystem.cs" />
-    <Compile Include="NuGetAppInstaller\IApplicationRepository.cs" />
-    <Compile Include="NuGetAppInstaller\MyProjectManager.cs" />
+    <Compile Include="AppDiscovery\NuGet\ProjectManagerWrapper.cs" />
+    <Compile Include="AppDiscovery\NuGet\ApplicationProjectSystem.cs" />
+    <Compile Include="AppDiscovery\IApplicationRepository.cs" />
+    <Compile Include="AppDiscovery\NuGet\ApplicationProjectManager.cs" />
+    <Compile Include="AppDiscovery\NuGet\NugetApplicationRepository.cs" />
     <Compile Include="Utils\AppDomainRenderer.cs" />
     <Compile Include="Bootstrap\LoggingInstaller.cs" />
     <Compile Include="Hosting\ApplicationInstance.cs" />
