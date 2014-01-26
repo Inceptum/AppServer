@@ -112,7 +112,6 @@
     <Compile Include="Configuration\RemoteConfigurationProviderTests.cs" />
     <Compile Include="Configuration\ResourceConfigurationProviderBaseTests.cs" />
     <Compile Include="Investigation.cs" />
-    <Compile Include="NugetApplicationBrowserTests.cs" />
     <Compile Include="NuGet\ApplicationProjectManagerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

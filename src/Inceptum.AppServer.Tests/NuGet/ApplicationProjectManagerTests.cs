@@ -10,9 +10,11 @@ using Path=System.IO.Path;
 namespace Inceptum.AppServer.Tests.NuGetInstaller
 {
     [TestFixture]
+    [Ignore]
     public class ApplicationProjectManagerTests
     {
         [Test]
+
         public void InstallTest()
         {
          /*   string tempPath =  Path.GetTempFileName();

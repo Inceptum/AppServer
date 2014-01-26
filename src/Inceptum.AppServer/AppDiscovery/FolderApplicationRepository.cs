@@ -24,10 +24,10 @@ namespace Inceptum.AppServer.AppDiscovery
 
         public IEnumerable<ApplicationInfo> GetAvailableApps()
         {
-            return m_Folders.Select(getApplication);
+            return m_Folders.Select(f=>getApplication(f).Item1);
         }
 
-        private ApplicationInfo getApplication(string folder)
+        private Tuple<ApplicationInfo,string> getApplication(string folder)
         {
             var dlls = Directory.GetFiles(folder, "*.dll").Select(file => new { path = file, AssemblyDefinition = Hosting.CeceilExtencions.TryReadAssembly(file) }).ToArray();
 
@@ -39,11 +39,9 @@ namespace Inceptum.AppServer.AppDiscovery
                 let applicationId = appAttribute.ConstructorArguments[0].Value.ToString()
                 let vendorAttribute = asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof (AssemblyCompanyAttribute).FullName)
                 let vendor = vendorAttribute == null ? null : vendorAttribute.ConstructorArguments[0].Value.ToString()
-                let types =
-                    asm.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof (IHostedApplication).FullName))
-                        .Select(t => t.FullName + ", " + asm.FullName)
+                let types = asm.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof (IHostedApplication).FullName)).Select(t => t.FullName + ", " + asm.FullName)
                 where types.Any()
-                select new ApplicationInfo {ApplicationId = applicationId, Vendor = vendor, Version = asm.Name.Version}).ToArray();
+                select Tuple.Create(new ApplicationInfo {ApplicationId = applicationId, Vendor = vendor, Version = asm.Name.Version},file.path)).ToArray();
 
           
 
@@ -58,7 +56,9 @@ namespace Inceptum.AppServer.AppDiscovery
 
         public void Install(string installPath, ApplicationInfo application)
         {
-            var folder = m_Folders.First(f => getApplication(f) == application);
+            
+         
+            var folder = m_Folders.First(f => getApplication(f).Item1 == application);
             m_Logger.WarnFormat("Cleaning up install folder '{0}'", installPath);
             var binFolder = Path.GetFullPath(Path.Combine(installPath, "bin"));
             if (Directory.Exists(binFolder))
@@ -84,7 +84,5 @@ namespace Inceptum.AppServer.AppDiscovery
         {
             throw new System.NotImplementedException();
         }
-
-       
     }
 }

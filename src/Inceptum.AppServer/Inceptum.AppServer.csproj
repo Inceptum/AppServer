@@ -183,8 +183,6 @@
       <Link>Utils\WcfHelper.cs</Link>
     </Compile>
     <Compile Include="AppDiscovery\FolderApplicationRepository.cs" />
-    <Compile Include="AppDiscovery\Nuget.old\NugetApplicationBrowser.cs" />
-    <Compile Include="AppDiscovery\Nuget.old\PackageWrapper.cs" />
     <Compile Include="AppServerSetup.cs" />
     <Compile Include="Hosting\JobObject.cs" />
     <Compile Include="AppDiscovery\NuGet\ProjectManagerWrapper.cs" />
@@ -195,11 +193,9 @@
     <Compile Include="Utils\AppDomainRenderer.cs" />
     <Compile Include="Bootstrap\LoggingInstaller.cs" />
     <Compile Include="Hosting\ApplicationInstance.cs" />
-    <Compile Include="AppDiscovery\FolderApplicationBrowser.cs" />
     <Compile Include="Hosting\ApplicationRepository.cs" />
     <Compile Include="Hosting\Host.cs" />
     <Compile Include="Bootstrap\Bootstrapper.cs" />
-    <Compile Include="AppDiscovery\IApplicationBrowser.cs" />
     <Compile Include="Logging\LogCache.cs" />
     <Compile Include="Logging\LogConnection.cs" />
     <Compile Include="Logging\SignalRhost.cs" />

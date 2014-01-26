@@ -13,9 +13,7 @@ using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.Windsor;
 using Inceptum.AppServer.AppDiscovery;
-using Inceptum.AppServer.AppDiscovery.Nuget;
 using Inceptum.AppServer.AppDiscovery.NuGet;
-using Inceptum.AppServer.AppDiscovery.Nuget.old;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Providers;
 using Inceptum.AppServer.Hosting;
@@ -89,16 +87,7 @@ namespace Inceptum.AppServer.Bootstrap
                         Component.For<IApplicationInstanceFactory>().AsFactory(),
                         Component.For<ApplicationInstance>().LifestyleTransient(),
                         Component.For<ApplicationRepository>(),
-                        Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }),
-                        Component.For<IApplicationBrowser>().ImplementedBy<NugetApplicationBrowser>()//.DependsOnBundle("server.host", "nuget", "{environment}", "{machineName}")
-                        /*,                        
-                        Component.For<IApplicationBrowser>().ImplementedBy<OpenWrapApplicationBrowser>().DependsOn(
-                            new
-                            {
-                                repository = setup.Repository ?? "Repository",
-                                debugWraps = setup.DebugWraps ?? new string[0]
-                            })*/
-                            );
+                        Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }));
                 container.Register(
                     Component.For<IApplicationRepository>().ImplementedBy<NugetApplicationRepository>()
                     
@@ -109,14 +98,7 @@ namespace Inceptum.AppServer.Bootstrap
                         new
                         {
                             folders = setup.DebugFolders.ToArray()
-                        }));/*
-                if (setup.DebugFolders.Any())
-                    container.Register(Component.For<IApplicationBrowser>().ImplementedBy<FolderApplicationBrowser>().DependsOn(
-                        new
-                        {
-                            folders = setup.DebugFolders.ToArray(),
-                            nativeDlls=setup.DebugNativeDlls.ToArray()
-                        }));*/
+                        })); 
 
             }
             catch (Exception e)
