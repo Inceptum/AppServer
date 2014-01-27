@@ -9,6 +9,7 @@ namespace Inceptum.AppServer.Model
     public class Application : IComparer<ApplicationVersion>
     {
         private readonly List<ApplicationVersion> m_Versions;
+        public bool Debug { get; set; }
         public string Name { get; private set; }
         public string Vendor { get; private set; }
         public string Repository { get; private set; }

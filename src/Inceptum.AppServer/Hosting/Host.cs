@@ -482,7 +482,7 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-                instance.Start(() => m_ApplicationRepository.Install(application, version, Path.Combine(m_Context.AppsDirectory, config.Name) + "\\"));
+                instance.Start(application.Debug, () => m_ApplicationRepository.Install(application, version, Path.Combine(m_Context.AppsDirectory, config.Name) + "\\"));
             }
             catch (Exception e)
             {

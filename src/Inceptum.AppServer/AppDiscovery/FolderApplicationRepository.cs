@@ -41,7 +41,7 @@ namespace Inceptum.AppServer.AppDiscovery
                 let vendor = vendorAttribute == null ? null : vendorAttribute.ConstructorArguments[0].Value.ToString()
                 let types = asm.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof (IHostedApplication).FullName)).Select(t => t.FullName + ", " + asm.FullName)
                 where types.Any()
-                select Tuple.Create(new ApplicationInfo {ApplicationId = applicationId, Vendor = vendor, Version = asm.Name.Version},file.path)).ToArray();
+                select Tuple.Create(new ApplicationInfo {Debug=true,ApplicationId = applicationId, Vendor = vendor, Version = asm.Name.Version},file.path)).ToArray();
 
           
 

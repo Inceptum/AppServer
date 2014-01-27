@@ -131,7 +131,7 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-        public void Start(Action beforeStart)
+        public void Start(bool debug,Action beforeStart)
         {
             lock (m_SyncRoot)
             {
@@ -156,7 +156,7 @@ namespace Inceptum.AppServer.Hosting
                                                                       throw new ConfigurationErrorsException("Instance is misconfigured");
 */
 
-                                                                  createHost();
+                                                                  createHost(debug);
                                                               }
                                                               catch (Exception e)
                                                               {
@@ -219,7 +219,7 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-        private void createHost()
+        private void createHost(bool debug)
         {
             string path = Path.GetFullPath(new[] { m_Context.AppsDirectory, Name }.Aggregate(Path.Combine));
             if (!Directory.Exists(path))
@@ -256,13 +256,15 @@ namespace Inceptum.AppServer.Hosting
                 procSetup.Password = pass;
                 procSetup.UseShellExecute = false;
             }
+ 
 
 #if !DEBUG
-            if (!m_ApplicationParams.Debug)
+            if (!debug)
             {
                 procSetup.CreateNoWindow = true;
             }
 #endif
+ 
 
             m_Process = Process.Start(procSetup);
 

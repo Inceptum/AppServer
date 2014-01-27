@@ -5,6 +5,7 @@ namespace Inceptum.AppServer.AppDiscovery
 {
     public class ApplicationInfo
     {
+        public bool Debug { get; set; } 
         public string Vendor { get; set; } 
         public string Description { get; set; } 
         public string ApplicationId { get; set; }

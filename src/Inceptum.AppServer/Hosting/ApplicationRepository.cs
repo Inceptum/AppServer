@@ -37,9 +37,12 @@ namespace Inceptum.AppServer.Hosting
                 });*/
             var applications = new List<Application>(
                                                     from info in appInfos
-                                                    group info by new { vendor = info.Item1.Vendor, name = info.Item1.ApplicationId, repo=info.Item2 }
+                                                    group info by new { vendor = info.Item1.Vendor, name = info.Item1.ApplicationId, repo=info.Item2 ,debug=info.Item1.Debug}
                                                         into app
                                                         select new Application(app.Key.repo, app.Key.name, app.Key.vendor, app.ToDictionary(a => a.Item1.Version, a => a.Item1.Description))
+                                                        {
+                                                            Debug = app.Key.debug
+                                                        }
                                                     );
             var apps = String.Join(
                             Environment.NewLine + "\t",
