@@ -22,6 +22,7 @@ namespace Inceptum.AppServer
         void StopInstance(string name);
         void AddInstance(ApplicationInstanceInfo config);
         void UpdateInstance(ApplicationInstanceInfo config);
+        void SetInstanceVersion(string name, Version version);
         void DeleteInstance(string name);
 
         string ExecuteCommand(string instance, InstanceCommand command);
