@@ -56,6 +56,7 @@ namespace Inceptum.AppServer.Management.OpenRasta
                     .And.AtUri("api/instance/{instance}/start").Named("start")
                     .And.AtUri("api/instance/{instance}/stop").Named("stop")
                     .And.AtUri("api/instance/{instance}/restart").Named("restart")
+                    .And.AtUri("api/instance/{instance}/version/{version}").Named("version")
                     .HandledBy<InstancesHandler>()
                     .TranscodedBy<NewtonsoftJsonCodec>();
                 
