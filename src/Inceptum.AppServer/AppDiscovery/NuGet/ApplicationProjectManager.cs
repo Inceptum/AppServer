@@ -117,7 +117,8 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
             // IMPORTANT: this filtering has to be done AFTER the 'if' statement above,
             // so that we don't throw the exception in case the <References> filters out all assemblies.
-            filterAssemblyReferences(assemblyReferences, package.PackageAssemblyReferences);
+            //[KN]: we do need all files since reference is just presence in app bin folder in this case
+            //filterAssemblyReferences(assemblyReferences, package.PackageAssemblyReferences);
 
             try
             {

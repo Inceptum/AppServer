@@ -17,18 +17,20 @@ namespace Inceptum.AppServer.Tests.NuGetInstaller
 
         public void InstallTest()
         {
+
+            
          /*   string tempPath =  Path.GetTempFileName();
             File.Delete(tempPath);
             Directory.CreateDirectory(tempPath);*/
 
-            var tempPath = @"d:\AppsTest\operations";
+            var tempPath = @"d:\AppsTest\raven";
             if(Directory.Exists(tempPath))
                 Directory.Delete(tempPath,true);
                 
             Directory.CreateDirectory(tempPath);
             Console.WriteLine(tempPath);
-            var applicationProjectManager = new ProjectManagerWrapper("Unistream.Processing.Operations", Path.Combine(tempPath, "packages"), tempPath, new ConsoleLogger(), PackageRepositoryFactory.Default.CreateRepository(@"d:\AppsTest\Repo23"));
-            applicationProjectManager.InstallPackage("Unistream.Processing.Operations", new SemanticVersion("1.0.1.23"));
+            var applicationProjectManager = new ProjectManagerWrapper("RavenDB.Database", Path.Combine(tempPath, "packages"), tempPath, new ConsoleLogger(), PackageRepositoryFactory.Default.CreateRepository(@"d:\AppsTest\Repo23"));
+            applicationProjectManager.InstallPackage("RavenDB.Database", new SemanticVersion("2.5.2700"));
         }
 
         [Test]
