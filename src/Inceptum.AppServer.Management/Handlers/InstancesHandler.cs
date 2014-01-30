@@ -1,7 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Model;
+using Newtonsoft.Json;
 using OpenRasta.Web;
 
 namespace Inceptum.AppServer.Management.Handlers
@@ -92,6 +94,12 @@ namespace Inceptum.AppServer.Management.Handlers
                 }
             }
             m_Host.StartInstance(instance);
+        }
+
+        [HttpOperation(HttpMethod.PUT, ForUriName = "version")]
+        public void Version(string instance, [JsonConverter(typeof(StringVersionJsonConverter))]Version version)
+        {
+            m_Host.SetInstanceVersion(instance, version);
         }
     }
 }

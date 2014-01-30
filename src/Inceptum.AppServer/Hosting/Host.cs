@@ -327,7 +327,35 @@ namespace Inceptum.AppServer.Hosting
 
             updateInstances();
         }
-        
+
+        public void SetInstanceVersion(string name, Version version)
+        {
+            try
+            {
+                string instances;
+                lock (m_SyncRoot)
+                {
+                    if (m_IsStopped)
+                        throw new ObjectDisposedException("Host is disposed");
+
+                    var instanceConfig = m_InstancesConfiguration.FirstOrDefault(x => x.Name == name);
+                    if (instanceConfig == null)
+                        throw new ConfigurationErrorsException(string.Format("Instance named '{0}' not found", name));
+                    
+                    instanceConfig.Version = version;
+
+                    instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(c => c.Name != instanceConfig.Name).Concat(new[] { instanceConfig }).ToArray(), Formatting.Indented);
+                }
+                m_ServerConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
+                updateInstances();
+            }
+            catch (Exception e)
+            {
+                Logger.WarnFormat(e, " Instance {0} failed to change version to {1} ", name, version);
+                throw;
+            }
+        }
+
         public void UpdateInstance(ApplicationInstanceInfo config)
         {
             string instances;
