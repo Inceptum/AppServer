@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Castle.Core.Logging;
@@ -29,8 +30,36 @@ namespace Inceptum.AppServer.Tests.NuGetInstaller
                 
             Directory.CreateDirectory(tempPath);
             Console.WriteLine(tempPath);
-            var applicationProjectManager = new ProjectManagerWrapper("RavenDB.Database", Path.Combine(tempPath, "packages"), tempPath, new ConsoleLogger(), PackageRepositoryFactory.Default.CreateRepository(@"d:\AppsTest\Repo23"));
-            applicationProjectManager.InstallPackage("RavenDB.Database", new SemanticVersion("2.5.2700"));
+
+            var applicationRepository = "http://nuget.it.unistreambank.ru/nuget/PROD.Apps";
+            var dependenciesRepositories = new string[] { "http://nuget.it.unistreambank.ru/nuget/PROD.Libs" }; ;
+
+            var appRepository = PackageRepositoryFactory.Default.CreateRepository(applicationRepository);
+            IPackageRepository[] dependencyRepositories = dependenciesRepositories.Select(r => PackageRepositoryFactory.Default.CreateRepository(r)).ToArray();
+
+            var dependenciesRepository = new AggregateRepository(new[] { appRepository}.Concat(dependencyRepositories)
+                );
+
+            var applicationProjectManager = new ProjectManagerWrapper("Unistream.Processing.Operations", Path.Combine(tempPath, "packages"), tempPath, new ConsoleLogger(), dependenciesRepository);
+            Stopwatch sw=Stopwatch.StartNew();
+            //var applicationProjectManager = new ProjectManagerWrapper("RavenDB.Database", Path.Combine(tempPath, "packages"), tempPath, new ConsoleLogger(), PackageRepositoryFactory.Default.CreateRepository(@"d:\AppsTest\Repo23"));
+            applicationProjectManager.InstallPackage("Unistream.Processing.Operations", new SemanticVersion("1.0.0.569"));
+/*
+            var applicationRepository = "http://nuget.it.unistreambank.ru/nuget/DEV.Apps";
+            var dependenciesRepositories = new string[]{"http://nuget.it.unistreambank.ru/nuget/DEV.Libs", "http://nuget.it.unistreambank.ru/nuget/DEV.ThirdParty" }; ;
+
+            var appRepository = PackageRepositoryFactory.Default.CreateRepository(applicationRepository);
+            IPackageRepository[] dependencyRepositories = dependenciesRepositories.Select(r => PackageRepositoryFactory.Default.CreateRepository(r)).ToArray();
+
+            var dependenciesRepository = new AggregateRepository(new[] { appRepository}.Concat(dependencyRepositories)
+                );
+
+            var applicationProjectManager = new ProjectManagerWrapper("Unistream.Integration.PaymentCenter.Hooks.ClientsManagement", Path.Combine(tempPath, "packages"), tempPath, new ConsoleLogger(), dependenciesRepository);
+            Stopwatch sw=Stopwatch.StartNew();
+            //var applicationProjectManager = new ProjectManagerWrapper("RavenDB.Database", Path.Combine(tempPath, "packages"), tempPath, new ConsoleLogger(), PackageRepositoryFactory.Default.CreateRepository(@"d:\AppsTest\Repo23"));
+            applicationProjectManager.InstallPackage("Unistream.Integration.PaymentCenter.Hooks.ClientsManagement", new SemanticVersion("1.0.2.17"));
+*/
+            Console.WriteLine(sw.ElapsedMilliseconds);
         }
 
         [Test]
