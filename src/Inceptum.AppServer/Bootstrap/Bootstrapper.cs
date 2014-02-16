@@ -20,8 +20,10 @@ using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Management;
 using Inceptum.AppServer.Notification;
+using Inceptum.AppServer.Raven;
 using Inceptum.AppServer.Windsor;
 using Microsoft.AspNet.SignalR;
+using Raven.Client;
 
 namespace Inceptum.AppServer.Bootstrap
 {
@@ -70,17 +72,18 @@ namespace Inceptum.AppServer.Bootstrap
                 container
                     .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
                                                                  .Params(new { environment = setup.Environment, machineName = Environment.MachineName })
-        /*                                                         .ConfigureTransports(new Dictionary<string, JailStrategy> { { "Environment", JailStrategy.Custom(() => setup.Environment) } },
-                                                                                      "server.transports", "{environment}", "{machineName}")*/
                                                         )
-                    //messaging
-                    //.AddFacility<MessagingFacility>(f => { })
+
                     //Management
                     .Register(                        
-                       // Component.For<IDependencyResolver>().Instance(new WindsorToSignalRAdapter(container.Kernel)),
-                        Component.For<SignalRhost>(),//.DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
-                        Component.For<ManagementConsole>().DependsOn(new { container }),//.DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
+                        Component.For<SignalRhost>(),
+                        Component.For<ManagementConsole>().DependsOn(new { container }),
                         Component.For<IHostNotificationListener>().ImplementedBy<UiNotifier>()
+                        )
+                    //Raven
+                    .Register(
+                        Component.For<RavenBootstrapper>()/*.DependsOn(new { indexLookupAssemblies = new[] { typeof(MessageViewModelListIndex).Assembly } })*/,
+                        Component.For<IDocumentStore>().UsingFactoryMethod(k => k.Resolve<RavenBootstrapper>().Store)
                         )
                     //App hostoing
                     .Register(

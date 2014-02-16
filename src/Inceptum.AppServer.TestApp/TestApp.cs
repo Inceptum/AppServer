@@ -8,6 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Newtonsoft.Json.Linq;
+using Raven.Client;
+using Raven.Client.Document;
+using Raven.Client.Extensions;
 
 namespace Inceptum.AppServer.TestApp
 {
@@ -22,14 +25,23 @@ namespace Inceptum.AppServer.TestApp
         {
             get; private set; }
     }
+
+
+    class TestDocument
+    {
+        public string Id { get; set; } 
+        public string Value { get; set; } 
+    }
     public class TestApp:IHostedApplication
     {
         private TestConf m_Config;
         private ILogger m_Logger;
         private JObject m_JObject;
+        private AppServerContext m_Context;
 
-        public TestApp(ILogger logger,TestConf config)
+        public TestApp(ILogger logger,TestConf config,AppServerContext context)
         {
+            m_Context = context;
             m_Logger = logger??NullLogger.Instance;
             m_Config = config;
         }
@@ -52,6 +64,19 @@ namespace Inceptum.AppServer.TestApp
                     throw new Exception();
                 }).Start();
             }
+
+            //var documentStore = new DocumentStore { Url = "http://localhost:" + m_Config.WebUIPort + "/" };
+            var documentStore = new DocumentStore { Url = m_Context.RavenUrl };
+            documentStore.Initialize();
+
+            documentStore.DatabaseCommands.EnsureDatabaseExists("TestApp");
+            using (IDocumentSession session = documentStore.OpenSession("TestApp"))
+            {
+                var model = new TestDocument() { Value = Guid.NewGuid().ToString() };
+                session.Store(model, Guid.NewGuid().ToString());
+                session.SaveChanges();
+            }
+
 
             bool hangOnStart;
             if (bool.TryParse(ConfigurationManager.AppSettings["hangOnStart"], out hangOnStart) && hangOnStart)
