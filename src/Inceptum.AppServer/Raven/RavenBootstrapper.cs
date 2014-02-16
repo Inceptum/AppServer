@@ -112,6 +112,7 @@ namespace Inceptum.AppServer.Raven
             {
                 m_Store.Value.Dispose();
                 m_Store = null;
+                m_Logger.Info("RavenDb is stopped");
             }
         }
 
