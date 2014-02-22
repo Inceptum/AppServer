@@ -121,10 +121,11 @@ namespace Inceptum.AppServer.Hosting
  
             IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
 
-            var dlls = Directory.GetFiles(Path.Combine(m_Context.AppsDirectory, m_InstanceName,"bin"), "*.dll")
+            var folder = Path.Combine(m_Context.AppsDirectory, m_InstanceName, "bin");
+            var dlls = new[]{"*.dll","*.exe"}
+                .SelectMany(searchPattern => Directory.GetFiles(folder, searchPattern))
                 .Select(file => new {path = file, AssemblyDefinition = CeceilExtencions.TryReadAssembly(file)  }).ToArray();
-
-
+            
             var injectedAssemblies = instanceParams.AssembliesToLoad;
             m_LoadedAssemblies = dlls.Where(d => d.AssemblyDefinition!=null)
                                      .Where(asm => loadedAssemblies.All(a => a.Name != asm.AssemblyDefinition.Name.Name))

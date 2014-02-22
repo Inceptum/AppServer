@@ -29,7 +29,9 @@ namespace Inceptum.AppServer.AppDiscovery
 
         private Tuple<ApplicationInfo,string> getApplication(string folder)
         {
-            var dlls = Directory.GetFiles(folder, "*.dll").Select(file => new { path = file, AssemblyDefinition = Hosting.CeceilExtencions.TryReadAssembly(file) }).ToArray();
+            var dlls = new[] { "*.dll", "*.exe" }
+                .SelectMany(searchPattern => Directory.GetFiles(folder, searchPattern))
+                .Select(file => new { path = file, AssemblyDefinition = Hosting.CeceilExtencions.TryReadAssembly(file) }).ToArray();
 
             var apps =( from file in dlls
                 let asm = file.AssemblyDefinition
@@ -73,7 +75,7 @@ namespace Inceptum.AppServer.AppDiscovery
                 var extension = Path.GetExtension(file);
                 var fileName= Path.GetFileName(file);
                 extension=extension==null?"":extension.ToLower();
-                if (extension == ".pdb" || extension == ".dll")
+                if (extension == ".pdb" || extension == ".dll" || extension == ".exe")
                     File.Copy(file, Path.Combine(binFolder, fileName), true);
                 else
                     File.Copy(file, Path.Combine(installPath, fileName), true);
