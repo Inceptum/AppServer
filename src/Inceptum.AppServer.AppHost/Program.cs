@@ -35,6 +35,8 @@ namespace Inceptum.AppServer.AppHost
                 AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", appConfigPath);
             }
 
+            AppDomain.CurrentDomain.SetData("APPBASE",Path.GetFullPath("./bin"));
+
 
 
             var name = args[0];

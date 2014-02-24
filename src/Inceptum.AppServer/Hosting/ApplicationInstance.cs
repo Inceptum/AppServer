@@ -241,7 +241,9 @@ namespace Inceptum.AppServer.Hosting
             {
                 FileName = Path.Combine(directoryName, "AppHost.exe"),
                 Arguments = args,
-                WorkingDirectory = path
+                WorkingDirectory = path,
+                
+
             };
 
             if (!string.IsNullOrWhiteSpace(m_User))

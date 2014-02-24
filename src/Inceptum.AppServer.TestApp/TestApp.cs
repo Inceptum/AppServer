@@ -51,6 +51,7 @@ namespace Inceptum.AppServer.TestApp
             File.WriteAllText("test.txt","ПЫЩ ПЫЩ ПЫЩ!!!");
             m_Logger.InfoFormat("Test App");
             m_Logger.InfoFormat("CurrentDirectory: {0}",System.IO.Directory.GetCurrentDirectory());
+            m_Logger.InfoFormat("AppDomian.BaseDirectory: {0}", AppDomain.CurrentDomain.BaseDirectory);
             m_Logger.InfoFormat("Value from config: '{0}'", m_Config.Value);
             m_Logger.InfoFormat("Value from app.config: '{0}'", ConfigurationManager.AppSettings["appConfigSetting"]);
             m_Logger.InfoFormat("Application assembly version: '{0}'", typeof(TestApp).Assembly.GetName().Version);
