@@ -310,12 +310,26 @@
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
+  de es fr it ja ko ru zh-Hans zh-Hant
 -->
   <Target Name="AfterBuild">
-    <CreateItem Include="$(OutDir)\*.dll;$(OutDir)\*.pdb;$(OutDir)\*.xml;" Exclude="$(OutDir)\Mono.*.dll;$(OutDir)\AppServer.pdb;$(OutDir)\AppServer.xml;$(OutDir)\AppHost.pdb;$(OutDir)\Inceptum.AppServer.Sdk.dll;$(OutDir)\Inceptum.AppServer.Sdk.pdb">
+    <RemoveDir Directories="$(OutDir)\bin\" />
+    <CreateItem Include="$(OutDir)\**\*.dll;$(OutDir)\**\*.pdb;$(OutDir)\**\*.xml;" Exclude="$(OutDir)\Mono.*.dll;$(OutDir)\AppServer.pdb;$(OutDir)\AppServer.xml;$(OutDir)\AppHost.pdb;$(OutDir)\Inceptum.AppServer.Sdk.dll;$(OutDir)\Inceptum.AppServer.Sdk.pdb">
       <Output TaskParameter="Include" ItemName="FilesToMove" />
     </CreateItem>
-    <RemoveDir Directories="$(OutDir)\bin\" />
-    <Move SourceFiles="@(FilesToMove)" DestinationFiles="@(FilesToMove->'$(OutDir)\bin\%(Filename)%(Extension)')" />
-  </Target>
+    <Move SourceFiles="@(FilesToMove)" DestinationFiles="@(FilesToMove->'$(OutDir)\bin\%(RecursiveDir)\%(Filename)%(Extension)')" />
+    <RemoveDir Directories="$(OutDir)\de\;$(OutDir)\es\;$(OutDir)\fr\;$(OutDir)\it\;$(OutDir)\ja\;$(OutDir)\ko\;$(OutDir)\ru\;$(OutDir)\zh-Hans\;$(OutDir)\zh-Hant\" />
+	
+	
+	<!--
+	
+    <CreateItem Include="$(OutDir)\de\*.dll">
+      <Output TaskParameter="Include" ItemName="FilesToMove_de" />
+    </CreateItem>
+    <RemoveDir Directories="$(OutDir)\bin\de\" />
+    <Move SourceFiles="@(FilesToMove_de)" DestinationFiles="@(FilesToMove_de->'$(OutDir)\bin\de\%(Filename)%(Extension)')" />
+    <RemoveDir Directories="$(OutDir)\de\" />
+-->
+
+	</Target>
 </Project>
