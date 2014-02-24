@@ -63,7 +63,7 @@ define([
                 this.log.html("");
             },
             onMessageReceived :function (data) {
-                var needToScroll=$(".log p").length>0 && $(".log p").last().offset().top - $(".log").offset().top<=$(".log").height();
+              /*  var needToScroll=$(".log p").length>0 && $(".log p").last().offset().top - $(".log").offset().top<=$(".log").height();
                 var p;
                 var self=this;
                 if( Object.prototype.toString.call( data ) === '[object Array]' ) {
@@ -78,7 +78,11 @@ define([
                     this.log.append(p);
                 }
                 if(needToScroll)
-                    this.log.scrollTo(p);
+                    this.log.scrollTo(p);*/
+
+                p = this.createLogItem(data);
+                this.log.prepend(p);
+                //this.log.scrollTo(p);
             },
             createLogItem:function(logEvent){
                 var p = $('<p data-source="'+logEvent.source+'">');
