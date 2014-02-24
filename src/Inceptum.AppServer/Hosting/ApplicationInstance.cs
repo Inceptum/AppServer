@@ -38,12 +38,12 @@ namespace Inceptum.AppServer.Hosting
         private readonly object m_ServiceHostLock=new object();
         private readonly JobObject m_JobObject;
         private Process m_Process;
-         private ChannelFactory<IApplicationHost> m_AppHostFactory;
-         private string m_User;
-         private string m_Password;
-         private LoggerLevel m_LogLevel;
+        private ChannelFactory<IApplicationHost> m_AppHostFactory;
+        private string m_User;
+        private string m_Password;
+        private LoggerLevel m_LogLevel;
 
-         public string Name { get; set; }
+        public string Name { get; set; }
         public string Environment { get; set; }
         public ILogger Logger { get; set; }
         public bool HasToBeRecreated { get; set; }
@@ -239,7 +239,7 @@ namespace Inceptum.AppServer.Hosting
             var directoryName = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? "";
             var procSetup = new ProcessStartInfo
             {
-                FileName = Path.Combine(directoryName, "AppHost.exe"),
+                FileName = Path.Combine(directoryName, "AppHost", "AppHost.exe"),
                 Arguments = args,
                 WorkingDirectory = path,
                 

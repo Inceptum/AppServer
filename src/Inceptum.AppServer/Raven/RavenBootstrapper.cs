@@ -33,7 +33,7 @@ namespace Inceptum.AppServer.Raven
                 m_Config = new RavenConfig()
                 {
                     WebUIPort = bundle.port,
-                    BaseDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "db"),
+                    BaseDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Raven"),
                     RunInMemory = false,
                     WebUIEnabled = bundle.webUIEnabled
                 };
@@ -45,7 +45,7 @@ namespace Inceptum.AppServer.Raven
                 m_Config = new RavenConfig()
                 {
                     WebUIPort = 9233,
-                    BaseDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "db"),
+                    BaseDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Raven"),
                     RunInMemory = false,
                     WebUIEnabled = true
                 };
@@ -86,6 +86,8 @@ namespace Inceptum.AppServer.Raven
             store.Configuration.Settings["Raven/Esent/MaxVerPages"] = "128";
             store.Configuration.MaxNumberOfItemsToIndexInSingleBatch = 1024;
             store.Configuration.DisableClusterDiscovery = true;
+
+            
 
             store.Initialize();
 

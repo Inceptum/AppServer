@@ -313,23 +313,31 @@
   de es fr it ja ko ru zh-Hans zh-Hant
 -->
   <Target Name="AfterBuild">
+    <RemoveDir Directories="$(OutDir)\AppHost\" />
+
+	<CreateItem Include="$(OutDir)\AppHost.pdb;$(OutDir)\AppHost.exe;">
+      <Output TaskParameter="Include" ItemName="AppHostFiles" />
+    </CreateItem>
+	<Move SourceFiles="@(AppHostFiles)" DestinationFiles="@(AppHostFiles->'$(OutDir)\AppHost\%(Filename)%(Extension)')" />
+  
+
+    <CreateItem Include="$(OutDir)\Mono.*.dll;$(OutDir)\Inceptum.AppServer.Sdk.dll;$(OutDir)\Inceptum.AppServer.Sdk.pdb">
+      <Output TaskParameter="Include" ItemName="AppHostDependenciesFiles" />
+    </CreateItem>
+    <Copy SourceFiles="@(AppHostDependenciesFiles)" DestinationFiles="@(AppHostDependenciesFiles->'$(OutDir)\AppHost\%(Filename)%(Extension)')" />
+
+
+  
     <RemoveDir Directories="$(OutDir)\bin\" />
+<!--
     <CreateItem Include="$(OutDir)\**\*.dll;$(OutDir)\**\*.pdb;$(OutDir)\**\*.xml;" Exclude="$(OutDir)\Mono.*.dll;$(OutDir)\AppServer.pdb;$(OutDir)\AppServer.xml;$(OutDir)\AppHost.pdb;$(OutDir)\Inceptum.AppServer.Sdk.dll;$(OutDir)\Inceptum.AppServer.Sdk.pdb">
+	-->
+    <CreateItem Include="$(OutDir)\**\*.dll;$(OutDir)\**\*.pdb;$(OutDir)\**\*.xml;" Exclude="$(OutDir)\AppServer.pdb;$(OutDir)\AppServer.xml;$(OutDir)\AppHost.pdb;$(OutDir)\AppHost\**\*;$(OutDir)\Raven\**\*">
       <Output TaskParameter="Include" ItemName="FilesToMove" />
     </CreateItem>
     <Move SourceFiles="@(FilesToMove)" DestinationFiles="@(FilesToMove->'$(OutDir)\bin\%(RecursiveDir)\%(Filename)%(Extension)')" />
     <RemoveDir Directories="$(OutDir)\de\;$(OutDir)\es\;$(OutDir)\fr\;$(OutDir)\it\;$(OutDir)\ja\;$(OutDir)\ko\;$(OutDir)\ru\;$(OutDir)\zh-Hans\;$(OutDir)\zh-Hant\" />
 	
-	
-	<!--
-	
-    <CreateItem Include="$(OutDir)\de\*.dll">
-      <Output TaskParameter="Include" ItemName="FilesToMove_de" />
-    </CreateItem>
-    <RemoveDir Directories="$(OutDir)\bin\de\" />
-    <Move SourceFiles="@(FilesToMove_de)" DestinationFiles="@(FilesToMove_de->'$(OutDir)\bin\de\%(Filename)%(Extension)')" />
-    <RemoveDir Directories="$(OutDir)\de\" />
--->
 
 	</Target>
 </Project>
