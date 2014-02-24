@@ -82,7 +82,6 @@ define([
 
                 p = this.createLogItem(data);
                 this.log.prepend(p);
-                //this.log.scrollTo(p);
             },
             createLogItem:function(logEvent){
                 var p = $('<p data-source="'+logEvent.source+'">');
