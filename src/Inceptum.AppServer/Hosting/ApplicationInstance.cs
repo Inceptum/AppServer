@@ -143,7 +143,7 @@ namespace Inceptum.AppServer.Hosting
                     throw new InvalidOperationException("Instance already started");
                 Status = HostedAppStatus.Starting;
 
-                Logger.InfoFormat("Starting instance '{0}'", Name);
+                Logger.InfoFormat("Starting instance '{0}'. Debug mode: {1}", Name,debug);
                 m_CurrentTask = Task.Factory.StartNew(() =>
                 {
                     
@@ -231,10 +231,10 @@ namespace Inceptum.AppServer.Hosting
             {
                 copyConfig(path, configFile, Path.GetFileName(configFile));
             }
-
-            if (m_ApplicationParams.Debug)
-                args += " -debug";
 */
+            if (debug)
+                args += " -debug";
+
 
             var directoryName = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? "";
             var procSetup = new ProcessStartInfo
