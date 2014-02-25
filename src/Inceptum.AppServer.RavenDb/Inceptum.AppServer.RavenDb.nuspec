@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Inceptum.Messaging.RavenDb</id>
+    <id>Inceptum.AppServer.RavenDb</id>
     <version>$version$</version>
-    <title>Inceptum.Messaging.RavenDb</title>
+    <title>Inceptum.AppServer.RavenDb</title>
     <authors>InceptumSoft</authors>
     <owners>InceptumSoft</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Inceptum.Messaging.RavenDb</description>
     <releaseNotes></releaseNotes>
-    <copyright>Copyright 2013</copyright>
-    <tags></tags>
-	<dependencies>
+    <copyright>Copyright 2014</copyright>
+    <tags>Inceptum.AppServer.Application</tags>
+    <dependencies>
         <dependency id="Inceptum.AppServer.Sdk" version="[$sdkVersion$]" />
     </dependencies>  
   </metadata>
