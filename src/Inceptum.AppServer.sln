@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.Sdk.Mess
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.TestApp", "Inceptum.AppServer.TestApp\Inceptum.AppServer.TestApp.csproj", "{BCCC2E49-7710-44AA-A76E-7C7850692573}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.AppServer.RavenDb", "Inceptum.AppServer.RavenDb\Inceptum.AppServer.RavenDb.csproj", "{E19C2B3C-A790-4303-BFA8-47E666D70084}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -142,6 +144,18 @@ Global
 		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{BCCC2E49-7710-44AA-A76E-7C7850692573}.Release|x86.ActiveCfg = Release|Any CPU
+		{E19C2B3C-A790-4303-BFA8-47E666D70084}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E19C2B3C-A790-4303-BFA8-47E666D70084}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E19C2B3C-A790-4303-BFA8-47E666D70084}.Debug|Itanium.ActiveCfg = Debug|Any CPU
+		{E19C2B3C-A790-4303-BFA8-47E666D70084}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E19C2B3C-A790-4303-BFA8-47E666D70084}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E19C2B3C-A790-4303-BFA8-47E666D70084}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E19C2B3C-A790-4303-BFA8-47E666D70084}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E19C2B3C-A790-4303-BFA8-47E666D70084}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E19C2B3C-A790-4303-BFA8-47E666D70084}.Release|Itanium.ActiveCfg = Release|Any CPU
+		{E19C2B3C-A790-4303-BFA8-47E666D70084}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E19C2B3C-A790-4303-BFA8-47E666D70084}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E19C2B3C-A790-4303-BFA8-47E666D70084}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

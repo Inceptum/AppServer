@@ -1,15 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using Castle.Core;
 using Castle.Core.Logging;
 using Inceptum.AppServer.Configuration;
-using Newtonsoft.Json.Linq;
 using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Embedded;
-using Raven.Client.Extensions;
 using Raven.Client.Indexes;
+using Raven.Imports.Newtonsoft.Json.Linq;
 
 namespace Inceptum.AppServer.Raven
 {
@@ -20,7 +18,7 @@ namespace Inceptum.AppServer.Raven
         private readonly ILogger m_Logger;
         private readonly Assembly[] m_IndexLookupAssemblies;
         private Lazy<EmbeddableDocumentStore> m_Store;
-        public RavenBootstrapper(IManageableConfigurationProvider configurationProvider,ILogger logger)
+        public RavenBootstrapper(IConfigurationProvider configurationProvider,ILogger logger)
         {
             Assembly[] indexLookupAssemblies = null;
             if (logger == null) throw new ArgumentNullException("logger");
@@ -28,12 +26,12 @@ namespace Inceptum.AppServer.Raven
             try
             {
                 
-                var bundleString = configurationProvider.GetBundle("AppServer", "server.host", "{environment}", "{machineName}");
-                dynamic bundle = JObject.Parse(bundleString).SelectToken("Raven");
+                var bundleString = configurationProvider.GetBundle("Raven", "host", "{environment}", "{machineName}");
+                dynamic bundle = JObject.Parse(bundleString);
                 m_Config = new RavenConfig()
                 {
                     WebUIPort = bundle.port,
-                    BaseDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Raven"),
+                    BaseDir = Path.GetFullPath("./Raven"),
                     RunInMemory = false,
                     WebUIEnabled = bundle.webUIEnabled
                 };
@@ -45,7 +43,7 @@ namespace Inceptum.AppServer.Raven
                 m_Config = new RavenConfig()
                 {
                     WebUIPort = 9233,
-                    BaseDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Raven"),
+                    BaseDir = Path.GetFullPath("./Raven"),
                     RunInMemory = false,
                     WebUIEnabled = true
                 };
@@ -118,10 +116,18 @@ namespace Inceptum.AppServer.Raven
             }
         }
 
-
-        public string Start()
+        public void Start()
         {
-            return m_Store.Value.Configuration.ServerUrl;
+            try
+            {
+                m_Logger.InfoFormat("RavenDb is started on {0}", m_Store.Value.Configuration.ServerUrl);
+
+            }
+            catch (Exception e)
+            {
+                m_Logger.FatalFormat(e,"Failed to start RavenDb");
+                throw;
+            }
         }
     }
 

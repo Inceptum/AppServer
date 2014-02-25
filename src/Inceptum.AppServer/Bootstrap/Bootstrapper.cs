@@ -20,10 +20,8 @@ using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Management;
 using Inceptum.AppServer.Notification;
-using Inceptum.AppServer.Raven;
 using Inceptum.AppServer.Windsor;
 using Microsoft.AspNet.SignalR;
-using Raven.Client;
 
 namespace Inceptum.AppServer.Bootstrap
 {
@@ -79,11 +77,6 @@ namespace Inceptum.AppServer.Bootstrap
                         Component.For<SignalRhost>(),
                         Component.For<ManagementConsole>().DependsOn(new { container }),
                         Component.For<IHostNotificationListener>().ImplementedBy<UiNotifier>()
-                        )
-                    //Raven
-                    .Register(
-                        Component.For<RavenBootstrapper>()/*.DependsOn(new { indexLookupAssemblies = new[] { typeof(MessageViewModelListIndex).Assembly } })*/,
-                        Component.For<IDocumentStore>().UsingFactoryMethod(k => k.Resolve<RavenBootstrapper>().Store)
                         )
                     //App hostoing
                     .Register(

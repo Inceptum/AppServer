@@ -20,7 +20,6 @@ using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Notification;
-using Inceptum.AppServer.Raven;
 using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.Windsor;
 using Newtonsoft.Json;
@@ -49,11 +48,9 @@ namespace Inceptum.AppServer.Hosting
         private readonly ILogCache m_LogCache;
         private readonly PeriodicalBackgroundWorker m_InstanceChecker;
         private bool m_IsStopped=true;
-        private RavenBootstrapper m_RavenBootstrapper;
 
-        public Host(RavenBootstrapper ravenBootstrapper,ILogCache logCache, IManageableConfigurationProvider serverConfigurationProvider, IConfigurationProvider applicationConfigurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepository applicationRepository, ILogger logger = null, string name = null)
+        public Host(ILogCache logCache, IManageableConfigurationProvider serverConfigurationProvider, IConfigurationProvider applicationConfigurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepository applicationRepository, ILogger logger = null, string name = null)
         {
-            m_RavenBootstrapper = ravenBootstrapper;
             m_LogCache = logCache;
             m_JobObject = new JobObject();
  
@@ -219,7 +216,6 @@ namespace Inceptum.AppServer.Hosting
         public void Start()
         {
             m_IsStopped = false;
-            m_Context.RavenUrl=m_RavenBootstrapper.Start();
             RediscoverApps();
             Logger.InfoFormat("Reading instances config");
             updateInstances();
