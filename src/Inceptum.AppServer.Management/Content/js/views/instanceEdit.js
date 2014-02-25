@@ -3,9 +3,10 @@ define([
     'backbone',
     'underscore',
     'models/instance',
+    'collections/configurations',
     'text!templates/instanceEdit.html',
     'views/alerts'],
-    function($, Backbone, _, instanceModel, template,alerts){
+    function($, Backbone, _, instanceModel,configurations, template,alerts){
         var View = Backbone.View.extend({
             el:'#content',
             initialize: function(){
@@ -30,10 +31,21 @@ define([
                 var self=this;
                 this.application.versions.each(function(version){
                     var option = $("<option></option>");
-                    if(self.model.get("Version")===version.id)
-                        option.attr("selected","selected")
+                    if (self.model.get("Version") === version.id)
+                        option.attr("selected", "selected");
                     option.text(version.id).attr("value",version.id).appendTo(versionSelect);
                 });
+
+                var defaultConfigurationSelect = $(this.el).find("#DefaultConfiguration");
+                
+                configurations.each(function (config) {
+                    var option = $("<option></option>");
+                    console.log(config);
+                    if (self.model.get("DefaultConfiguration") === config.id)
+                        option.attr("selected", "selected");
+                    option.text(config.id).attr("value", config.id).appendTo(defaultConfigurationSelect);
+                });
+
             },
             'submit':function(e){
                 e.preventDefault();

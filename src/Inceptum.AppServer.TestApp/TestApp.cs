@@ -67,18 +67,18 @@ namespace Inceptum.AppServer.TestApp
             }
 
             //var documentStore = new DocumentStore { Url = "http://localhost:" + m_Config.WebUIPort + "/" };
-            var documentStore = new DocumentStore { Url = m_Context.RavenUrl };
-            documentStore.Initialize();
+            /*   var documentStore = new DocumentStore { Url = m_Context.RavenUrl };
+               documentStore.Initialize();
 
-            documentStore.DatabaseCommands.EnsureDatabaseExists("TestApp");
-            using (IDocumentSession session = documentStore.OpenSession("TestApp"))
-            {
-                var model = new TestDocument() { Value = Guid.NewGuid().ToString() };
-                session.Store(model, Guid.NewGuid().ToString());
-                session.SaveChanges();
-            }
+               documentStore.DatabaseCommands.EnsureDatabaseExists("TestApp");
+               using (IDocumentSession session = documentStore.OpenSession("TestApp"))
+               {
+                   var model = new TestDocument() { Value = Guid.NewGuid().ToString() };
+                   session.Store(model, Guid.NewGuid().ToString());
+                   session.SaveChanges();
+               }
 
-
+               */
             bool hangOnStart;
             if (bool.TryParse(ConfigurationManager.AppSettings["hangOnStart"], out hangOnStart) && hangOnStart)
             {

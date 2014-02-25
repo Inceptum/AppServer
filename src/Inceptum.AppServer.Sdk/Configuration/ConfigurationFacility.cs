@@ -31,6 +31,18 @@ namespace Inceptum.AppServer.Configuration
 
         protected override void Init()
         {
+
+            if(Kernel.HasComponent(typeof(InstanceContext)))
+            {
+                string defaultConfiguration = Kernel.Resolve<InstanceContext>().DefaultConfiguration;
+                if(!string.IsNullOrEmpty(defaultConfiguration))
+                    m_DefaultConfiguration = defaultConfiguration;
+            }
+
+            if (m_DefaultConfiguration == null)
+                throw new ConfigurationErrorsException(
+                    "ConfigurationFacility is not set up correctly. You have to provide DefaultConfiguration");
+
 /*
             if (m_DefaultConfiguration == null || m_ServiceUrl == null)
                 throw new ConfigurationErrorsException(

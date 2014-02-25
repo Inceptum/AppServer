@@ -26,6 +26,7 @@ using NLog.Conditions;
 using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
+using InstanceContext=Inceptum.AppServer.InstanceContext;
 
 namespace Inceptum.AppServer.Hosting
 {
@@ -75,6 +76,7 @@ namespace Inceptum.AppServer.Hosting
         private Dictionary<AssemblyName, Lazy<Assembly>> m_LoadedAssemblies;
         private IApplicationInstance m_Instance;
         private ServiceHost m_ServiceHost;
+        private InstanceContext m_InstanceContext;
 
         public ApplicationHost(string instanceName)
         {
@@ -117,7 +119,12 @@ namespace Inceptum.AppServer.Hosting
 
             m_Environment = instanceParams.Environment;
             m_Context = instanceParams.AppServerContext;
-            
+            m_InstanceContext = new Inceptum.AppServer.InstanceContext
+            {
+                Name = m_InstanceName,
+                DefaultConfiguration = instanceParams.DefaultConfiguration
+
+            };
  
             IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
 
@@ -275,6 +282,7 @@ namespace Inceptum.AppServer.Hosting
                 }
 
                 container.Register(
+                   Component.For<InstanceContext>().Instance(m_InstanceContext),
                    Component.For<ILogCache>().Instance(m_LogCache).Named("LogCache"),
                    Component.For<ManagementConsoleTarget>().DependsOn(new { source = m_InstanceName })
                    );

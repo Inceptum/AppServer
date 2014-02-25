@@ -33,7 +33,9 @@ namespace Inceptum.AppServer.Model
 
         [DataMember]
         public Dictionary<string, string> AssembliesToLoad { get;  set; }
- 
+
+        [DataMember]
+        public string DefaultConfiguration { get; set; }
     }
 
 

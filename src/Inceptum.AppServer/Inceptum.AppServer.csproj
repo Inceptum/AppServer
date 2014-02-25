@@ -292,7 +292,7 @@
     <!--
     <CreateItem Include="$(OutDir)\**\*.dll;$(OutDir)\**\*.pdb;$(OutDir)\**\*.xml;" Exclude="$(OutDir)\Mono.*.dll;$(OutDir)\AppServer.pdb;$(OutDir)\AppServer.xml;$(OutDir)\AppHost.pdb;$(OutDir)\Inceptum.AppServer.Sdk.dll;$(OutDir)\Inceptum.AppServer.Sdk.pdb">
 	-->
-    <CreateItem Include="$(OutDir)\**\*.dll;$(OutDir)\**\*.pdb;$(OutDir)\**\*.xml;" Exclude="$(OutDir)\AppServer.pdb;$(OutDir)\AppServer.xml;$(OutDir)\AppHost.pdb;$(OutDir)\AppHost\**\*;$(OutDir)\Raven\**\*">
+    <CreateItem Include="$(OutDir)\**\*.dll;$(OutDir)\**\*.pdb;$(OutDir)\**\*.xml;" Exclude="$(OutDir)\AppServer.pdb;$(OutDir)\AppServer.xml;$(OutDir)\AppHost.pdb;$(OutDir)\AppHost\**\*;$(OutDir)\Raven\**\*;$(OutDir)\apps\**\*;$(OutDir)\Configuration\**\*;$(OutDir)\logs\**\*">
       <Output TaskParameter="Include" ItemName="FilesToMove" />
     </CreateItem>
     <Move SourceFiles="@(FilesToMove)" DestinationFiles="@(FilesToMove->'$(OutDir)\bin\%(RecursiveDir)\%(Filename)%(Extension)')" />

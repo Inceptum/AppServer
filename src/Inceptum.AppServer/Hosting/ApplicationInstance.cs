@@ -42,8 +42,9 @@ namespace Inceptum.AppServer.Hosting
         private string m_User;
         private string m_Password;
         private LoggerLevel m_LogLevel;
+         private string m_DefaultConfiguration;
 
-        public string Name { get; set; }
+         public string Name { get; set; }
         public string Environment { get; set; }
         public ILogger Logger { get; set; }
         public bool HasToBeRecreated { get; set; }
@@ -118,8 +119,9 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-         public void UpdateConfig(Version actualVersion, string environment, string user, string password, LoggerLevel logLevel)
+         public void UpdateConfig(Version actualVersion, string environment, string user, string password, LoggerLevel logLevel, string defaultConfiguration)
         {
+             m_DefaultConfiguration = defaultConfiguration;
              m_LogLevel = logLevel;
              m_ActualVersion = actualVersion;
             m_Password = password;
@@ -400,6 +402,8 @@ namespace Inceptum.AppServer.Hosting
                 AppServerContext = m_Context,
                 Environment = Environment,
                 LogLevel = m_LogLevel.ToString() ,
+                DefaultConfiguration=m_DefaultConfiguration,
+                
                 AssembliesToLoad =   new Dictionary<string, string>()
                 {
                     {typeof (AppInfo).Assembly.GetName().FullName, typeof (AppInfo).Assembly.Location},
