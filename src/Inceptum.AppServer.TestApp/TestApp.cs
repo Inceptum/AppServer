@@ -88,6 +88,7 @@ namespace Inceptum.AppServer.TestApp
             m_Logger.DebugFormat("Debug");
             m_Logger.Warn("Warning");
             m_Logger.Error("Error");
+            m_Logger.InfoFormat("text from content file: {0}", File.ReadAllText("./content/content.txt"));
 
         }
 

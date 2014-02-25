@@ -80,6 +80,7 @@
     <Compile Include="Configuration\Providers\RemoteConfigurationProvider.cs" />
     <Compile Include="Configuration\Providers\ResourceConfigurationProviderBase.cs" />
     <Compile Include="HostedAppStatus.cs" />
+    <Compile Include="InstanceContext.cs" />
     <Compile Include="Logging\GenericsAwareNLoggerFactory.cs" />
     <Compile Include="Logging\LogEvent.cs" />
     <Compile Include="Model\Application.cs" />
