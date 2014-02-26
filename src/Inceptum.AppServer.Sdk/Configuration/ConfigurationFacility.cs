@@ -184,7 +184,7 @@ namespace Inceptum.AppServer.Configuration
             return this;
         }
 
-        public ConfigurationFacility ServiceUrl(string serviceUrl, string cachePath=null)
+        public ConfigurationFacility Remote(string serviceUrl, string cachePath=null)
         {
             if (!ValidationHelper.IsValidUrl(serviceUrl))
                 throw new ArgumentException("Invalid url");

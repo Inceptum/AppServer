@@ -53,10 +53,10 @@ namespace Inceptum.Configuration.Tests.Client
         {
             Assert.Catch<ConfigurationErrorsException>(() => new WindsorContainer().AddFacility<ConfigurationFacility>(), "ConfigurationFacility is not set up correctly. You have to provide Configuration and ServiceUrl in onCreate");
             Assert.Catch<ConfigurationErrorsException>(() => new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.Configuration("ibank")), "ConfigurationFacility is not set up correctly. You have to provide Configuration and ServiceUrl in onCreate");
-            Assert.Catch<ConfigurationErrorsException>(() => new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.ServiceUrl("http://localhost:8080/")), "ConfigurationFacility is not set up correctly. You have to provide Configuration and ServiceUrl in onCreate");
+            Assert.Catch<ConfigurationErrorsException>(() => new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.Remote("http://localhost:8080/")), "ConfigurationFacility is not set up correctly. You have to provide Configuration and ServiceUrl in onCreate");
             Assert.Catch<ArgumentException>(() => new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.Configuration("#i b #%^#ank")));
-            Assert.Catch<ArgumentException>(() => new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.ServiceUrl("#i b #%^#ank")));
-            Assert.Catch<ConfigurationErrorsException>(() => new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.ServiceUrl("http://localhost:8080/").Configuration("ibank")), "IConfigurationProvider not found. Register it before registering ConfigurationFacility");
+            Assert.Catch<ArgumentException>(() => new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.Remote("#i b #%^#ank")));
+            Assert.Catch<ConfigurationErrorsException>(() => new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.Configuration("ibank")), "IConfigurationProvider not found. Register it before registering ConfigurationFacility");
          }
 
 /*
@@ -81,7 +81,7 @@ namespace Inceptum.Configuration.Tests.Client
             var configurationProvider = MockRepository.GenerateMock<IConfigurationProvider>();
             configurationProvider.Expect(p => p.GetBundle("testConfiguration", "bundle", "param1", "param2")).Return(
                 bundleContent);
-            var windsorContainer = new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.ServiceUrl("http://localhost:8080/").Configuration("testConfiguration").Provider = configurationProvider);
+            var windsorContainer = new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.Remote("http://localhost:8080/").Configuration("testConfiguration").Provider = configurationProvider);
             var resolved = windsorContainer.Register(Component.For<TestComponent>().DependsOnBundle("bundle", jsonPath, "param1","param2")).Resolve<TestComponent>();
             Assert.That(resolved.LongDependency, Is.EqualTo(999999999999));
             Assert.That(resolved.IntDependency, Is.EqualTo(10));
@@ -97,7 +97,7 @@ namespace Inceptum.Configuration.Tests.Client
             var configurationProvider = MockRepository.GenerateMock<IConfigurationProvider>();
             configurationProvider.Expect(p => p.GetBundle("testConfiguration", "bundle", "param1", "param2")).Return(
                 bundleContent);
-            var windsorContainer = new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.ServiceUrl("http://localhost:8080/").Configuration("testConfiguration").Provider = configurationProvider);
+            var windsorContainer = new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.Remote("http://localhost:8080/").Configuration("testConfiguration").Provider = configurationProvider);
             var resolved = windsorContainer.Register(Component.For<ITestComponent>().ImplementedBy<TestComponent>().DependsOnBundle("bundle", jsonPath, "param1", "param2")).Resolve<ITestComponent>();
             Assert.That(resolved.LongDependency, Is.EqualTo(999999999999));
             Assert.That(resolved.IntDependency, Is.EqualTo(10));
@@ -109,7 +109,7 @@ namespace Inceptum.Configuration.Tests.Client
         {
             var configurationProvider = MockRepository.GenerateMock<IConfigurationProvider>();
             configurationProvider.Expect(p => p.GetBundle("testConfiguration", "bundle", "dit", "msa-ibdev1")).Return("{\"prop\":{\"longDependency\":999999999999,\"intDependency\":10, \"strDependency\":\"str\"}}");
-            var windsorContainer = new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.ServiceUrl("http://localhost:8080/").Configuration("testConfiguration").Params(new { environment = "dit", box = "msa-ibdev1" }).Provider = configurationProvider);
+            var windsorContainer = new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.Remote("http://localhost:8080/").Configuration("testConfiguration").Params(new { environment = "dit", box = "msa-ibdev1" }).Provider = configurationProvider);
             var resolved = windsorContainer.Register(Component.For<TestComponent>().DependsOnBundle("bundle", "prop", "{environment}", "{box}")).Resolve<TestComponent>();
 
             Assert.That(resolved.LongDependency, Is.EqualTo(999999999999));
