@@ -8,6 +8,7 @@ using Castle.Core;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Facilities;
 using Castle.MicroKernel.Registration;
+using Inceptum.AppServer.Configuration.Providers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -43,22 +44,21 @@ namespace Inceptum.AppServer.Configuration
                 throw new ConfigurationErrorsException(
                     "ConfigurationFacility is not set up correctly. You have to provide DefaultConfiguration");
 
-/*
-            if (m_DefaultConfiguration == null || m_ServiceUrl == null)
-                throw new ConfigurationErrorsException(
-                    "ConfigurationFacility is not set up correctly. You have to provide Configuration and ServiceUrl in onCreate");
-*/
+
 
             if (m_Provider == null)
             {
                 if (string.IsNullOrWhiteSpace(m_Path))
                     m_Path = ".";
-                if(!Kernel.HasComponent(typeof(IConfigurationProvider)))
-                    throw new ConfigurationErrorsException("IConfigurationProvider not found. Register it before registering ConfigurationFacility");
-/*
-                Kernel.Register(Component.For<IConfigurationProvider>().ImplementedBy<ConfigurationProvider>()
-                                    .DependsOn(new { serviceUrl = m_ServiceUrl, configurationName = m_DefaultConfiguration, path = m_Path }));
-*/
+                if (m_ServiceUrl != null)
+                {
+                    Kernel.Register(Component.For<IConfigurationProvider>().ImplementedBy<CachingRemoteConfigurationProvider>()
+                        .DependsOn(new { serviceUrl = m_ServiceUrl, path = m_Path }));
+                }
+                else if (!Kernel.HasComponent(typeof(IConfigurationProvider)))
+                        throw new ConfigurationErrorsException("IConfigurationProvider not found. Register it before registering ConfigurationFacility");
+
+
                 m_Provider = Kernel.Resolve<IConfigurationProvider>();
             }
             else
@@ -184,11 +184,12 @@ namespace Inceptum.AppServer.Configuration
             return this;
         }
 
-        public ConfigurationFacility ServiceUrl(string serviceUrl)
+        public ConfigurationFacility ServiceUrl(string serviceUrl, string cachePath=null)
         {
             if (!ValidationHelper.IsValidUrl(serviceUrl))
                 throw new ArgumentException("Invalid url");
             m_ServiceUrl = serviceUrl;
+            m_Path = cachePath;
             return this;
         }
 

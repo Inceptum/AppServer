@@ -12,7 +12,7 @@
     <copyright>Copyright 2014</copyright>
     <tags>Inceptum.AppServer.Application</tags>
     <dependencies>
-        <dependency id="Inceptum.AppServer.Sdk" version="[$sdkVersion$]" />
+        <dependency id="Inceptum.AppServer.Sdk" version="$sdkVersion$" />
     </dependencies>  
   </metadata>
 </package>
