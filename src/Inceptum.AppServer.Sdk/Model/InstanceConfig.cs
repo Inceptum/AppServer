@@ -31,5 +31,8 @@ namespace Inceptum.AppServer.Model
         }
 
         public string DefaultConfiguration { get; set; }
+        public long MaxLogSize { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public LogLimitReachedAction LogLimitReachedAction { get; set; }
     }
 }

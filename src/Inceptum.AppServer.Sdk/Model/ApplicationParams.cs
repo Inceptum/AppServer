@@ -36,8 +36,16 @@ namespace Inceptum.AppServer.Model
 
         [DataMember]
         public string DefaultConfiguration { get; set; }
+         [DataMember]
+        public long MaxLogSize { get; set; }
+         [DataMember]
+        public LogLimitReachedAction LogLimitReachedAction { get; set; }
     }
-
+    public enum LogLimitReachedAction
+    {
+        LogToOversizedFolder = 0,
+        StopLogging = 1
+    }
 
     [DataContract]
     public class ApplicationParams

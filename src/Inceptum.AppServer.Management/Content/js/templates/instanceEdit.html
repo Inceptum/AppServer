@@ -62,7 +62,34 @@
     </div>
     
     
-    
+    <div class="control-group">
+        <label class="control-label" for="MaxLogSize">Maximum dayly log size in bytes (0 for unlimited)</label>
+        <div class="controls">
+            <input type="text" id="MaxLogSize" name="MaxLogSize" placeholder="Maximum log size" value="<%=model.MaxLogSize%>">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="User">On maximum log sized reached</label>
+        <div class="controls" >
+            <select name="LogLimitReachedAction">
+                <% 
+                console.log(model.LogLimitReachedAction);
+                if (model.LogLimitReachedAction=="LogToOversizedFolder") { %>
+                <option selected='selected' value="LogToOversizedFolder">Log to logs.oversized folder</option>
+                <% } 
+                else{ %>
+                <option value="LogToOversizedFolder">Log to logs.oversized folder</option>
+                <% } %>
+                <% if (model.LogLimitReachedAction=="StopLogging") { %>
+                <option selected='selected' value="StopLogging">Stop logging</option>
+                <% } 
+                else{ %>
+                <option  value="StopLogging">StopLogging</option>
+                <% } %>
+            </select>
+        </div>
+    </div>
+
     <div class="control-group">
         <label class="control-label" for="User">Log level</label>
         <div class="controls" >

@@ -43,6 +43,8 @@ namespace Inceptum.AppServer.Hosting
         private string m_Password;
         private LoggerLevel m_LogLevel;
          private string m_DefaultConfiguration;
+         private LogLimitReachedAction m_LogLimitReachedAction;
+         private long m_MaxLogSize;
 
          public string Name { get; set; }
         public string Environment { get; set; }
@@ -119,8 +121,10 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-         public void UpdateConfig(Version actualVersion, string environment, string user, string password, LoggerLevel logLevel, string defaultConfiguration)
+         public void UpdateConfig(Version actualVersion, string environment, string user, string password, LoggerLevel logLevel, string defaultConfiguration,long maxLogSize,LogLimitReachedAction logLimitReachedAction)
         {
+             m_MaxLogSize = maxLogSize;
+             m_LogLimitReachedAction = logLimitReachedAction;
              m_DefaultConfiguration = defaultConfiguration;
              m_LogLevel = logLevel;
              m_ActualVersion = actualVersion;
@@ -403,6 +407,9 @@ namespace Inceptum.AppServer.Hosting
                 Environment = Environment,
                 LogLevel = m_LogLevel.ToString() ,
                 DefaultConfiguration=m_DefaultConfiguration,
+                LogLimitReachedAction = m_LogLimitReachedAction,
+                MaxLogSize = m_MaxLogSize,
+
                 
                 AssembliesToLoad =   new Dictionary<string, string>()
                 {

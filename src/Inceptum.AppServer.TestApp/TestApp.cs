@@ -32,6 +32,41 @@ namespace Inceptum.AppServer.TestApp
         public string Id { get; set; } 
         public string Value { get; set; } 
     }
+
+
+    class LogWriter:IDisposable
+    {
+        private ILogger m_Logger;
+        private ManualResetEvent m_Stop=new ManualResetEvent(false);
+        private Thread m_Thread;
+
+        public LogWriter(ILogger logger)
+        {
+            m_Logger = logger;
+        }
+
+        public void Start()
+        {
+            m_Thread = new Thread(doit);
+            m_Thread.Start();
+        }
+
+        private void doit()
+        {
+            int i = 0;
+            while (!m_Stop.WaitOne(1000))
+            {
+                m_Logger.InfoFormat("Log record #{0}", i++);
+            }
+        }
+
+        public void Dispose()
+        {
+                m_Logger.InfoFormat("Disposing...");
+            m_Stop.Set();
+            m_Thread.Join();
+        }
+    }
     public class TestApp:IHostedApplication
     {
         private TestConf m_Config;

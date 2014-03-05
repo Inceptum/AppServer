@@ -1,4 +1,5 @@
-﻿using Castle.MicroKernel.Registration;
+﻿using Castle.Facilities.Startable;
+using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Inceptum.AppServer.Configuration;
@@ -9,8 +10,11 @@ namespace Inceptum.AppServer.TestApp
     {
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            container.AddFacility<ConfigurationFacility>()//(f => f.Configuration("TestApp"))
-                .Register(Component.For<TestConf>().FromConfiguration("test","", "{environment}", "{machineName}"));
+            container
+                .AddFacility<ConfigurationFacility>()//(f => f.Configuration("TestApp"))
+                .AddFacility<StartableFacility>()
+                .Register(Component.For<TestConf>().FromConfiguration("test","", "{environment}", "{machineName}"),
+                Component.For<LogWriter>().StartUsingMethod(writer => writer.Start));
         }
     }
 }

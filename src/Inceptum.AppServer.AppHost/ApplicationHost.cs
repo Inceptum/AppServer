@@ -18,6 +18,7 @@ using Castle.Windsor.Installer;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.AppHost;
 using Inceptum.AppServer.Logging;
+using Inceptum.AppServer.Model;
 using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.Windsor;
 using Mono.Cecil;
@@ -123,7 +124,6 @@ namespace Inceptum.AppServer.Hosting
             {
                 Name = m_InstanceName,
                 DefaultConfiguration = instanceParams.DefaultConfiguration
-
             };
  
             IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
@@ -180,7 +180,7 @@ namespace Inceptum.AppServer.Hosting
                 throw new  InvalidOperationException(string.Format("Instance {0} bin folder does not contain type implementing IHostedApplication",m_InstanceName));
 
 
-            var instanceCommands = initContainer(Type.GetType(appType), instanceParams.LogLevel);
+            var instanceCommands = initContainer(Type.GetType(appType), instanceParams.LogLevel,instanceParams.MaxLogSize,instanceParams.LogLimitReachedAction);
             
             m_Instance.RegisterApplicationHost(address, instanceCommands);
 
@@ -197,7 +197,7 @@ namespace Inceptum.AppServer.Hosting
             if (m_ServiceHost!=null)
                 m_ServiceHost.Close();
             
-        }
+        } 
 
         private void onUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
@@ -265,7 +265,7 @@ namespace Inceptum.AppServer.Hosting
 
         #region IApplicationHost Members
 
-        private InstanceCommand[] initContainer(Type appType, string logLevel)
+        private InstanceCommand[] initContainer(Type appType, string logLevel, long maxLogSize, LogLimitReachedAction logLimitReachedAction)
         {
             if (m_Container != null)
                 throw new InvalidOperationException("Host is already started");
@@ -289,7 +289,9 @@ namespace Inceptum.AppServer.Hosting
 
 
                 var logFolder = new[] { m_Context.BaseDirectory, "logs", m_InstanceName }.Aggregate(Path.Combine);
+                var oversizedLogFolder = new[] { m_Context.BaseDirectory, "logs.oversized", m_InstanceName }.Aggregate(Path.Combine);
                 GlobalDiagnosticsContext.Set("logfolder",logFolder);
+                GlobalDiagnosticsContext.Set("oversizedLogFolder",oversizedLogFolder);
                 ConfigurationItemFactory.Default.Targets.RegisterDefinition("ManagementConsole", typeof(ManagementConsoleTarget));
                 var createInstanceOriginal = ConfigurationItemFactory.Default.CreateInstance;
                 ConfigurationItemFactory.Default.CreateInstance = type => container.Kernel.HasComponent(type) ? container.Resolve(type) : createInstanceOriginal(type);
@@ -300,7 +302,7 @@ namespace Inceptum.AppServer.Hosting
                 container
                     .AddFacility<LoggingFacility>(f => f.LogUsing(new GenericsAwareNLoggerFactory(
                         nlogConfigPath,
-                        config => updateLoggingConfig(config,logLevel))))
+                        config => updateLoggingConfig(config,logLevel, maxLogSize, logLimitReachedAction))))
                     .Register(
                         Component.For<AppServerContext>().Instance(m_Context),
                         Component.For<IConfigurationProvider>().Named("ConfigurationProvider")
@@ -356,16 +358,34 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-        private void updateLoggingConfig(LoggingConfiguration config, string logLevel)
+        private void updateLoggingConfig(LoggingConfiguration config, string logLevel, long maxLogSize, LogLimitReachedAction logLimitReachedAction)
         {
             var minLogLevel = mapLogLevel(logLevel);
 
-            Target logFile = new AsyncTargetWrapper(new FileTarget
+            var fileTarget = new FileTarget
             {
                 Encoding = Encoding.UTF8,
                 FileName = Path.Combine(m_Context.BaseDirectory, "logs", m_InstanceName, "${shortdate}.log"),
+                ArchiveFileName = Path.Combine(m_Context.BaseDirectory, "logs.oversized", m_InstanceName, "${shortdate}.{#####}.log"),
                 Layout = "${longdate} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
-            });
+            };
+            if (maxLogSize > 0)
+            {
+                fileTarget.ArchiveAboveSize = maxLogSize;
+                fileTarget.ArchiveEvery = FileArchivePeriod.Minute;
+                fileTarget.ArchiveNumbering = ArchiveNumberingMode.Rolling;
+                switch (logLimitReachedAction)
+                {
+                    case LogLimitReachedAction.LogToOversizedFolder:
+                        fileTarget.MaxArchiveFiles = int.MaxValue;
+                        break;
+                    case LogLimitReachedAction.StopLogging:
+                        fileTarget.MaxArchiveFiles = 0;
+                        break;
+                }
+
+            }
+            Target logFile = new AsyncTargetWrapper(fileTarget);
             config.AddTarget("logFile", logFile);
             var rule = new LoggingRule("*", minLogLevel, logFile);
             config.LoggingRules.Add(rule);
