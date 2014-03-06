@@ -107,6 +107,15 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 m_Logger.WarnFormat("Deleting {0} folder", binFolder);
                 Directory.Delete(binFolder, true);
             }
+
+
+            var contentFolder = Path.GetFullPath(Path.Combine(installPath, "content"));
+            if (Directory.Exists(contentFolder))
+            {
+                m_Logger.WarnFormat("Deleting {0} folder", contentFolder);
+                Directory.Delete(contentFolder, true);
+            }
+
             var packagesConfig = Path.GetFullPath(Path.Combine(installPath, "packages.config"));
             if (File.Exists(packagesConfig))
             {

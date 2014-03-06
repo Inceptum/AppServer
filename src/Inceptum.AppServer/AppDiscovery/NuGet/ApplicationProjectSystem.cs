@@ -73,14 +73,12 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 return !Path.GetFileName(path).Equals("app.config", StringComparison.OrdinalIgnoreCase);
 */
             return true;
-            Console.WriteLine("NOT SUPPORTED:"+path);
-            return false;
+          
         }
 
         public string ResolvePath(string path)
         {
-            Console.WriteLine(path);
-            return path;
+            return Path.Combine("Content",path);
         }
 
         public void AddImport(string targetPath, ProjectImportLocation location)
@@ -110,5 +108,8 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         {
             return Path.Combine(BIN_DIR, name);
         }
+
+       
+
     }
 }

@@ -64,10 +64,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
         public override void AddPackageReference(IPackage package, bool ignoreDependencies, bool allowPrereleaseVersions)
         {
-         //   InstallWalker walker = new InstallWalker(this.LocalRepository, this.SourceRepository, Project.TargetFramework, this.Logger, ignoreDependencies, allowPrereleaseVersions);
-            //base.AddPackageReference(package, ignoreDependencies, allowPrereleaseVersions);
-
-            var walker = new UpdateWalker(LocalRepository, SourceRepository, new DependentsWalker(LocalRepository, Project.TargetFramework), ConstraintProvider,
+             var walker = new UpdateWalker(LocalRepository, SourceRepository, new DependentsWalker(LocalRepository, Project.TargetFramework), ConstraintProvider,
                 Project.TargetFramework, NullLogger.Instance, !ignoreDependencies, allowPrereleaseVersions)
             {
                 AcceptedTargets = PackageTargets.All
@@ -161,36 +158,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 LocalRepository.AddPackage(package);
             }
         }
-
-/*
-        protected override void ExtractPackageFilesToProject(IPackage package)
-        {
-            base.ExtractPackageFilesToProject(package); 
-            IEnumerable<IPackageFile> configItems;
-            Project.TryGetCompatibleItems(package.GetFiles("config"), out configItems);
-            var configFiles = configItems.ToArray();
-            if (!configFiles.Any() && package.GetFiles("config").Any())
-            {
-                // for portable framework, we want to show the friendly short form (e.g. portable-win8+net45+wp8) instead of ".NETPortable, Profile=Profile104".
-                FrameworkName targetFramework = Project.TargetFramework;
-                string targetFrameworkString = /*targetFramework.IsPortableFramework()#1#targetFramework != null && ".NETPortable".Equals(targetFramework.Identifier, StringComparison.OrdinalIgnoreCase)
-                    ? VersionUtility.GetShortFrameworkName(targetFramework)
-                    : targetFramework != null ? targetFramework.ToString() : null;
-
-                throw new InvalidOperationException(
-                    String.Format(CultureInfo.CurrentCulture,
-                        NuGetResources.UnableToFindCompatibleItems, package.GetFullName(), targetFrameworkString));
-            }
-
-            if (configFiles.Any())
-            {
-                Logger.Log(MessageLevel.Debug, ">> {0} are being added from '{1}'{2}", "config files",
-                    Path.GetDirectoryName(configFiles[0].Path), GetTargetFrameworkLogString(configFiles[0].TargetFramework));
-            }
-            // Add config files
-            Project.AddFiles(configFiles, new Dictionary<FileTransformExtensions, IPackageFileTransformer>());
-        }
-*/
+ 
         public static string GetTargetFrameworkLogString(FrameworkName targetFramework)
         {
             return (targetFramework == null || targetFramework == VersionUtility.EmptyFramework) ? "(not framework-specific)" : String.Empty;
