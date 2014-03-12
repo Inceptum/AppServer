@@ -78,6 +78,8 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
         public string ResolvePath(string path)
         {
+            if (path.ToLower().StartsWith("config\\"))
+                return path.Substring(7);
             return Path.Combine("Content",path);
         }
 
