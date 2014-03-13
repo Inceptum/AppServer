@@ -315,7 +315,13 @@ namespace Inceptum.AppServer.Hosting
                     ApplicationId = config.ApplicationId,
                     ApplicationVendor = config.ApplicationVendor,
                     Environment = config.Environment,
-                    AutoStart = config.AutoStart
+                    AutoStart = config.AutoStart,
+                    User = config.User,
+                    Password = Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(config.Password ?? ""), new byte[0], DataProtectionScope.LocalMachine)),
+                    LogLevel = config.LogLevel,
+                    DefaultConfiguration=config.DefaultConfiguration,
+                    MaxLogSize=config.MaxLogSize,
+                    LogLimitReachedAction = config.LogLimitReachedAction
                 };
                 instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Concat(new[] { cfg }).ToArray(), Formatting.Indented);
             }
