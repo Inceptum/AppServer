@@ -10,7 +10,8 @@ define([
     function($, Backbone, _,instanceView, template,confirmView,commandPopupView,alerts){
         var View = Backbone.View.extend({
             el: '#main',
-            initialize: function(){
+            initialize: function () {
+                this.nameFilter = null;
                 this.filter=this.options.filter;
                 _(this).bindAll('add', 'remove','reset','destroy','start','stop','dispose','command');
                 this.instances=this.options.instances;
@@ -29,8 +30,19 @@ define([
                 this.instances.bind('reset', this.reset);
                 this.rendered=false;
             },
+            events: {
+                "keyup #nameFilter": "applyNameFilter"
+            },
+            applyNameFilter: function () {
+                this.reset();
+            },
             add : function(instance) {
                 if(this.filter && (instance.get("ApplicationId")!=this.filter.ApplicationId || instance.get("ApplicationVendor")!=this.filter.ApplicationVendor))
+                    return;
+                if (this.nameFilter!=null && this.nameFilter.val() != '' && 
+                    (instance.get('Name').toLowerCase().indexOf(this.nameFilter.val().toLowerCase()) == -1 &&
+                    instance.get('Environment').toLowerCase().indexOf(this.nameFilter.val().toLowerCase()) == -1)&&
+                    instance.get('ApplicationId').toLowerCase().indexOf(this.nameFilter.val().toLowerCase()) == -1)
                     return;
 
 
@@ -43,6 +55,7 @@ define([
                 view.bind("restart",this.restart);
                 view.bind("stop",this.stop);
                 view.bind("command",this.command);
+
 
 
                 //TODO: sort order id not preserved
@@ -89,16 +102,22 @@ define([
                 console.log('reset');
             },
             render: function(){
-                this.template = _.template( template, {  } );
+                this.template = _.template(template, {});
                 $(this.el).empty();
                 $(this.el).append(this.template);
                 _(this.subViews).each(function(v) {
                     this.$('.instances tbody').append(v.render().el);
                 });
 
+                this.nameFilter = $(this.el).find('#nameFilter');
+                console.log("this.nameFilter");
+                console.log(this.nameFilter);
+                //alert(this.nameFilter);
+
                 $.connection.hub.start();
                 // We keep track of the rendered state of the view
                 this.rendered = true;
+
                 return this;
             },
             destroy:function(model,view){
@@ -165,7 +184,7 @@ define([
                 this.instances.unbind('add', this.add);
                 this.instances.unbind('remove', this.remove);
                 this.instances.unbind('reset', this.reset);
-                this.removeViews(this.subViews)
+                this.removeViews(this.subViews);
             }
         });
 
