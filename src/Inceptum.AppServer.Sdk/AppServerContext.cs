@@ -13,7 +13,5 @@ namespace Inceptum.AppServer
         public string AppsDirectory { get; set; }
         [DataMember]
         public string BaseDirectory { get; set; }
-        [DataMember]
-        public string RavenUrl { get; set; }
     }
 }

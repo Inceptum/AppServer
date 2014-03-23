@@ -120,9 +120,11 @@ namespace Inceptum.AppServer.Hosting
 
             m_Environment = instanceParams.Environment;
             m_Context = instanceParams.AppServerContext;
-            m_InstanceContext = new Inceptum.AppServer.InstanceContext
+            m_InstanceContext = new InstanceContext
             {
                 Name = m_InstanceName,
+                AppServerName= instanceParams.AppServerContext.Name,
+                Environment=m_Environment,
                 DefaultConfiguration = instanceParams.DefaultConfiguration
             };
  
