@@ -65,14 +65,14 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         public override void AddPackageReference(IPackage package, bool ignoreDependencies, bool allowPrereleaseVersions)
         {
             //TODO[KN]: crappy nuget does not install some packages. Second run helps
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 1; i++)
             {
                 var walker = new UpdateWalker(LocalRepository, SourceRepository,
                     new DependentsWalker(SourceRepository, Project.TargetFramework), ConstraintProvider,
                     Project.TargetFramework, Logger, !ignoreDependencies, allowPrereleaseVersions)
                 {
                     AcceptedTargets = PackageTargets.All,
-                    DependencyVersion = DependencyVersion.Lowest
+                    DependencyVersion = DependencyVersion.Highest
                 };
                 execute(package, walker);
             }

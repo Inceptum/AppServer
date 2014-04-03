@@ -28,7 +28,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
  
             m_DependenciesRepository = new AggregateRepository(
                 new[] { m_ApplicationRepository }.Concat(dependencyRepositories)
-                );
+                ) { ResolveDependenciesVertically =true};
 
             m_LocalSharedRepository = Path.GetFullPath("packages\\");
         }
