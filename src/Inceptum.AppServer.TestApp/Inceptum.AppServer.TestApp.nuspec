@@ -15,5 +15,6 @@
   <files> 
     <file src="App.config" target="config" /> 
     <file src="nlog.config" target="config" /> 
+    <file src="bin\$Configuration$\Content\**\*.*" target="Content" />
   </files>
 </package>

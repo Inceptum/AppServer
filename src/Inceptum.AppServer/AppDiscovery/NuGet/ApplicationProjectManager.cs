@@ -121,7 +121,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             {
                 // Add content files
                 if (m_PackageId==package.Id)
-                    Project.AddFiles(contentFiles);
+                    Project.AddFiles(contentFiles,"");
 
                 // Add config files
                 var configTransformers = configFiles.Select(f => Path.GetExtension(f.Path)).Distinct().ToDictionary(e => new FileTransformExtensions(e, e), e => (IPackageFileTransformer)new ConfigTransformer(e));

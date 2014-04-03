@@ -304,7 +304,8 @@ namespace Inceptum.AppServer.Hosting
                 container
                     .AddFacility<LoggingFacility>(f => f.LogUsing(new GenericsAwareNLoggerFactory(
                         nlogConfigPath,
-                        config => updateLoggingConfig(config,logLevel, maxLogSize, logLimitReachedAction))))
+                        config => updateLoggingConfig(config,logLevel, maxLogSize, logLimitReachedAction))));
+                container
                     .Register(
                         Component.For<AppServerContext>().Instance(m_Context),
                         Component.For<IConfigurationProvider>().Named("ConfigurationProvider")
@@ -320,8 +321,10 @@ namespace Inceptum.AppServer.Hosting
                                          instance = m_InstanceName,
                                      }
                                  })
-                    )
-                    .Install(FromAssembly.Instance(appType.Assembly, new PluginInstallerFactory()))
+                    );
+                container
+                    .Install(FromAssembly.Instance(appType.Assembly, new PluginInstallerFactory()));
+                container
                     .Register(Component.For<IHostedApplication>().ImplementedBy(appType));
 
 

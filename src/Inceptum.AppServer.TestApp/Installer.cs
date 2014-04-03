@@ -14,7 +14,7 @@ namespace Inceptum.AppServer.TestApp
                 .AddFacility<ConfigurationFacility>()//(f => f.Configuration("TestApp"))
                 .AddFacility<StartableFacility>()
                 .Register(Component.For<TestConf>().FromConfiguration("test","", "{environment}", "{machineName}"),
-                Component.For<LogWriter>().StartUsingMethod(writer => writer.Start));
+                Component.For<LogWriter>().StartUsingMethod("Start"));
         }
     }
 }
