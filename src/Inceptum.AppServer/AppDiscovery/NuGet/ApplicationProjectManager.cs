@@ -58,19 +58,24 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             {
                 if (!LocalRepository.Exists(package))
                     return;
-                Logger.Log(MessageLevel.Info, NuGetResources.Log_ProjectAlreadyReferencesPackage, (object)this.Project.ProjectName, (object)PackageExtensions.GetFullName((IPackageMetadata)package));
+                Logger.Log(MessageLevel.Info, NuGetResources.Log_ProjectAlreadyReferencesPackage, Project.ProjectName, package.GetFullName());
             }
         }
 
         public override void AddPackageReference(IPackage package, bool ignoreDependencies, bool allowPrereleaseVersions)
         {
-             var walker = new UpdateWalker(LocalRepository, SourceRepository, new DependentsWalker(LocalRepository, Project.TargetFramework), ConstraintProvider,
-                Project.TargetFramework, NullLogger.Instance, !ignoreDependencies, allowPrereleaseVersions)
+            //TODO[KN]: crappy nuget does not install some packages. Second run helps
+            for (int i = 0; i < 2; i++)
             {
-                AcceptedTargets = PackageTargets.All
-            };
-            execute(package, walker);
-            
+                var walker = new UpdateWalker(LocalRepository, SourceRepository,
+                    new DependentsWalker(SourceRepository, Project.TargetFramework), ConstraintProvider,
+                    Project.TargetFramework, Logger, !ignoreDependencies, allowPrereleaseVersions)
+                {
+                    AcceptedTargets = PackageTargets.All,
+                    DependencyVersion = DependencyVersion.Lowest
+                };
+                execute(package, walker);
+            }
         }
 
 
