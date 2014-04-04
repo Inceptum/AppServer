@@ -95,8 +95,25 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         protected override void ExtractPackageFilesToProject(IPackage package)
         {
             // Resolve assembly references and content files first so that if this fails we never do anything to the project
-            List<IPackageAssemblyReference> assemblyReferences = Project.GetCompatibleItemsCore(package.AssemblyReferences).ToList();
+      /*      List<IPackageFile> assemblyReferences = Project.GetCompatibleItemsCore(package.AssemblyReferences).Cast<IPackageFile>().ToList();
+            IEnumerable<IPackageFile> satellites;
+            VersionUtility.TryGetCompatibleItems(Project.TargetFramework, package.GetLibFiles(), out satellites);
+            assemblyReferences.AddRange(satellites.ToArray());
+*/
+            IEnumerable<IPackageFile> satellites;
+            VersionUtility.TryGetCompatibleItems(Project.TargetFramework, package.GetLibFiles(), out satellites);
+            var assemblyReferences =new List<IPackageFile>();
+            assemblyReferences.AddRange(satellites.ToArray());
+
+
+
             List<IPackageFile> contentFiles = Project.GetCompatibleItemsCore(package.GetContentFiles()).ToList();
+        /*     
+            IEnumerable<IPackageFile> satellites;
+            VersionUtility.TryGetCompatibleItems(Project.TargetFramework, package.GetLibFiles(), out satellites);
+            var packageFiles = satellites.ToArray();
+            return refs.Concat(packageFiles);*/
+
             IEnumerable<IPackageFile> configItems;
             Project.TryGetCompatibleItems(package.GetFiles("config"), out configItems);
             var configFiles = configItems.ToArray();
@@ -134,7 +151,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
     
 
                 // Add the references to the reference path
-                foreach (IPackageAssemblyReference assemblyReference in assemblyReferences)
+                foreach (var assemblyReference in assemblyReferences)
                 {
                     if (assemblyReference.IsEmptyFolder())
                     {
@@ -145,14 +162,14 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                     string referencePath = Path.Combine(PathResolver.GetInstallPath(package), assemblyReference.Path);
                     string relativeReferencePath = PathUtility.GetRelativePath(Project.Root, referencePath);
 
-                    if (Project.ReferenceExists(assemblyReference.Name))
+                    if (Project.ReferenceExists(assemblyReference.EffectivePath))
                     {
-                        Project.RemoveReference(assemblyReference.Name);
+                        Project.RemoveReference(assemblyReference.EffectivePath);
                     }
 
                     // The current implementation of all ProjectSystem does not use the Stream parameter at all.
                     // We can't change the API now, so just pass in a null stream.
-                    Project.AddReference(relativeReferencePath, assemblyReference.GetStream());
+                    Project.AddReference(assemblyReference.EffectivePath, assemblyReference.GetStream());
                 }
 
 

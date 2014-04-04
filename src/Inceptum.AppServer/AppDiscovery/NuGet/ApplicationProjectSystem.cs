@@ -41,8 +41,12 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
         public void AddReference(string referencePath, Stream stream)
         {
+/*
             string fileName = Path.GetFileName(referencePath);
             string fullPath = this.GetFullPath(GetReferencePath(fileName));
+*/
+            string fullPath = this.GetFullPath(GetReferencePath(referencePath));
+
 /*
             //nuget provides empty stream for references so this is the only way to get the file
             using (var fs = new FileStream(Path.Combine(Root, "packages", referencePath), FileMode.Open))
