@@ -204,7 +204,6 @@ namespace Inceptum.AppServer.Hosting
                                                ActualVersion=instance.ActualVersion,
                                                Commands = instance.Commands,
                                                User = cfg.User,
-                                               Password = cfg.Password,
                                                LogLevel = cfg.LogLevel,
                                                DefaultConfiguration = cfg.DefaultConfiguration,
                                                MaxLogSize=cfg.MaxLogSize,
@@ -317,7 +316,9 @@ namespace Inceptum.AppServer.Hosting
                     Environment = config.Environment,
                     AutoStart = config.AutoStart,
                     User = config.User,
-                    Password = Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(config.Password ?? ""), new byte[0], DataProtectionScope.LocalMachine)),
+                    Password = string.IsNullOrEmpty(config.Password)
+                                    ? null
+                                    : Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(config.Password ?? ""), new byte[0], DataProtectionScope.LocalMachine)),
                     LogLevel = config.LogLevel,
                     DefaultConfiguration=config.DefaultConfiguration,
                     MaxLogSize=config.MaxLogSize,
@@ -379,6 +380,7 @@ namespace Inceptum.AppServer.Hosting
                     throw new ConfigurationErrorsException(string.Format("Instance named '{0}' not found", config.Name));
                 if (config.Name!=config.Id && m_InstancesConfiguration.Any(x => x.Name == config.Name))
                     throw new ConfigurationErrorsException(string.Format("Can not rename instance '{0}' to {1}. Instance with this name already exists", config.Id, config.Name));
+                var originalPassword = m_InstancesConfiguration.First(c => c.Name == config.Id).Password;
                 var cfg = new InstanceConfig
                 {
                     Name = config.Name,
@@ -388,7 +390,9 @@ namespace Inceptum.AppServer.Hosting
                     Environment =  config.Environment,
                     AutoStart = config.AutoStart,
                     User = config.User,
-                    Password = Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(config.Password ?? ""), new byte[0], DataProtectionScope.LocalMachine)) ,
+                    Password = string.IsNullOrEmpty(config.Password)
+                        ?originalPassword
+                        :Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(config.Password ?? ""), new byte[0], DataProtectionScope.LocalMachine)) ,
                     LogLevel = config.LogLevel,
                     DefaultConfiguration=config.DefaultConfiguration,
                     MaxLogSize=config.MaxLogSize,
