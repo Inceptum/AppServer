@@ -32,11 +32,29 @@
             margin-bottom: .3em;
         }
 
+    
         #sidebar>div {
+            direction: rtl!important;    
             position: fixed;
             width: inherit;
             /* width: 220px;*/
+            height: 90%;
+            overflow-y:scroll;
+            white-space: nowrap!important;
+         
         }
+
+            #sidebar > div > ul {
+                direction: ltr!important;
+            }
+      #sidebar > div>ul {
+             
+            display: block;
+            margin-right: 25px;
+            padding-left: 1px;
+            overflow-x:hidden!important;
+        }
+        
 
         .page-header {
             padding-bottom: 5px;
@@ -95,7 +113,7 @@
 <div id="header"></div>
 
 
-<div class="sidebar span4"  id="sidebar">
+<div class="sidebar span4"  id="sidebar" >
 </div>
 <div class="main">
     <div class="container-fluid">
