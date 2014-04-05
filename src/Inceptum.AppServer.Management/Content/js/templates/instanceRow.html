@@ -1,11 +1,12 @@
 
-    <td><%=model.Environment%></td>
-    <td><a href="#/instances/<%=model.Name%>"><%=model.Name%></a></td>
-    <td><a href="#/applications/<%=model.ApplicationVendor%>/<%=model.ApplicationId%>"><%=model.ApplicationId%></a></td>
-    <td><%=model.Version%><%if(!model.Version || model.Version==""){%><%=model.ActualVersion%> (latest) <%}%></td>
-    <td><%if(model.EffectiveUser!=''){%><%=model.EffectiveUser%><%}else{%><span style="color:grey">Same as server</span><%}%></td>
-    <td><span class="label label-<%if(model.Status=="Starting"){%>warning<%}%><%if(model.Status=="Stopping"){%>inverse<%}%><%if(model.Status=="Started"){%>success<%}%>"><%=model.Status%></span></td>
-    <td>
+    <td style="white-space: nowrap"><%=model.Environment%></td>
+    <td class="text-span"><a href="#/instances/<%=model.Name%>"><%=model.Name%></a></td>
+    <td style="white-space: nowrap"><a href="#/applications/<%=model.ApplicationVendor%>/<%=model.ApplicationId%>"><%=model.ApplicationId%></a></td>
+    <td style="white-space: nowrap"><%=model.ActualVersion%></td>
+    <td style="white-space: nowrap"><%=model.Version%><%if(!model.Version || model.Version==""){%>latest<%}%></td>
+    <td style="white-space: nowrap"><%if(model.EffectiveUser!=''){%><%=model.EffectiveUser%><%}else{%><span style="color:grey">Same as server</span><%}%></td>
+    <td style="white-space: nowrap"><span class="label label-<%if(model.Status=="Starting"){%>warning<%}%><%if(model.Status=="Stopping"){%>inverse<%}%><%if(model.Status=="Started"){%>success<%}%>"><%=model.Status%></span></td>
+    <td style="white-space: nowrap">
         <div class="btn-group actions pull-right">
         <% if(model.Commands && model.Commands.length>0) {%>
             <div class="btn btn-group commands">
