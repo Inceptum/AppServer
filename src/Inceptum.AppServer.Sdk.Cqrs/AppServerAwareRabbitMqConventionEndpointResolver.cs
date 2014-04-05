@@ -10,7 +10,7 @@ namespace Inceptum.AppServer.Sdk.Cqrs
     public class AppServerAwareRabbitMqConventionEndpointResolver : RabbitMqConventionEndpointResolver
     {
         public AppServerAwareRabbitMqConventionEndpointResolver(string transport, string serializationFormat, InstanceContext instanceContext)
-            : base(transport, serializationFormat, instanceContext.Name + "." + instanceContext.AppServerName, instanceContext.Environment)
+            : base(transport, serializationFormat, instanceContext.Name.Replace('.','-') + "." + instanceContext.AppServerName, instanceContext.Environment)
         {
         }
     }
