@@ -19,6 +19,11 @@
             </ul>
             </div>
         <%}%>
+
+        <% if(model.DefaultConfiguration!=null) {%>
+            <a class="btn btn-mini" title="Configuration" href="#configurations/<%= model.DefaultConfiguration %>"><i class="icon-cog"></i></a>
+        <%}%>
+
             <a class="btn btn-mini cmd start" title="Start"><i class="icon-play"></i></a>
             <a class="btn btn-mini cmd stop" title="Stop"><i class="icon-stop"></i></a>
             <a class="btn btn-mini cmd restart" title="Restart"><i class="icon-refresh"></i></a>
