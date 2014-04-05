@@ -31,15 +31,24 @@
 <dl>
     <dt>Vendor</dt>
     <dd><a href="http://inceptumsoft.com"><%= model.Vendor %></a></dd>
-    <dt>Available versions</dt>
+    <dt>Available versions  <%
+            if(model.Versions.length>10)
+                {
+            %>
+            <a id="more" style="font-weight: 100" href="#">more...</a>
+                <%
+                }
+                %></dt>
     <dd class="app-versions">
         <div class="tabbable">
             <ul class="nav nav-pills">
-                <% _.each(model.Versions,function(ver) { %>
-                <li class="<%= ver.Version.split('.').join('_')%>"><a  data-toggle="tab" data-version="<%=ver.Version%>"  href="#<%= ver.Version.split('.').join('_')%>"><%= ver.Version%></a></li>
-                <% }); %>
+                <%
+                var cnt=0;
+                _.each(model.Versions,function(ver) { %>
+                <li class="<%= ver.Version.split('.').join('_')%> <% if(cnt>9){%>oldVersion hide<%}%>"><a  data-toggle="tab" data-version="<%=ver.Version%>"  href="#<%= ver.Version.split('.').join('_')%>"><%= ver.Version%></a></li>
+                <% cnt++; }); %>
             </ul>
-
+           
             <dt>Description</dt>
             <dd>
                 <div class="tab-content"  >

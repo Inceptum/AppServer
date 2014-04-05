@@ -7,12 +7,24 @@ define([
     'text!templates/application.html'],
     function($, Backbone, _,InstancesListView,alerts, template){
         var View = Backbone.View.extend({
-            el:'#content',
-            initialize: function(){
+            el: '#content',
+            events: {
+                "click #more":"toggleVersions"
+            },
+            initialize: function () {
+                
                 this.instances=this.options.instances;
-                _(this).bindAll('remove','change');
+                _(this).bindAll('remove', 'change', 'toggleVersions');
                 this.model.bind('remove', this.remove);
                 this.model.bind('change', this.change);
+            },
+            toggleVersions: function (e) {
+                $(this.el).find(".oldVersion").toggleClass("hide");
+                if ($(this.el).find("#more").text() == 'more...')
+                    $(this.el).find("#more").text('less...');
+                else
+                    $(this.el).find("#more").text('more...');
+                e.preventDefault();
             },
             remove:function(model){
                 alerts.show({
