@@ -84,7 +84,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         {
             if (path.ToLower().StartsWith("config\\"))
                 return path.Substring(7);
-            return path;//Path.Combine("Content",path);
+            return Path.Combine("Content",path);
         }
 
         public void AddImport(string targetPath, ProjectImportLocation location)

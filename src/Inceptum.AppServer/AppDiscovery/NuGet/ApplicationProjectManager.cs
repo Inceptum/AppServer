@@ -91,6 +91,8 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 }
             }
         }
+     
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         protected override void ExtractPackageFilesToProject(IPackage package)
         {
