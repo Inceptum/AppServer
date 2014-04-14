@@ -87,7 +87,7 @@ namespace Inceptum.AppServer.AppDiscovery
             }
             Directory.CreateDirectory(binFolder);
 
-            foreach (var file in Directory.GetFiles(folder))
+            foreach (var file in Directory.GetFiles(folder,"*.*", SearchOption.AllDirectories))
             {
                 var extension = Path.GetExtension(file);
                 var fileName= Path.GetFileName(file);
