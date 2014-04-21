@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace Inceptum.AppServer.Bootstrap
 {
     public static class Bootstrapper
     {
-        internal static IDisposable Start(AppServerSetup setup)
+        internal static IDisposable Start(IEnumerable<string> debugFolders = null)
         {
             IWindsorContainer container = new WindsorContainer();
             container.Install(new LoggingInstaller());
@@ -56,11 +57,11 @@ namespace Inceptum.AppServer.Bootstrap
                 container.Register(
                     Component.For<IConfigurationProvider, IManageableConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>().Named("localStorageConfigurationProvider")
                                   .DependsOn(new { configFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration") }));
-
+                var confSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"];
                 //If remote configuration source is provided in app.config use it by default
-                if (setup.ConfSvcUrl != null)
+                if (confSvcUrl != null)
                     container.Register(Component.For<IConfigurationProvider>().ImplementedBy<CachingRemoteConfigurationProvider>()
-                        .DependsOn(new { serviceUrl = setup.ConfSvcUrl, path = "." })
+                        .DependsOn(new { serviceUrl = confSvcUrl, path = "." })
                         .IsDefault());
 
 
@@ -68,9 +69,7 @@ namespace Inceptum.AppServer.Bootstrap
                 GlobalHost.DependencyResolver = new WindsorToSignalRAdapter(container.Kernel);
                 //Configuration local/remote
                 container
-                    .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer")
-                                                                 .Params(new { environment = setup.Environment, machineName = Environment.MachineName })
-                                                        )
+                    .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer").Params(new { machineName = Environment.MachineName }))
 
                     //Management
                     .Register(                        
@@ -83,19 +82,17 @@ namespace Inceptum.AppServer.Bootstrap
                         Component.For<IApplicationInstanceFactory>().AsFactory(),
                         Component.For<ApplicationInstance>().LifestyleTransient(),
                         Component.For<ApplicationRepository>(),
-                        Component.For<IHost>().ImplementedBy<Host>().DependsOn(new { name = setup.Environment }));
-                container.Register(
-                    Component.For<IApplicationRepository>().ImplementedBy<NugetApplicationRepository>()
-                    
-                    );
+                        Component.For<IHost>().ImplementedBy<Host>())
+                    //Nuget
+                    .Register(
+                        Component.For<IApplicationRepository>().ImplementedBy<NugetApplicationRepository>()
+                        );
 
-                if (setup.DebugFolders.Any())
-                    container.Register(Component.For<IApplicationRepository>().ImplementedBy<FolderApplicationRepository>().DependsOn(
-                        new
-                        {
-                            folders = setup.DebugFolders.ToArray()
-                        })); 
-
+                var folders = (debugFolders??new string[0]).ToArray();
+                if (folders.Length>0)
+                {
+                    container.Register(Component.For<IApplicationRepository>().ImplementedBy<FolderApplicationRepository>().DependsOn(new{folders}));
+                }
             }
             catch (Exception e)
             {
@@ -111,7 +108,7 @@ namespace Inceptum.AppServer.Bootstrap
             logger.InfoFormat("Initialization complete in {0}ms",sw.ElapsedMilliseconds);
             return new CompositeDisposable
             {
-                System.Reactive.Disposables.Disposable.Create(host.Stop),
+                Disposable.Create(host.Stop),
                 container
             };
 

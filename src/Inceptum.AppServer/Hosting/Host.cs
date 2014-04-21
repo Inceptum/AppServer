@@ -49,7 +49,7 @@ namespace Inceptum.AppServer.Hosting
         private readonly PeriodicalBackgroundWorker m_InstanceChecker;
         private bool m_IsStopped=true;
 
-        public Host(ILogCache logCache, IManageableConfigurationProvider serverConfigurationProvider, IConfigurationProvider applicationConfigurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepository applicationRepository, ILogger logger = null, string name = null)
+        public Host(ILogCache logCache, IManageableConfigurationProvider serverConfigurationProvider, IConfigurationProvider applicationConfigurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepository applicationRepository, ILogger logger = null)
         {
             m_LogCache = logCache;
             m_JobObject = new JobObject();
@@ -61,27 +61,22 @@ namespace Inceptum.AppServer.Hosting
             m_Listeners = listeners;
             m_InstanceFactory = instanceFactory;
             Logger = logger ?? NullLogger.Instance;
-            Name = name;
- 
-
-            if (Name == null)
+        
+            Name = Environment.MachineName;
+            try
             {
-                Name = Environment.MachineName;
-                try
-                {
-                    var bundleString = serverConfigurationProvider.GetBundle("AppServer", "server.host", "{environment}", "{machineName}");
-                    dynamic bundle = JObject.Parse(bundleString);
-                    if (bundle.name != null)
-                        Name = bundle.name;
-                    else
-                        Logger.WarnFormat("Failed to get server name from configuration , using default:{0}", Name);
-                }
-                catch (Exception e)
-                {
-                    Logger.WarnFormat(e, "Failed to get server name from configuration , using default:{0}",Name);
-                }
+                var bundleString = serverConfigurationProvider.GetBundle("AppServer", "server.host", "{machineName}");
+                var setup = JsonConvert.DeserializeObject<AppServerSetup>(bundleString);
+                if (setup.Name != null)
+                    Name = setup.Name;
+                else
+                    Logger.WarnFormat("Failed to get server name from configuration , using default:{0}", Name);
             }
-
+            catch (Exception e)
+            {
+                Logger.WarnFormat(e, "Failed to get server name from configuration , using default:{0}", Name);
+            }
+        
 
             m_Context = new AppServerContext
             {
@@ -243,12 +238,11 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
-        private ApplicationInstance createInstance(InstanceConfig config)
+        private void createInstance(InstanceConfig config)
         {
             var instance = m_InstanceFactory.Create(config.Name,  m_Context);
             m_Instances.Add(instance);
             instance.Subscribe(status => notifyInstancesChanged(instance.Name + ":" + instance.Status));
-            return instance;
         }
 
         private void validateInstanceConfig(ApplicationInstanceInfo config)
@@ -475,7 +469,7 @@ namespace Inceptum.AppServer.Hosting
             stopInstance(instance);
         }
 
-        public void stopInstance(ApplicationInstance instance,bool abort=false)
+        private void stopInstance(ApplicationInstance instance,bool abort=false)
         {
             try
             {

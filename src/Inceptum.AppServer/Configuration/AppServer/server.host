@@ -1,5 +1,4 @@
 {
-  "appsToStart": [],
   "ManagementConsole": {
     "port": 9223,
     "enabled": true

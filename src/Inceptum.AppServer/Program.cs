@@ -19,11 +19,6 @@ namespace Inceptum.AppServer
 
     internal static class Program
     {
-
-        /*
-         -debug-wrap "x:\WORK\Finam\CODE\_OPENWRAP\ibank\Internet.Bank.DiasoftAdapter-1.1.0.5.wrap, x:\WORK\Finam\CODE\_OPENWRAP\ibank\Internet.Bank.CyberplatAdapter-1.1.0.1.wrap"
-         */
-
         /// <summary>
         ///   The main entry point for the application.
         /// </summary>
@@ -31,34 +26,17 @@ namespace Inceptum.AppServer
         public static void Main(params string[] args)
         {
            // jobObject.AddProcess(process.Handle);
-
-            var setup = new AppServerSetup
-                            {
-                                Environment = ConfigurationManager.AppSettings["Environment"],
-                                ConfSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"]
-                            };
-
+ 
+            var debugFolders =new List<string>();
             for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i].ToLower())
                 {
-                    case "-appstostart":
-                        i++;
-                        if (i < args.Length)
-                            setup.AppsToStart = args[i].Split(',');
-                        break;
-
                     case "-debug-folder": 
                         i++;
                         if (i < args.Length)
-                            setup.DebugFolders.Add(args[i]);
+                            debugFolders.Add(args[i]);
                         break;
-                    case "-withNativeDll":
-                        i++;
-                        if (i < args.Length)
-                            setup.DebugNativeDlls.Add(args[i]);
-                        break;
-
                     default:
                         Console.WriteLine("Unknown arg: " + args[i]);
                         return;
@@ -75,12 +53,12 @@ namespace Inceptum.AppServer
                                 EventLogEntryType.Information);
 
                 Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-                var servicesToRun = new ServiceBase[] {new ServiceHostSvc(() => createHost(setup))};
+                var servicesToRun = new ServiceBase[] { new ServiceHostSvc(() => createHost(debugFolders)) };
                 ServiceBase.Run(servicesToRun);
                 return;
             }
 
-            using (var host = createHost(setup))
+            using (createHost(debugFolders))
             {
                 Console.ReadLine();
                 
@@ -89,9 +67,9 @@ namespace Inceptum.AppServer
 
 
 
-        private static IDisposable createHost(AppServerSetup setup = null)
+        private static IDisposable createHost(IEnumerable<string> debugFolders = null)
         {
-            return Bootstrapper.Start(setup);
+            return Bootstrapper.Start(debugFolders);
         }
     }
 
