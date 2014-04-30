@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -29,7 +30,7 @@ namespace Inceptum.AppServer.AppDiscovery
 
         private Tuple<ApplicationInfo,string> getApplication(string folder)
         {
-            var dlls = new[] { "*.dll", "*.exe" }
+			var dlls = new[] { "*.dll", "*.exe" }
                 .SelectMany(searchPattern => Directory.GetFiles(folder, searchPattern))
                 .Select(file => new { path = file, AssemblyDefinition = Hosting.CeceilExtencions.TryReadAssembly(file) }).ToArray();
 
@@ -87,6 +88,8 @@ namespace Inceptum.AppServer.AppDiscovery
             }
             Directory.CreateDirectory(binFolder);
 
+			
+
             foreach (var file in Directory.GetFiles(folder,"*.*", SearchOption.AllDirectories))
             {
                 var extension = Path.GetExtension(file);
@@ -97,8 +100,13 @@ namespace Inceptum.AppServer.AppDiscovery
                 else
                     File.Copy(file, Path.Combine(installPath, fileName), true);
             }
-        }
 
+	        var cultures = CultureInfo.GetCultures(CultureTypes.SpecificCultures);
+			foreach (var directory in Directory.GetDirectories(folder, "??").Where(directory => cultures.Any(c =>  Path.GetFileName(directory).Equals(c.TwoLetterISOLanguageName, StringComparison.InvariantCultureIgnoreCase))))
+			{
+				copyDirectory(directory, Path.Combine(binFolder, Path.GetFileName(directory)), false);
+			}
+        }
 
 
         private static void copyDirectory(string sourceDirName, string destDirName, bool copySubDirs)
