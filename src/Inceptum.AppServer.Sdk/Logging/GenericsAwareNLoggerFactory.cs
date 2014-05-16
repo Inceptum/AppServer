@@ -13,7 +13,7 @@ namespace Inceptum.AppServer.Logging
     /// <remarks>
     /// Refer to IB-220 for details
     /// </remarks>
-    public class GenericsAwareNLoggerFactory : Castle.Services.Logging.NLogIntegration.NLogFactory
+    public class GenericsAwareNLoggerFactory : Castle.Services.Logging.NLogIntegration.ExtendedNLogFactory
     {
         public GenericsAwareNLoggerFactory() { }
 
@@ -44,7 +44,7 @@ namespace Inceptum.AppServer.Logging
 
         public GenericsAwareNLoggerFactory(LoggingConfiguration loggingConfiguration) : base(loggingConfiguration) { }
 
-        public override ILogger Create(Type type)
+        public override IExtendedLogger Create(Type type)
         {
             if (type == null)
                 throw new ArgumentNullException("type");
