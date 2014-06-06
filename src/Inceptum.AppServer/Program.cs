@@ -44,14 +44,6 @@ namespace Inceptum.AppServer
             }
             if (!Environment.UserInteractive)
             {
-                const string source = "Inceptum.AppServer";
-                const string log = "Application";
-
-                if (!EventLog.SourceExists(source)) EventLog.CreateEventSource(source, log);
-                var eLog = new EventLog {Source = source};
-                eLog.WriteEntry(@"Starting the service in " + AppDomain.CurrentDomain.BaseDirectory,
-                                EventLogEntryType.Information);
-
                 Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
                 var servicesToRun = new ServiceBase[] { new ServiceHostSvc(() => createHost(debugFolders)) };
                 ServiceBase.Run(servicesToRun);
