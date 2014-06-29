@@ -78,32 +78,58 @@ namespace Inceptum.AppServer.Hosting
         private IApplicationInstance m_Instance;
         private ServiceHost m_ServiceHost;
         private InstanceContext m_InstanceContext;
+        private readonly string m_ServiceAddress;
+        private readonly object m_ServiceHostLock=new object();
 
         public ApplicationHost(string instanceName)
         {
             m_InstanceName = instanceName;
+            m_ServiceAddress = new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/" + m_InstanceName).ToString();
         }
 
-    
         #region Initialization
+
+        private void resetServiceHost(object sender, EventArgs e)
+        {
+            lock (m_ServiceHostLock)
+            {
+                if (m_ServiceHost != null)
+                {
+                    m_ServiceHost.Faulted -= resetServiceHost;
+                    m_ServiceHost.Close();
+                    m_ServiceHost = null;
+                }
+                createServiceHost();
+            }
+        }
+ 
+
+        private void createServiceHost()
+        {
+            lock (m_ServiceHostLock)
+            {
+                m_ServiceHost = new ServiceHost(this);
+
+
+                var debug = m_ServiceHost.Description.Behaviors.Find<ServiceDebugBehavior>();
+
+                // if not found - add behavior with setting turned on 
+                if (debug == null)
+                    m_ServiceHost.Description.Behaviors.Add(new ServiceDebugBehavior {IncludeExceptionDetailInFaults = true});
+                else
+                    debug.IncludeExceptionDetailInFaults = true;
+                //TODO: need to do it in better way. String based type resolving is a bug source
+                m_ServiceHost.AddServiceEndpoint(typeof (IApplicationHost), WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), m_ServiceAddress);
+
+
+                m_ServiceHost.Open();
+                m_ServiceHost.Faulted += resetServiceHost;
+            }
+        }
 
         public void Run()
         {
-
-            m_ServiceHost = new ServiceHost(this);
-            var debug = m_ServiceHost.Description.Behaviors.Find<ServiceDebugBehavior>();
-
-            // if not found - add behavior with setting turned on 
-            if (debug == null)
-                m_ServiceHost.Description.Behaviors.Add(new ServiceDebugBehavior { IncludeExceptionDetailInFaults = true });
-            else
-                debug.IncludeExceptionDetailInFaults = true;
-            var address = new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/" + m_InstanceName).ToString();
-            //TODO: need to do it in better way. String based type resolving is a bug source
-            m_ServiceHost.AddServiceEndpoint(typeof(IApplicationHost), WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), address);
-            //m_ConfigurationProviderServiceHost.Faulted += new EventHandler(this.IpcHost_Faulted);
-            m_ServiceHost.Open();
-
+             createServiceHost();
 
 
             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/instances/" + m_InstanceName;
@@ -157,8 +183,8 @@ namespace Inceptum.AppServer.Hosting
             }
 
             AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
-            var congigurationProvider = getCongigurationProvider();
-            var logCache = getLogCache();
+            createCongigurationProviderProxy();
+            createLogCacheProxy();
 
 
             var appAssemblies = from file in dlls
@@ -183,23 +209,50 @@ namespace Inceptum.AppServer.Hosting
 
 
             var instanceCommands = initContainer(Type.GetType(appType), instanceParams.LogLevel,instanceParams.MaxLogSize,instanceParams.LogLimitReachedAction);
-            
-            m_Instance.RegisterApplicationHost(address, instanceCommands);
+
+            m_Instance.RegisterApplicationHost(m_ServiceAddress, instanceCommands);
 
             m_StopEvent.WaitOne();
             if (m_Container == null)
                 throw new InvalidOperationException("Host is not started");
+            
+            if (m_ServiceHost != null) try
+                {
+                    m_ServiceHost.Close();
+                }
+                catch (Exception e)
+                {
+                    //There is nothing to do with it
+                }
+
+
             m_Container.Dispose();
-            if(congigurationProvider!=null)
-                congigurationProvider.Close();
-            if(logCache!=null)
-                logCache.Close();
+            if (m_ConfigurationProvider != null)
+            {
+                try
+                {
+
+                    ((ICommunicationObject)m_ConfigurationProvider).Close();
+                }
+                catch (Exception e)
+                {
+                    //There is nothing to do with it
+                }
+            }
+            if (m_LogCache != null)
+            {
+                try
+                {
+                    ((ICommunicationObject)m_LogCache).Close();
+                }
+                catch (Exception e)
+                {
+                    //There is nothing to do with it
+                }
+            }
             m_Container = null;
             m_HostedApplication = null;
-            if (m_ServiceHost!=null)
-                m_ServiceHost.Close();
-            
-        } 
+        }
 
         private void onUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
@@ -245,22 +298,40 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
-        private   ChannelFactory<IConfigurationProvider> getCongigurationProvider()
+        private   void createCongigurationProviderProxy()
         {
             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/ConfigurationProvider";
             var factory = new ChannelFactory<IConfigurationProvider>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(),
                 new EndpointAddress(uri));
             m_ConfigurationProvider = factory.CreateChannel();
-            return factory;
+
+            EventHandler clientFault = null;
+            clientFault = (sender, e) =>
+            {
+                ((ICommunicationObject)m_ConfigurationProvider).Faulted -= clientFault;
+                m_ConfigurationProvider = factory.CreateChannel();
+                ((ICommunicationObject)m_ConfigurationProvider).Faulted += clientFault;
+
+            };
+            ((ICommunicationObject)m_ConfigurationProvider).Faulted += clientFault;
         }
 
-        private   ChannelFactory<ILogCache> getLogCache()
+        private   void createLogCacheProxy()
         {
             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/LogCache";
             var factory = new ChannelFactory<ILogCache>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(),
                 new EndpointAddress(uri));
             m_LogCache= factory.CreateChannel();
-            return factory;
+
+            EventHandler clientFault = null;
+            clientFault = (sender, e) =>
+            {
+                ((ICommunicationObject) m_LogCache).Faulted -= clientFault;
+                m_LogCache = factory.CreateChannel();
+                ((ICommunicationObject)m_LogCache).Faulted += clientFault;
+
+            };
+            ((ICommunicationObject)m_LogCache).Faulted += clientFault;
         }
 
         #endregion
