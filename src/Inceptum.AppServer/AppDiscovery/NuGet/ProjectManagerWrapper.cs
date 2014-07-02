@@ -92,7 +92,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         {
             return SourceRepository.GetUpdates(
                 LocalRepository.GetPackages(),
-                includePrerelease: true,
+                includePrerelease: false,
                 includeAllVersions: true)
             .Where(p => (package.Id == p.Id)).ToArray();
         }
