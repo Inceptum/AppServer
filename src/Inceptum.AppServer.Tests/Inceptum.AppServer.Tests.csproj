@@ -45,16 +45,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Castle.Windsor.3.2.1\lib\net40\Castle.Windsor.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Web.XmlTransform">
-      <HintPath>..\packages\Microsoft.Web.Xdt.1.0.0\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
+    <Reference Include="Microsoft.Web.XmlTransform, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=2.1.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NLog.2.1.0\lib\net40\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Core, Version=2.8.50320.36, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="NuGet.Core, Version=2.8.50506.491, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NuGet.Core.2.8.1\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <HintPath>..\packages\NuGet.Core.2.8.2\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework, Version=2.6.2.12296, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
