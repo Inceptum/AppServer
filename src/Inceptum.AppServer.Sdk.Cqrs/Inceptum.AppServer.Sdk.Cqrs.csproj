@@ -45,15 +45,15 @@
     <Reference Include="EventStore.ClientAPI">
       <HintPath>..\packages\EventStore.Client.2.0.2\lib\net40\EventStore.ClientAPI.dll</HintPath>
     </Reference>
-    <Reference Include="Inceptum.Cqrs, Version=1.0.7.12, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Inceptum.Cqrs, Version=1.0.7.20, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Inceptum.Cqrs.1.0.7.12\lib\net45\Inceptum.Cqrs.dll</HintPath>
+      <HintPath>..\packages\Inceptum.Cqrs.1.0.7.20\lib\net45\Inceptum.Cqrs.dll</HintPath>
     </Reference>
     <Reference Include="Inceptum.Messaging">
-      <HintPath>..\packages\Inceptum.Messaging.1.0.8.3\lib\net40\Inceptum.Messaging.dll</HintPath>
+      <HintPath>..\packages\Inceptum.Messaging.1.0.8.11\lib\net40\Inceptum.Messaging.dll</HintPath>
     </Reference>
     <Reference Include="Inceptum.Messaging.RabbitMq">
-      <HintPath>..\packages\Inceptum.Messaging.RabbitMq.1.0.8.3\lib\net40\Inceptum.Messaging.RabbitMq.dll</HintPath>
+      <HintPath>..\packages\Inceptum.Messaging.RabbitMq.1.0.8.11\lib\net40\Inceptum.Messaging.RabbitMq.dll</HintPath>
     </Reference>
     <Reference Include="NEventStore">
       <HintPath>..\packages\NEventStore.4.1.0.10\lib\net40\NEventStore.dll</HintPath>
@@ -72,7 +72,7 @@
       <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="RabbitMQ.Client">
-      <HintPath>..\packages\RabbitMQ.Client.3.1.5\lib\net30\RabbitMQ.Client.dll</HintPath>
+      <HintPath>..\packages\RabbitMQ.Client.3.2.4\lib\net30\RabbitMQ.Client.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
