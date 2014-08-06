@@ -102,7 +102,10 @@ namespace Inceptum.AppServer.Hosting
         public void ReportFailure(string error)
         {
             Logger.ErrorFormat("Instance '{0}' crashed: {1}", Name, error);
-            Stop(true);
+            lock (m_SyncRoot)
+            {
+                m_CurrentTask = doStop();
+            }
         }
 
         public void RegisterApplicationHost(string uri, InstanceCommand[] instanceCommands)
@@ -256,8 +259,13 @@ namespace Inceptum.AppServer.Hosting
             {
                 Commands = new InstanceCommand[0];
                 Logger.ErrorFormat(e, "Instance '{0}' failed to start", Name);
-                Stop(true);
+                lock (m_SyncRoot)
+                {
+                    m_CurrentTask = doStop();
+                } 
             }
+
+
         }
 
 
@@ -426,7 +434,10 @@ namespace Inceptum.AppServer.Hosting
             {
                 if ((Status != HostedAppStatus.Started && Status != HostedAppStatus.Starting) || m_Process == null || !m_Process.HasExited) return;
                 Logger.ErrorFormat("Instance '{0}' process has unexpectedly stopped", Name);
-                Stop(true);
+                lock (m_SyncRoot)
+                {
+                    m_CurrentTask = doStop();
+                } 
             }
         }
     }
