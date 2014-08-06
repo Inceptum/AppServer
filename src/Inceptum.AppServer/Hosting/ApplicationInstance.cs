@@ -9,6 +9,7 @@ using System.Security;
 using System.Security.Cryptography;
 using System.ServiceModel;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
@@ -40,10 +41,15 @@ namespace Inceptum.AppServer.Hosting
         private ServiceHost m_ServiceHost;
         private HostedAppStatus m_Status;
         private string m_User;
+        private CancellationTokenSource m_CancellationTokenSource=new CancellationTokenSource();
 
         public ApplicationInstance(string name, AppServerContext context,
             ILogger logger, JobObject jobObject)
         {
+            var completionSource = new TaskCompletionSource<object>();
+            completionSource.SetResult(null);
+            m_CurrentTask = completionSource.Task;
+
             m_JobObject = jobObject;
             Name = name;
             Logger = logger;
@@ -145,7 +151,7 @@ namespace Inceptum.AppServer.Hosting
 
         #region IDisposable Members
 
-        public void Dispose()
+        public async void Dispose()
         {
             lock (m_SyncRoot)
             {
@@ -160,14 +166,9 @@ namespace Inceptum.AppServer.Hosting
                 m_StatusSubject.Dispose();
             };
 
-            if (m_CurrentTask != null)
-            {
-                m_CurrentTask.ContinueWith(task => finishDispose());
-            }
-            else
-            {
-                Task.Factory.StartNew(finishDispose);
-            }
+            m_CancellationTokenSource.Cancel();
+            await m_CurrentTask;
+            finishDispose();
         }
 
         #endregion
@@ -223,26 +224,39 @@ namespace Inceptum.AppServer.Hosting
                 Status = HostedAppStatus.Starting;
 
                 Logger.InfoFormat("Starting instance '{0}'. Debug mode: {1}", Name, debug);
-                m_CurrentTask = Task.Factory.StartNew(() =>
-                {
-                    try
-                    {
-                        if (beforeStart != null)
-                            beforeStart();
-/*
-                                                                  if (IsMisconfigured)
-                                                                      throw new ConfigurationErrorsException("Instance is misconfigured");
-*/
+                Logger.InfoFormat("Scheduling starting  instance '{0}'", Name);
+                m_CurrentTask = doStart(debug, beforeStart);
+            }
+        }
 
-                        createHost(debug);
-                    }
-                    catch (Exception e)
-                    {
-                        Commands = new InstanceCommand[0];
-                        Logger.ErrorFormat(e, "Instance '{0}' failed to start", Name);
-                        Stop(true);
-                    }
-                });
+
+
+        private async Task doStart(bool debug, Action beforeStart)
+        {
+
+            await m_CurrentTask;
+            await Task.Yield();
+
+
+            if (m_CancellationTokenSource.IsCancellationRequested)
+                return;
+
+            try
+            {
+                if (beforeStart != null)
+                    beforeStart();
+                /*
+                                        if (IsMisconfigured)
+                                            throw new ConfigurationErrorsException("Instance is misconfigured");
+                */
+
+                createHost(debug);
+            }
+            catch (Exception e)
+            {
+                Commands = new InstanceCommand[0];
+                Logger.ErrorFormat(e, "Instance '{0}' failed to start", Name);
+                Stop(true);
             }
         }
 
@@ -260,37 +274,47 @@ namespace Inceptum.AppServer.Hosting
                 Commands = new InstanceCommand[0];
 
                 Status = HostedAppStatus.Stopping;
-                Logger.InfoFormat("Stopping instance '{0}'", Name);
-                m_CurrentTask = Task.Factory.StartNew(() =>
-                {
-                    try
-                    {
-                        if (m_ApplicationHost != null && !m_Process.HasExited)
-                            m_ApplicationHost.Stop();
-                        if (m_AppHostFactory != null)
-                            m_AppHostFactory.Close();
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.ErrorFormat(e, "Instance '{0}' application failed while stopping", Name);
-                        if (!m_Process.HasExited)
-                            m_Process.Kill();
-                    }
-                    finally
-                    {
-                        Logger.InfoFormat("Instance '{0}' stopped", Name);
-                        if (m_Process != null && !m_Process.HasExited)
-                            m_Process.WaitForExit();
+                Logger.InfoFormat("Scheduling stopping instance '{0}'", Name);
+                m_CurrentTask = doStop();
+            }
+        }
 
-                        m_Process = null;
-                        m_ApplicationHost = null;
-                        m_AppHostFactory = null;
-                    }
-                    lock (m_SyncRoot)
-                    {
-                        Status = HostedAppStatus.Stopped;
-                    }
-                });
+        private async Task doStop()
+        {
+            await m_CurrentTask;
+            if (m_CancellationTokenSource.IsCancellationRequested)
+                return;
+            await Task.Yield();
+
+            Logger.InfoFormat("Stopping instance '{0}'", Name);
+
+
+            try
+            {
+                if (m_ApplicationHost != null && !m_Process.HasExited)
+                    m_ApplicationHost.Stop();
+                if (m_AppHostFactory != null)
+                    m_AppHostFactory.Close();
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorFormat(e, "Instance '{0}' application failed while stopping", Name);
+                if (!m_Process.HasExited)
+                    m_Process.Kill();
+            }
+            finally
+            {
+                Logger.InfoFormat("Instance '{0}' stopped", Name);
+                if (m_Process != null && !m_Process.HasExited)
+                    m_Process.WaitForExit();
+
+                m_Process = null;
+                m_ApplicationHost = null;
+                m_AppHostFactory = null;
+            }
+            lock (m_SyncRoot)
+            {
+                Status = HostedAppStatus.Stopped;
             }
         }
 
@@ -367,8 +391,29 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-        public string ExecuteCommand(InstanceCommand command)
+        public Task<string> ExecuteCommand(InstanceCommand command)
         {
+            lock (m_SyncRoot)
+            {
+                if (m_IsDisposing)
+                    throw new ObjectDisposedException("Instance is being disposed");
+                if (Status == HostedAppStatus.Stopped || Status == HostedAppStatus.Stopping)
+                    throw new InvalidOperationException("Instance is " + Status);
+
+                Logger.InfoFormat("Scheduling command '{0}' execution with  instance '{1}'",command, Name);
+                var currentTask = doExecute(command);
+                m_CurrentTask = currentTask;
+                return currentTask;
+            }
+        }
+
+        private async Task<string> doExecute(InstanceCommand command)
+        {
+            await m_CurrentTask;
+            await Task.Yield();
+            Logger.InfoFormat("Executing command '{0}' with  instance '{1}'", command, Name);
+            m_CancellationTokenSource.Token.ThrowIfCancellationRequested();
+
             InstanceCommand cmd = Commands.FirstOrDefault(c => c.Name == command.Name);
             if (cmd == null)
                 throw new InvalidOperationException(string.Format("Command '{0}' not found", command));

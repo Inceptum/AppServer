@@ -445,7 +445,7 @@ namespace Inceptum.AppServer.Hosting
                     ApplicationInstance instance = m_Instances.FirstOrDefault(i => i.Name == name);
                     if (instance == null)
                         return null;
-                    return instance.ExecuteCommand(command);
+                    return instance.ExecuteCommand(command).ConfigureAwait(false).GetAwaiter().GetResult();
                 }
             }
             catch (Exception e)
