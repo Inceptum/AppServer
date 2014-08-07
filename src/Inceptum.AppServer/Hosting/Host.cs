@@ -449,7 +449,7 @@ namespace Inceptum.AppServer.Hosting
                     task = instance.ExecuteCommand(command);
                 }
                 var result = task.ConfigureAwait(false).GetAwaiter().GetResult();
-                return string.IsNullOrWhiteSpace(result)?string.Format("Command '{0}' is executed",command.Name):result;
+                return string.IsNullOrWhiteSpace(result)?string.Format("Command '{0}' has executed",command.Name):result;
             }
             catch (Exception e)
             {
