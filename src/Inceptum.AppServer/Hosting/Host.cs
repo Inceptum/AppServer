@@ -437,6 +437,7 @@ namespace Inceptum.AppServer.Hosting
         {
             try
             {
+                Task<string> task;
                 lock (m_SyncRoot)
                 {
                     if (m_IsStopped)
@@ -445,8 +446,9 @@ namespace Inceptum.AppServer.Hosting
                     ApplicationInstance instance = m_Instances.FirstOrDefault(i => i.Name == name);
                     if (instance == null)
                         return null;
-                    return instance.ExecuteCommand(command).ConfigureAwait(false).GetAwaiter().GetResult();
+                    task = instance.ExecuteCommand(command);
                 }
+                return task.ConfigureAwait(false).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
