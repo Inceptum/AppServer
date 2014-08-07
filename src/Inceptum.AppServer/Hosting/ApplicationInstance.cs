@@ -16,6 +16,7 @@ using Castle.Facilities.Logging;
 using Castle.Services.Logging.NLogIntegration;
 using Castle.Windsor;
 using Inceptum.AppServer.Model;
+using Inceptum.AppServer.Utils;
 
 namespace Inceptum.AppServer.Hosting
 {
@@ -110,16 +111,28 @@ namespace Inceptum.AppServer.Hosting
 
         public void RegisterApplicationHost(string uri, InstanceCommand[] instanceCommands)
         {
-            m_AppHostFactory = new ChannelFactory<IApplicationHost>(new NetNamedPipeBinding(), new EndpointAddress(uri));
+            m_AppHostFactory = new ChannelFactory<IApplicationHost>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), new EndpointAddress(uri));
             IApplicationHost applicationHost = m_AppHostFactory.CreateChannel();
             Commands = instanceCommands;
             m_ApplicationHost = applicationHost;
+
+            EventHandler clientFault = null;
+            clientFault = (sender, e) =>
+            {
+                ((ICommunicationObject)m_ApplicationHost).Faulted -= clientFault;
+                m_ApplicationHost = m_AppHostFactory.CreateChannel();
+                ((ICommunicationObject)m_ApplicationHost).Faulted += clientFault;
+
+            };
+            ((ICommunicationObject)m_ApplicationHost).Faulted += clientFault;
+
             lock (m_SyncRoot)
             {
                 Status = HostedAppStatus.Started;
             }
             Logger.InfoFormat("Instance {0} started", Name);
         }
+
 
         public InstanceParams GetInstanceParams()
         {
@@ -410,10 +423,25 @@ namespace Inceptum.AppServer.Hosting
 
                 Logger.InfoFormat("Scheduling command '{0}' execution with  instance '{1}'",command, Name);
                 var currentTask = doExecute(command);
-                m_CurrentTask = currentTask;
+
+
+                m_CurrentTask = safeTask(currentTask);
                 return currentTask;
             }
         }
+
+        private async Task safeTask(Task task)
+        {
+            try
+            {
+                await task;
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+
 
         private async Task<string> doExecute(InstanceCommand command)
         {
