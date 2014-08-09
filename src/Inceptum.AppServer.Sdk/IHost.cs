@@ -1,5 +1,6 @@
 ﻿using System;
 //using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Model;
 
@@ -20,8 +21,8 @@ namespace Inceptum.AppServer
         void RediscoverApps();
         void Start();
         void Stop();
-        void StartInstance(string name);
-        void StopInstance(string name);
+        Task StartInstance(string name);
+        Task StopInstance(string name);
         void AddInstance(ApplicationInstanceInfo config);
         void UpdateInstance(ApplicationInstanceInfo config);
         void SetInstanceVersion(string name, Version version);

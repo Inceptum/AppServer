@@ -227,7 +227,7 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
-        public void Start(bool debug, Action beforeStart)
+        public Task Start(bool debug, Action beforeStart)
         {
             lock (m_SyncRoot)
             {
@@ -242,6 +242,7 @@ namespace Inceptum.AppServer.Hosting
                 Logger.InfoFormat("Starting instance '{0}'. Debug mode: {1}", Name, debug);
                 Logger.InfoFormat("Scheduling starting  instance '{0}'", Name);
                 m_CurrentTask = doStart(debug, beforeStart);
+                return m_CurrentTask;
             }
         }
 
@@ -282,7 +283,7 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
-        public void Stop(bool abort)
+        public Task Stop(bool abort)
         {
             lock (m_SyncRoot)
             {
@@ -297,6 +298,7 @@ namespace Inceptum.AppServer.Hosting
                 Status = HostedAppStatus.Stopping;
                 Logger.InfoFormat("Scheduling stopping instance '{0}'", Name);
                 m_CurrentTask = doStop();
+                return m_CurrentTask;
             }
         }
 

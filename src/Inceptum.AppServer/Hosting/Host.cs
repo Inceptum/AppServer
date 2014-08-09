@@ -435,6 +435,7 @@ namespace Inceptum.AppServer.Hosting
 
         public string ExecuteCommand(string name, InstanceCommand command)
         {
+            Logger.InfoFormat("Executing command {0} with instance  ",command.Name, name);
             try
             {
                 Task<string> task;
@@ -459,8 +460,9 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
-        public void StopInstance(string name)
+        public Task StopInstance(string name)
         {
+            Logger.InfoFormat("Stopping instance {0}  ", name);
             ApplicationInstance instance;
             lock (m_SyncRoot)
             {
@@ -472,30 +474,18 @@ namespace Inceptum.AppServer.Hosting
             if (instance == null)
                 throw new ConfigurationErrorsException(string.Format("Instance '{0}' not found", name));
 
-            stopInstance(instance);
+            return instance.Stop(false);
+        }
+ 
+
+        public Task StartInstance(string name)
+        {
+            return startInstance(name,false);
         }
 
-        private void stopInstance(ApplicationInstance instance,bool abort=false)
+        private Task startInstance(string name, bool safe)
         {
-            try
-            {
-                instance.Stop(abort);
-
-            }
-            catch (Exception e)
-            {
-                Logger.WarnFormat(e, "Failed to stop instance {0}", instance.Name);
-                throw;
-            }
-        }
-
-        public void StartInstance(string name)
-        {
-            startInstance(name,false);
-        }
-
-        private void startInstance(string name,bool safe)
-        {
+            Logger.InfoFormat(" Starting instance {0}  ", name);
             try
             {
                 ApplicationInstance instance;
@@ -523,15 +513,14 @@ namespace Inceptum.AppServer.Hosting
     
                 
 
-
-
-                instance.Start(application.Debug, () => m_ApplicationRepository.Install(application, version, Path.Combine(m_Context.AppsDirectory, config.Name) + "\\"));
+                return instance.Start(application.Debug, () => m_ApplicationRepository.Install(application, version, Path.Combine(m_Context.AppsDirectory, config.Name) + "\\"));
             }
             catch (Exception e)
             {
                 Logger.WarnFormat(e, "Failed to start instance {0}", name);
                 if (!safe)
                     throw;
+                return Task.FromResult<object>(null);
             }
         }
 
@@ -575,7 +564,7 @@ namespace Inceptum.AppServer.Hosting
             {
                 Logger.InfoFormat("Stopping instances");
                 tasks = m_Instances.Where(instance=>instance.Status!=HostedAppStatus.Stopped&& instance.Status!=HostedAppStatus.Stopping)
-                    .Select(instance => Task.Factory.StartNew(() => stopInstance(instance,true)));
+                    .Select(instance => instance.Stop(true));
             }
 
             Task.WaitAll(tasks.ToArray());

@@ -87,13 +87,9 @@ namespace Inceptum.AppServer.Management.Handlers
 
             if (m_Host.Instances.FirstOrDefault(i => i.Name == instance).Status == HostedAppStatus.Started)
             {
-                m_Host.StopInstance(instance);
-                while (m_Host.Instances.FirstOrDefault(i => i.Name == instance).Status == HostedAppStatus.Starting || m_Host.Instances.FirstOrDefault(i => i.Name == instance).Status == HostedAppStatus.Stopping)
-                {
-                    Thread.Sleep(300);
-                }
-            }
-            m_Host.StartInstance(instance);
+                m_Host.StopInstance(instance).ConfigureAwait(false).GetAwaiter().GetResult();
+             }
+            m_Host.StartInstance(instance).ConfigureAwait(false).GetAwaiter().GetResult(); ;
         }
 
         [HttpOperation(HttpMethod.PUT, ForUriName = "version")]

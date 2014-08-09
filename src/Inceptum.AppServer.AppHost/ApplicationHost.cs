@@ -520,8 +520,7 @@ namespace Inceptum.AppServer.Hosting
         public string Execute(InstanceCommand command)
         {
             var methodInfo = m_HostedApplication.GetType().GetMethod(command.Name);
-            var result=methodInfo.Invoke(m_HostedApplication,
-                              methodInfo.GetParameters().Select(p=>parseCommandParameterValue(p,command)).ToArray());
+            var result=methodInfo.Invoke(m_HostedApplication, methodInfo.GetParameters().Select(p=>parseCommandParameterValue(p,command)).ToArray());
             return result == null ? null : result.ToString();
         }
 
