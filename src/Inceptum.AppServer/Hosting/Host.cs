@@ -454,7 +454,7 @@ namespace Inceptum.AppServer.Hosting
             }
             catch (Exception e)
             {
-                Logger.WarnFormat(e, " Instance {0} failed to execute command {1} ", name,command);
+                Logger.WarnFormat(e, " Instance {0} failed to execute command {1} ", name,command.Name);
                 throw;
             }
         }

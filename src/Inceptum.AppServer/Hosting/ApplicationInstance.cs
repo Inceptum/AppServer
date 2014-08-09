@@ -43,7 +43,7 @@ namespace Inceptum.AppServer.Hosting
         private HostedAppStatus m_Status;
         private string m_User;
         private CancellationTokenSource m_CancellationTokenSource=new CancellationTokenSource();
-
+        private readonly AutoResetEvent m_HostRegisteredEvent=new AutoResetEvent(false);
         public ApplicationInstance(string name, AppServerContext context,
             ILogger logger, JobObject jobObject)
         {
@@ -131,6 +131,8 @@ namespace Inceptum.AppServer.Hosting
                 Status = HostedAppStatus.Started;
             }
             Logger.InfoFormat("Instance {0} started", Name);
+            m_HostRegisteredEvent.Set();
+
         }
 
 
@@ -254,7 +256,7 @@ namespace Inceptum.AppServer.Hosting
             await m_CurrentTask;
             await Task.Yield();
 
-
+            m_HostRegisteredEvent.Reset();
             if (m_CancellationTokenSource.IsCancellationRequested)
                 return;
 
@@ -268,6 +270,7 @@ namespace Inceptum.AppServer.Hosting
                 */
 
                 createHost(debug);
+                m_HostRegisteredEvent.WaitOne();
             }
             catch (Exception e)
             {
