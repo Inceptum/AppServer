@@ -435,7 +435,7 @@ namespace Inceptum.AppServer.Hosting
 
         public string ExecuteCommand(string name, InstanceCommand command)
         {
-            Logger.InfoFormat("Executing command {0} with instance  ",command.Name, name);
+            Logger.InfoFormat("Executing command {0} with instance {1} ",command.Name, name);
             try
             {
                 Task<string> task;

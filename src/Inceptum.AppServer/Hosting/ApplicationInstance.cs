@@ -241,8 +241,7 @@ namespace Inceptum.AppServer.Hosting
                     throw new InvalidOperationException("Instance already started");
                 Status = HostedAppStatus.Starting;
 
-                Logger.InfoFormat("Starting instance '{0}'. Debug mode: {1}", Name, debug);
-                Logger.InfoFormat("Scheduling starting  instance '{0}'", Name);
+                Logger.InfoFormat("Scheduling starting instance '{0}'. Debug mode: {1}", Name, debug);
                 m_CurrentTask = doStart(debug, beforeStart);
                 return m_CurrentTask;
             }
@@ -255,22 +254,25 @@ namespace Inceptum.AppServer.Hosting
 
             await m_CurrentTask;
             await Task.Yield();
-
-            m_HostRegisteredEvent.Reset();
             if (m_CancellationTokenSource.IsCancellationRequested)
                 return;
+            Logger.InfoFormat("Starting instance '{0}'. Debug mode: {1}", Name, debug);
+           
 
             try
             {
                 if (beforeStart != null)
                     beforeStart();
                 /*
-                                        if (IsMisconfigured)
-                                            throw new ConfigurationErrorsException("Instance is misconfigured");
+                if (IsMisconfigured)
+                    throw new ConfigurationErrorsException("Instance is misconfigured");
                 */
 
                 createHost(debug);
-                m_HostRegisteredEvent.WaitOne();
+                while (!m_HostRegisteredEvent.WaitOne(300) && (m_Process==null || !m_Process.HasExited))
+                {
+                    Logger.DebugFormat("Waiting for hosted process to start...");
+                }
             }
             catch (Exception e)
             {
@@ -330,7 +332,6 @@ namespace Inceptum.AppServer.Hosting
             }
             finally
             {
-                Logger.InfoFormat("Instance '{0}' stopped", Name);
                 if (m_Process != null && !m_Process.HasExited)
                     m_Process.WaitForExit();
 
@@ -341,6 +342,7 @@ namespace Inceptum.AppServer.Hosting
             lock (m_SyncRoot)
             {
                 Status = HostedAppStatus.Stopped;
+                Logger.InfoFormat("Instance '{0}' stopped", Name);
             }
         }
 
@@ -390,7 +392,7 @@ namespace Inceptum.AppServer.Hosting
             }
 #endif
 
-
+            m_HostRegisteredEvent.Reset();
             m_Process = Process.Start(procSetup);
 
             m_JobObject.AddProcess(m_Process);
@@ -426,12 +428,12 @@ namespace Inceptum.AppServer.Hosting
                 if (Status == HostedAppStatus.Stopped || Status == HostedAppStatus.Stopping)
                     throw new InvalidOperationException("Instance is " + Status);
 
-                Logger.InfoFormat("Scheduling command '{0}' execution with  instance '{1}'",command, Name);
-                var currentTask = doExecute(command);
+                Logger.InfoFormat("Scheduling command '{0}' execution with  instance '{1}'",command.Name, Name);
+                
+                var executeTask = doExecute(command, m_CurrentTask);
+                m_CurrentTask = safeTask(executeTask);
 
-
-                m_CurrentTask = safeTask(currentTask);
-                return currentTask;
+                return executeTask;
             }
         }
 
@@ -448,16 +450,16 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-        private async Task<string> doExecute(InstanceCommand command)
+        private async Task<string> doExecute(InstanceCommand command, Task currentTask)
         {
-            await m_CurrentTask;
             await Task.Yield();
-            Logger.InfoFormat("Executing command '{0}' with  instance '{1}'", command, Name);
+            await currentTask;
             m_CancellationTokenSource.Token.ThrowIfCancellationRequested();
+            Logger.InfoFormat("Executing command '{0}' with  instance '{1}'", command.Name,Name);
 
             InstanceCommand cmd = Commands.FirstOrDefault(c => c.Name == command.Name);
             if (cmd == null)
-                throw new InvalidOperationException(string.Format("Command '{0}' not found", command));
+                throw new InvalidOperationException(string.Format("Command '{0}' not found", command.Name));
             return m_ApplicationHost.Execute(command);
         }
 
