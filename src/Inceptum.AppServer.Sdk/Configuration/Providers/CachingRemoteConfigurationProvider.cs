@@ -42,9 +42,17 @@ namespace Inceptum.AppServer.Configuration.Providers
         public string GetBundle(string configuration, string bundleName, params string[] extraParams)
         {
             string content;
+
+            var provider = selectProvider(configuration);
+            if (provider == m_LocalStorageConfigurationProvider)
+            {
+                return provider.GetBundle(configuration, bundleName, extraParams); 
+            }
+
+
             try
             {
-                content = selectProvider(configuration).GetBundle(configuration, bundleName, extraParams);
+                content = provider.GetBundle(configuration, bundleName, extraParams);
             }catch(Exception e)
             {
                 m_Logger.WarnFormat(e,"Failed to retrieve bundle '{0}' with extra params {1} from remote source. Using cached value.", bundleName, string.Join(",", extraParams.Select(p => "'" + p + "'").ToArray()));
