@@ -28,7 +28,7 @@ namespace Inceptum.Configuration.Tests.Client
         public void TrailingSlashAppendCtorTest()
         {
             var provider = new RemoteConfigurationProvider("http://abc.com/dd");
-            Assert.AreEqual("http://abc.com/dd/",provider.ConfifurationServiceUrl.AbsoluteUri,"Trailing slash was not added to the url");
+            Assert.AreEqual("http://abc.com/dd/",provider.ConfigurationServiceUrl.AbsoluteUri,"Trailing slash was not added to the url");
         }
 
         [Test]

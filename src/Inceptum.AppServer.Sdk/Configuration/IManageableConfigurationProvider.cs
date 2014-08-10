@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Inceptum.AppServer.Configuration.Model;
 
 namespace Inceptum.AppServer.Configuration
 {
@@ -8,17 +7,16 @@ namespace Inceptum.AppServer.Configuration
         ConfigurationInfo[] GetConfigurations();
         ConfigurationInfo GetConfiguration(string configuration);
         void DeleteBundle(string configuration, string bundle);
-        void CreateOrUpdateBundle(string configuration, string name, string content);
+        BundleInfo CreateOrUpdateBundle(string configuration, string name, string content);
         void CreateConfiguration(string configuration);
-        bool DeleteConfiguration(string configuration);
-        BundleInfo GetBundleInfo(string configuration, string bundleName);
+        void DeleteConfiguration(string configuration);
     }
 
 
     public class ConfigurationInfo
     {
         public string Name { get; set; }
-        public BundleInfo[] Bundles { get; private set; }
+        public BundleInfo[] Bundles { get;  set; }
 
         public ConfigurationInfo()
         {
@@ -38,7 +36,7 @@ namespace Inceptum.AppServer.Configuration
         public string Configuration { get; set; }
         public string Content { get; set; }
         public string PureContent { get; set; }
-        public BundleInfo[] Bundles { get; private set; }
+        public BundleInfo[] Bundles { get;  set; }
 
         public BundleInfo()
         {

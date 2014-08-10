@@ -101,6 +101,7 @@ namespace Inceptum.AppServer.Management.OpenRasta
                     .AtUri("/configuration/{configuration}/{bundle}").Named("configBundle")
                     .And.AtUri("/configuration/{configuration}/{bundle}/{overrides}").Named("configBundleWithOverrides")
                     .HandledBy<ConfigurationsHandler>();
+
             }
         }
 

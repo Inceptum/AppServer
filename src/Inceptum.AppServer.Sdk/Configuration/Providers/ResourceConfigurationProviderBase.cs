@@ -3,6 +3,8 @@ using System.Linq;
 
 namespace Inceptum.AppServer.Configuration.Providers
 {
+     
+
     public abstract class ResourceConfigurationProviderBase : IConfigurationProvider
     {
         #region IConfigurationProvider Members

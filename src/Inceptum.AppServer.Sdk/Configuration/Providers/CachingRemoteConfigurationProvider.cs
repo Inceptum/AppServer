@@ -7,31 +7,33 @@ using Castle.Core.Logging;
 namespace Inceptum.AppServer.Configuration.Providers
 {
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
-    public class CachingRemoteConfigurationProvider : IConfigurationProvider
+    public class CachingRemoteConfigurationProvider : IManageableConfigurationProvider
     {
         private const string CONFIG_CACHE_PATH = "ConfigsCache";
         private readonly FileSystemConfigurationProvider m_FileSystemConfigurationProvider;
-        private readonly IConfigurationProvider m_ExternalProvider;
+        private readonly IManageableConfigurationProvider m_ExternalProvider;
         private readonly ILogger m_Logger;
+        private IManageableConfigurationProvider m_LocalStorageConfigurationProvider;
 
 
-        public CachingRemoteConfigurationProvider(string serviceUrl)
-            : this(serviceUrl, ".")
+        public CachingRemoteConfigurationProvider(string serviceUrl, IManageableConfigurationProvider localStorageConfigurationProvider)
+            : this(serviceUrl, ".", localStorageConfigurationProvider)
         {
         }
 
-        public CachingRemoteConfigurationProvider(string serviceUrl,  string path)
-            : this(serviceUrl,  path, NullLogger.Instance)
+        public CachingRemoteConfigurationProvider(string serviceUrl, string path, IManageableConfigurationProvider localStorageConfigurationProvider)
+            : this(serviceUrl, path, NullLogger.Instance, localStorageConfigurationProvider)
         {
         }
 
-        public CachingRemoteConfigurationProvider(string serviceUrl,  string path, ILogger logger)
-            : this(new FileSystemConfigurationProvider(Path.Combine(Path.GetFullPath(path), CONFIG_CACHE_PATH)), new RemoteConfigurationProvider(serviceUrl), logger)
+        public CachingRemoteConfigurationProvider(string serviceUrl, string path, ILogger logger, IManageableConfigurationProvider localStorageConfigurationProvider)
+            : this(new FileSystemConfigurationProvider(Path.Combine(Path.GetFullPath(path), CONFIG_CACHE_PATH)), new RemoteConfigurationProvider(serviceUrl), logger, localStorageConfigurationProvider)
         {
         }
 
-        protected internal CachingRemoteConfigurationProvider(FileSystemConfigurationProvider fileSystemConfigurationProvider, IConfigurationProvider externalProvider,ILogger logger)
+        protected internal CachingRemoteConfigurationProvider(FileSystemConfigurationProvider fileSystemConfigurationProvider, IManageableConfigurationProvider externalProvider, ILogger logger, IManageableConfigurationProvider localStorageConfigurationProvider)
         {
+            m_LocalStorageConfigurationProvider = localStorageConfigurationProvider;
             m_ExternalProvider = externalProvider;
             m_Logger = logger;
             m_FileSystemConfigurationProvider = fileSystemConfigurationProvider;
@@ -42,7 +44,7 @@ namespace Inceptum.AppServer.Configuration.Providers
             string content;
             try
             {
-                content = m_ExternalProvider.GetBundle(configuration, bundleName, extraParams);
+                content = selectProvider(configuration).GetBundle(configuration, bundleName, extraParams);
             }catch(Exception e)
             {
                 m_Logger.WarnFormat(e,"Failed to retrieve bundle '{0}' with extra params {1} from remote source. Using cached value.", bundleName, string.Join(",", extraParams.Select(p => "'" + p + "'").ToArray()));
@@ -82,5 +84,46 @@ namespace Inceptum.AppServer.Configuration.Providers
 
             return content;
         }
+
+        private IManageableConfigurationProvider selectProvider(string configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+            return configuration.ToLower()=="appserver"?m_LocalStorageConfigurationProvider:m_ExternalProvider;
+        }
+
+        public ConfigurationInfo[] GetConfigurations()
+        {
+            var configurations = m_ExternalProvider.GetConfigurations();
+            configurations = configurations.Where(c => c.Name.ToLower() != "appserver")
+                .Concat(new[] {m_LocalStorageConfigurationProvider.GetConfiguration("appserver")})
+                .ToArray();
+            return configurations;
+        }
+
+        public ConfigurationInfo GetConfiguration(string configuration)
+        {
+            return selectProvider(configuration).GetConfiguration(configuration);
+        }
+
+        public void DeleteBundle(string configuration, string bundle)
+        {
+            selectProvider(configuration).DeleteBundle(configuration, bundle);
+        }
+
+        public BundleInfo CreateOrUpdateBundle(string configuration, string name, string content)
+        {
+            return selectProvider(configuration).CreateOrUpdateBundle(configuration, name, content);
+        }
+
+        public void CreateConfiguration(string configuration)
+        {
+            selectProvider(configuration).CreateConfiguration(configuration);
+        }
+
+        public void DeleteConfiguration(string configuration)
+        {
+            selectProvider(configuration).DeleteConfiguration(configuration);
+        }
+ 
     }
 }

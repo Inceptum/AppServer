@@ -42,16 +42,13 @@ namespace Inceptum.AppServer.Management.Handlers
 
         public BundleInfo PutBundle(string configuration, string bundle, BundleInfo info)
         {
-            m_Provider.CreateOrUpdateBundle(configuration, info.id, info.PureContent);
-            return m_Provider.GetBundleInfo(configuration, bundle);
+            return m_Provider.CreateOrUpdateBundle(configuration, info.id, info.PureContent);
         }
 
         public object PostBundle(string configuration, BundleInfo info)
         {
             info.id = string.IsNullOrEmpty(info.Parent) ? info.Name : info.Parent + "." + info.Name;
-            m_Provider.CreateOrUpdateBundle(configuration, info.id, info.PureContent);
-            return m_Provider.GetBundleInfo(configuration, info.id);
-
+            return m_Provider.CreateOrUpdateBundle(configuration, info.id, info.PureContent);
         }
 
         public object Post(ConfigurationInfo info)

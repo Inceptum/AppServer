@@ -136,7 +136,7 @@ namespace Inceptum.AppServer.Configuration.Providers
             }
         }
 
-        public bool DeleteConfiguration(string configuration)
+        public void DeleteConfiguration(string configuration)
         {
             m_ConfigurationsLock.EnterUpgradeableReadLock();
             try
@@ -144,14 +144,13 @@ namespace Inceptum.AppServer.Configuration.Providers
                 var config = m_Configurations.FirstOrDefault(c => c.Name == configuration);
                 if (config == null)
                 {
-                    return false;
+                    return;
                 }
                 m_ConfigurationsLock.EnterWriteLock();
                 try
                 {
                     m_Persister.Delete(configuration);
                     m_Configurations.Remove(config);
-                    return true;
                 }
                 finally
                 {
@@ -205,7 +204,7 @@ namespace Inceptum.AppServer.Configuration.Providers
         }
 
  
-        public void CreateOrUpdateBundle(string configuration, string name, string content)
+        public BundleInfo CreateOrUpdateBundle(string configuration, string name, string content)
         {
             var config = findConfig(configuration);
             lock (config)
@@ -213,6 +212,8 @@ namespace Inceptum.AppServer.Configuration.Providers
                 config[name]=content;
                 config.Commit();
             }
+
+            return GetBundleInfo(configuration,name);
             
         }
 
