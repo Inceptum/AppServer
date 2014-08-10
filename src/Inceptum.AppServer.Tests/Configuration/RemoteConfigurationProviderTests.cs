@@ -36,7 +36,7 @@ namespace Inceptum.Configuration.Tests.Client
         {
             var provider =new RemoteConfigurationProvider("http://abc.com/dd/");
             var resourceName = provider.GetResourceName("testConfiguration", "ibank");
-            Assert.That(resourceName, Is.EqualTo("testConfiguration/ibank/"), "Wrong resource name  was generated");
+            Assert.That(resourceName, Is.EqualTo("configuration/testConfiguration/ibank/"), "Wrong resource name  was generated");
         }
 
         [Test]
@@ -44,9 +44,9 @@ namespace Inceptum.Configuration.Tests.Client
         {
             var provider = new RemoteConfigurationProvider("http://abc.com/dd/");
             var resourceName = provider.GetResourceName("testConfiguration", "ibank", "test1", "test2");
-            Assert.That(resourceName, Is.EqualTo("testConfiguration/ibank/test1/test2/"),"Wrong resource name  was generated");
+            Assert.That(resourceName, Is.EqualTo("configuration/testConfiguration/ibank/test1/test2/"), "Wrong resource name  was generated");
             resourceName = provider.GetResourceName("testConfiguration", "ibank", "test1");
-            Assert.That(resourceName, Is.EqualTo("testConfiguration/ibank/test1/"),"Wrong resource name  was generated");
+            Assert.That(resourceName, Is.EqualTo("configuration/testConfiguration/ibank/test1/"), "Wrong resource name  was generated");
 
         }
 
