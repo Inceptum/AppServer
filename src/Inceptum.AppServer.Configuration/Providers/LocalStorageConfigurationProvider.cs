@@ -11,7 +11,6 @@ using Inceptum.AppServer.Configuration.Persistence;
 
 namespace Inceptum.AppServer.Configuration.Providers
 {
-        
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class LocalStorageConfigurationProvider : IManageableConfigurationProvider
     {
@@ -214,7 +213,6 @@ namespace Inceptum.AppServer.Configuration.Providers
             }
 
             return GetBundleInfo(configuration,name);
-            
         }
 
         public void DeleteBundle(string configuration, string name)

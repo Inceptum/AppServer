@@ -37,6 +37,9 @@ namespace Inceptum.AppServer.Windsor
             if (m_KnownDependencies.ContainsKey(dependency))
                 return true;
 
+            if(dependency.TargetType == null)
+                return false;
+
             IHandler[] handlers = m_Kernel.GetHandlers(dependency.TargetType);
 
             //if there's just one, we're not interested.

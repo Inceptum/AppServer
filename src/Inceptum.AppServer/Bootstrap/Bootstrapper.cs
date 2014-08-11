@@ -54,25 +54,37 @@ namespace Inceptum.AppServer.Bootstrap
             try
             {
                 container.Register(Component.For<JobObject>());
-                container.Register(
-                    Component.For<IConfigurationProvider, IManageableConfigurationProvider>().ImplementedBy<LocalStorageConfigurationProvider>().Named("localStorageConfigurationProvider")
-                                  .DependsOn(new { configFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration") }));
+
+                container.Register(Component
+                    .For<IConfigurationProvider, IManageableConfigurationProvider>()
+                    .ImplementedBy<LocalStorageConfigurationProvider>()
+                    .Named("localStorageConfigurationProvider")
+                    .DependsOn(new { configFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration") }));
+
                 var confSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"];
+
                 //If remote configuration source is provided in app.config use it by default
                 if (confSvcUrl != null)
-                    container.Register(Component.For<IConfigurationProvider, IManageableConfigurationProvider>().ImplementedBy<CachingRemoteConfigurationProvider>()
-                        .DependsOn(new { serviceUrl = confSvcUrl, path = "." })
-                        .IsDefault());
-
+                {
+                    container.Register(Component
+                                           .For<IConfigurationProvider, IManageableConfigurationProvider>()
+                                           .ImplementedBy<CachingRemoteConfigurationProvider>()
+                                           .DependsOn(new {serviceUrl = confSvcUrl, path = "."})
+                                           .Named("cachingRemoteConfigurationProvider"),
+                                       Component
+                                           .For<IConfigurationProvider, IManageableConfigurationProvider>()
+                                           .ImplementedBy<AppServerExternalConfigurationProvider>()
+                                           .DependsOn(Dependency.OnComponent("localProvider", "localStorageConfigurationProvider"), Dependency.OnComponent("externalProvider", "cachingRemoteConfigurationProvider"))
+                                           .IsDefault());
+                }
 
                 //SignalR and Castle integraion
                 GlobalHost.DependencyResolver = new WindsorToSignalRAdapter(container.Kernel);
                 //Configuration local/remote
                 container
                     .AddFacility<ConfigurationFacility>(f => f.Configuration("AppServer").Params(new { machineName = Environment.MachineName }))
-
                     //Management
-                    .Register(                        
+                    .Register(
                         Component.For<SignalRhost>(),
                         Component.For<ManagementConsole>().DependsOn(new { container }),
                         Component.For<IHostNotificationListener>().ImplementedBy<UiNotifier>()

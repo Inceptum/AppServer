@@ -190,6 +190,7 @@
     </Compile>
     <Compile Include="AppDiscovery\FolderApplicationRepository.cs" />
     <Compile Include="AppServerSetup.cs" />
+    <Compile Include="AppServerExternalConfigurationProvider.cs" />
     <Compile Include="Hosting\JobObject.cs" />
     <Compile Include="AppDiscovery\NuGet\ProjectManagerWrapper.cs" />
     <Compile Include="AppDiscovery\NuGet\ApplicationProjectSystem.cs" />

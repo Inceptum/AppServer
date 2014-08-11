@@ -32,7 +32,6 @@ namespace Inceptum.AppServer.Configuration
 
         protected override void Init()
         {
-
             if(Kernel.HasComponent(typeof(InstanceContext)))
             {
                 string defaultConfiguration = Kernel.Resolve<InstanceContext>().DefaultConfiguration;
@@ -41,19 +40,16 @@ namespace Inceptum.AppServer.Configuration
             }
 
             if (m_DefaultConfiguration == null)
-                throw new ConfigurationErrorsException(
-                    "ConfigurationFacility is not set up correctly. You have to provide DefaultConfiguration");
-
-
+                throw new ConfigurationErrorsException("ConfigurationFacility is not set up correctly. You have to provide DefaultConfiguration");
 
             if (m_Provider == null)
             {
                 if (string.IsNullOrWhiteSpace(m_Path))
                     m_Path = ".";
+
                 if (m_ServiceUrl != null)
                 {
-                    Kernel.Register(Component.For<IConfigurationProvider>().ImplementedBy<CachingRemoteConfigurationProvider>()
-                        .DependsOn(new { serviceUrl = m_ServiceUrl, path = m_Path }));
+                    Kernel.Register(Component.For<IConfigurationProvider>().ImplementedBy<CachingRemoteConfigurationProvider>().DependsOn(new { serviceUrl = m_ServiceUrl, path = m_Path }).IsDefault());
                 }
                 else if (!Kernel.HasComponent(typeof(IConfigurationProvider)))
                         throw new ConfigurationErrorsException("IConfigurationProvider not found. Register it before registering ConfigurationFacility");
