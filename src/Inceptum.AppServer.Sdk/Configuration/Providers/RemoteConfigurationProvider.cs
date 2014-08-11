@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Configuration;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace Inceptum.AppServer.Configuration.Providers
 {
-
-
     public class RemoteConfigurationProvider : ResourceConfigurationProviderBase, IManageableConfigurationProvider
     {
         private const int DEFAULT_HELPROX_TIMEOUT = 30000;
