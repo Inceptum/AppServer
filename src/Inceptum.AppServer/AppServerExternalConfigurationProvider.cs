@@ -21,14 +21,6 @@ namespace Inceptum.AppServer
             m_ExternalProvider = externalProvider;
         }
 
-        public string GetBundle(string configuration, string bundleName, params string[] extraParams)
-        {
-            if (configuration.ToLower() == "appserver")
-                return m_LocalStorageConfigurationProvider.GetBundle(configuration, bundleName, extraParams);
-
-            return m_ExternalProvider.GetBundle(configuration, bundleName, extraParams);
-        }
-
         public ConfigurationInfo[] GetConfigurations()
         {
             var appServerConfigurationinfo = m_LocalStorageConfigurationProvider.GetConfiguration("appserver");
@@ -39,29 +31,41 @@ namespace Inceptum.AppServer
                                      .ToArray();
         }
 
+        private IManageableConfigurationProvider selectProvider(string configuration)
+        {
+            return configuration.ToLower() == "appserver"
+                       ? m_LocalStorageConfigurationProvider
+                       : m_ExternalProvider;
+        }
+
+        public string GetBundle(string configuration, string bundleName, params string[] extraParams)
+        {
+            return selectProvider(configuration).GetBundle(configuration, bundleName, extraParams);
+        }
+
         public ConfigurationInfo GetConfiguration(string configuration)
         {
-            return m_ExternalProvider.GetConfiguration(configuration);
+            return selectProvider(configuration).GetConfiguration(configuration);
         }
 
         public void DeleteBundle(string configuration, string bundle)
         {
-            m_ExternalProvider.DeleteBundle(configuration, bundle);
+            selectProvider(configuration).DeleteBundle(configuration, bundle);
         }
 
         public BundleInfo CreateOrUpdateBundle(string configuration, string name, string content)
         {
-            return m_ExternalProvider.CreateOrUpdateBundle(configuration, name, content);
+            return selectProvider(configuration).CreateOrUpdateBundle(configuration, name, content);
         }
 
         public void CreateConfiguration(string configuration)
         {
-            m_ExternalProvider.CreateConfiguration(configuration);
+            selectProvider(configuration).CreateConfiguration(configuration);
         }
 
         public void DeleteConfiguration(string configuration)
         {
-            m_ExternalProvider.DeleteConfiguration(configuration);
+            selectProvider(configuration).DeleteConfiguration(configuration);
         }
     }
 }
