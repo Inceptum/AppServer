@@ -52,6 +52,7 @@ define([
                 });
                 view.bind("destroy",this.destroy);
                 view.bind("start",this.start);
+                view.bind("debug",this.debug);
                 view.bind("restart",this.restart);
                 view.bind("stop",this.stop);
                 view.bind("command",this.command);
@@ -135,6 +136,15 @@ define([
             start:function(model,view){
                 var self=this;
                 model.start({
+                    error:function(model,response){
+                        view.render();
+                        alerts.show({type:"error",text:"Failed to start instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});
+                    }
+                });
+            },
+            debug: function (model, view) {
+                var self=this;
+                model.debug({
                     error:function(model,response){
                         view.render();
                         alerts.show({type:"error",text:"Failed to start instance '"+model.id+"'. "+JSON.parse(response.responseText).Error});

@@ -22,6 +22,8 @@ namespace Inceptum.AppServer.Model
 
         public bool AutoStart { get; set; }
 
+        public bool IsDebuggable { get; set; }
+
         [JsonConverter(typeof(StringVersionJsonConverter))]
         public Version ActualVersion { get; set; }
 

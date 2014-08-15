@@ -3,11 +3,14 @@ define(['jquery', 'backbone', 'underscore','context'], function($, Backbone, _,c
     var Model = Backbone.Model.extend({
         urlRoot: context.httpUrl("/api/instance"),
         initialize: function() {
-            _.bindAll(this, "command","start","stop");
+            _.bindAll(this, "command","start","debug","stop");
         },
         idAttribute: "Id",
         start:function(options){
             this.action("start",options);
+        },
+        debug: function (options) {
+            this.action("debug", options);
         },
         restart:function(options){
             this.action("restart",options);

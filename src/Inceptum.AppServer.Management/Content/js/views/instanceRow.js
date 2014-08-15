@@ -12,6 +12,7 @@ define([
             },
             events:{
                 "click .start":"start",
+                "click .debug": "debug",
                 "click .stop":"stop",
                 "click .restart":"restart",
                 "click .delete":"delete",
@@ -38,6 +39,12 @@ define([
                 $(this.el).find(".actions button").addClass('disabled').attr('disabled', 'disabled');
                 this.trigger('start',this.model,this);
             },
+            debug: function (e) {
+                e.preventDefault();
+                if ($(this.el).find(".debug").attr('disabled')) return false;
+                $(this.el).find(".actions button").addClass('disabled').attr('disabled', 'disabled');
+                this.trigger('debug', this.model, this);
+            },
             restart:function(e){
                 e.preventDefault();
                 if ($(this.el).find(".restart").attr('disabled')) return false;
@@ -63,6 +70,7 @@ define([
                 }
                 if(this.model.get("Status")=="Stopped")
                 {
+                    $(this.el).find(".debug").removeClass('disabled').removeAttr('disabled','disabled');
                     $(this.el).find(".start").removeClass('disabled').removeAttr('disabled','disabled');
                     $(this.el).find(".delete").removeClass('disabled').removeAttr('disabled','disabled');
                 }

@@ -21,7 +21,7 @@ namespace Inceptum.AppServer
         void RediscoverApps();
         void Start();
         void Stop();
-        Task StartInstance(string name);
+        Task StartInstance(string name, bool doDebug);
         Task StopInstance(string name);
         void AddInstance(ApplicationInstanceInfo config);
         void UpdateInstance(ApplicationInstanceInfo config);

@@ -24,10 +24,8 @@ namespace Inceptum.AppServer.AppHost
 
         public static void Main(params string[] args)
         {
-#if !DEBUG
             if (args.Length == 2 && args[1] == "-debug")
-#endif
-            Debugger.Launch();
+                Debugger.Launch();
 
             string appConfigPath = Path.GetFullPath("app.config");
             if (File.Exists(appConfigPath))

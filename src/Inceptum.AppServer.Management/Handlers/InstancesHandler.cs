@@ -60,7 +60,14 @@ namespace Inceptum.AppServer.Management.Handlers
         [HttpOperation(HttpMethod.POST, ForUriName = "start")]
         public void Start(string instance)
         {
-            m_Host.StartInstance(instance);
+            m_Host.StartInstance(instance,false);
+        }
+
+
+        [HttpOperation(HttpMethod.POST, ForUriName = "debug")]
+        public void Debug(string instance)
+        {
+            m_Host.StartInstance(instance,true);
         }
 
         [HttpOperation(HttpMethod.POST, ForUriName = "stop")]
@@ -89,7 +96,7 @@ namespace Inceptum.AppServer.Management.Handlers
             {
                 m_Host.StopInstance(instance).ConfigureAwait(false).GetAwaiter().GetResult();
              }
-            m_Host.StartInstance(instance).ConfigureAwait(false).GetAwaiter().GetResult(); ;
+            m_Host.StartInstance(instance,false).ConfigureAwait(false).GetAwaiter().GetResult(); ;
         }
 
         [HttpOperation(HttpMethod.PUT, ForUriName = "version")]

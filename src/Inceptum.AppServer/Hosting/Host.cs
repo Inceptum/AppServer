@@ -202,8 +202,8 @@ namespace Inceptum.AppServer.Hosting
                                                LogLevel = cfg.LogLevel,
                                                DefaultConfiguration = cfg.DefaultConfiguration,
                                                MaxLogSize=cfg.MaxLogSize,
-                                               LogLimitReachedAction = cfg.LogLimitReachedAction
-
+                                               LogLimitReachedAction = cfg.LogLimitReachedAction,
+                                               IsDebuggable = m_ApplicationRepository.Applications.Where(a=>a.Vendor==cfg.ApplicationVendor && a.Name==cfg.ApplicationId).Select(a=>a.Debug).FirstOrDefault()
                                            }).ToArray();
                 }
             }
@@ -476,14 +476,14 @@ namespace Inceptum.AppServer.Hosting
 
             return instance.Stop(false);
         }
- 
 
-        public Task StartInstance(string name)
+
+        public Task StartInstance(string name, bool doDebug)
         {
-            return startInstance(name,false);
+            return startInstance(name, false, doDebug);
         }
 
-        private Task startInstance(string name, bool safe)
+        private Task startInstance(string name, bool safe, bool doDebug=false)
         {
             Logger.InfoFormat(" Starting instance {0}  ", name);
             try
@@ -510,10 +510,10 @@ namespace Inceptum.AppServer.Hosting
 
                 
                 instance.UpdateConfig(version,config.Environment,config.User,config.Password,config.LogLevel,config.DefaultConfiguration,config.MaxLogSize,config.LogLimitReachedAction);
-    
-                
 
-                return instance.Start(application.Debug, () => m_ApplicationRepository.Install(application, version, Path.Combine(m_Context.AppsDirectory, config.Name) + "\\"));
+
+
+                return instance.Start(application.Debug && doDebug, () => m_ApplicationRepository.Install(application, version, Path.Combine(m_Context.AppsDirectory, config.Name) + "\\"));
             }
             catch (Exception e)
             {
