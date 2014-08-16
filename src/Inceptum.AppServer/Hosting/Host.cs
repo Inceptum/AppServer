@@ -477,6 +477,30 @@ namespace Inceptum.AppServer.Hosting
             return instance.Stop(false);
         }
 
+        public void KillInstanceProcess(string name)
+        {
+            try
+            {
+                Logger.InfoFormat("Stopping instance {0}  ", name);
+                ApplicationInstance instance;
+                lock (m_SyncRoot)
+                {
+                    if (m_IsStopped)
+                        throw new ObjectDisposedException("Host is disposed");
+                    instance = m_Instances.FirstOrDefault(i => i.Name == name);
+                }
+
+                if (instance == null)
+                    throw new ConfigurationErrorsException(string.Format("Instance '{0}' not found", name));
+
+                instance.KillProcess();
+            }
+            catch (Exception e)
+            {
+                Logger.WarnFormat(e, "Failed to kill instance {0} process", name);
+                throw;
+            }
+        }
 
         public Task StartInstance(string name, bool doDebug)
         {

@@ -13,7 +13,7 @@ define([
             initialize: function () {
                 this.nameFilter = null;
                 this.filter=this.options.filter;
-                _(this).bindAll('add', 'remove','reset','destroy','start','stop','dispose','command');
+                _(this).bindAll('add', 'remove','reset','destroy','start','stop','kill','dispose','command');
                 this.instances=this.options.instances;
                 this.subViews=[];
                 var self=this;
@@ -55,6 +55,7 @@ define([
                 view.bind("debug",this.debug);
                 view.bind("restart",this.restart);
                 view.bind("stop",this.stop);
+                view.bind("kill",this.kill);
                 view.bind("command",this.command);
 
 
@@ -151,6 +152,18 @@ define([
                     }
                 });
             },
+            kill: function (model, view) {
+               var self = this;
+               confirmView.open({ title: "Kill process", body: "You are about to kill '" + model.id + "' instance process. Are you sure?", confirm_text: "Kill" })
+                   .done(function () {
+                       model.kill({
+                           error: function (model, response) {
+                               view.render();
+                               alerts.show({ type: "error", text: "Failed to kill instance '" + model.id + "' process. " + JSON.parse(response.responseText).Error });
+                           }
+                       });
+                   }).fail(view.render());
+                },
             restart:function(model,view){
                 var self=this;
                 model.restart({

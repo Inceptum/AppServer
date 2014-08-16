@@ -29,6 +29,10 @@
             <a class="btn btn-mini cmd start" title="Start"><i class="icon-play"></i></a>
             <a class="btn btn-mini cmd stop" title="Stop"><i class="icon-stop"></i></a>
             <a class="btn btn-mini cmd restart" title="Restart"><i class="icon-refresh"></i></a>
+        <% if(model.Status=='Stopped') {%>
             <a class="btn btn-mini cmd btn-danger delete" title="Delete"><i class="icon-trash"></i></a>
+        <%} else {%>
+            <a class="btn btn-mini cmd btn-danger kill" title="Kill process"><i class="icon-remove"></i></a>
+        <%}%>
         </div>
     </td>

@@ -70,6 +70,13 @@ namespace Inceptum.AppServer.Management.Handlers
             m_Host.StartInstance(instance,true);
         }
 
+
+        [HttpOperation(HttpMethod.POST, ForUriName = "kill")]
+        public void Kill(string instance)
+        {
+            m_Host.KillInstanceProcess(instance);
+        }
+
         [HttpOperation(HttpMethod.POST, ForUriName = "stop")]
         public void Stop(string instance)
         {

@@ -55,6 +55,7 @@ namespace Inceptum.AppServer.Management.OpenRasta
                     .And.AtUri("api/instance/{instance}")
                     .And.AtUri("api/instance/{instance}/start").Named("start")
                     .And.AtUri("api/instance/{instance}/debug").Named("debug")
+                    .And.AtUri("api/instance/{instance}/kill").Named("kill")
                     .And.AtUri("api/instance/{instance}/stop").Named("stop")
                     .And.AtUri("api/instance/{instance}/restart").Named("restart")
                     .And.AtUri("api/instance/{instance}/version/{version}").Named("version")
