@@ -6,7 +6,6 @@ define([
     'views/serverSideBar',
     'collections/instances',
     'text!templates/serverLog.html',
-    'scrollTo',
     'noext!sr/signalr/hubs'],
     function($, Backbone, _,context,ServerSideBarView,instances, template){
         var View = Backbone.View.extend({

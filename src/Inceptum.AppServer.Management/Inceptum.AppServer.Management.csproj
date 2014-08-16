@@ -147,7 +147,6 @@
     <EmbeddedResource Include="Content\js\libs\jquery.ba-throttle-debounce.min.js" />
     <EmbeddedResource Include="Content\js\libs\jquery.fileupload.js" />
     <EmbeddedResource Include="Content\js\libs\jquery.iframe-transport.js" />
-    <EmbeddedResource Include="Content\js\libs\jquery.scrollTo-min.js" />
     <EmbeddedResource Include="Content\js\libs\jquery.ui.widget.js" />
     <EmbeddedResource Include="Content\js\libs\json2.js" />
     <EmbeddedResource Include="Content\js\libs\json2.min.js" />

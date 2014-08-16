@@ -9,7 +9,6 @@ require.config({
         "backbone": "libs/backbone",
         "backbone.composite.keys": "libs/backbone-composite-keys",
         "bootstrap":"libs/bootstrap.min",
-        "scrollTo":"libs/jquery.scrollTo-min",
         "shortcut":"libs/shortcut",
         "throttle":"libs/jquery.ba-throttle-debounce.min",
         "signalr": "libs/jquery.signalR-1.1.2",
@@ -56,9 +55,6 @@ require.config({
         underscore: {
             'exports': '_'
         },
-        'scrollTo': {
-			 deps:		['jquery']
-		},
         'hotkeys': {
 			 deps:		['jquery']
 		},
