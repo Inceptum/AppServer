@@ -141,6 +141,7 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
                 views.push(
                     new BundleView({model:b,configuration:c})
                 );
+                console.log('created view for'+b.id);
             }
             this.showViews(views);
             this.headerView.selectMenuItem("configurations");

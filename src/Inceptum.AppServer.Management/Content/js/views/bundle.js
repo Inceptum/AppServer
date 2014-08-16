@@ -16,10 +16,6 @@ define([
 
                 this.configuration=this.options.configuration;
                 _.bindAll(this, "verify", "jumpToLine", "save","togglePreview","toggleFullScreen","switchToPreview");
-                shortcut.add("F11", this.toggleFullScreen);
-                shortcut.add("ctrl+p", this.togglePreview);
-                shortcut.add("ctrl+f", this.verify);
-                shortcut.add("ctrl+s", this.save);
             }, events:{
                 "click #verify":"verify",
                 "click #save":"save",
@@ -84,7 +80,7 @@ define([
                 this.model.set(change);
             },
             save:function () {
-                if(this.verify()){
+                if (this.verify()) {
                     var self = this;
                     var action=this.model.isNew()?"create":"update";
                     var content=this.isPreview?this.Content:this.codeMirror.getValue()
@@ -183,8 +179,13 @@ define([
                 });
                 this.verificationErrors = $("#verificationErrors").hide();
                 prettyPrint();
+                shortcut.add("F11", this.toggleFullScreen);
+                shortcut.add("ctrl+p", this.togglePreview);
+                shortcut.add("ctrl+f", this.verify);
+                shortcut.add("ctrl+s", this.save);
+
             },
-            dispose:function(){
+            dispose: function () {
                 shortcut.remove("F11");
                 shortcut.remove("ctrl+p");
                 shortcut.remove("ctrl+f");
