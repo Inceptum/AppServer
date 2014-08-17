@@ -44,9 +44,7 @@ namespace Inceptum.AppServer.Hosting
         private string m_User;
         private CancellationTokenSource m_CancellationTokenSource=new CancellationTokenSource();
         private readonly AutoResetEvent m_HostRegisteredEvent=new AutoResetEvent(false);
-        private readonly AutoResetEvent m_ProcessKilledEvent = new AutoResetEvent(false);
-        public ApplicationInstance(string name, AppServerContext context,
-            ILogger logger, JobObject jobObject)
+        public ApplicationInstance(string name, AppServerContext context,ILogger logger, JobObject jobObject)
         {
             var completionSource = new TaskCompletionSource<object>();
             completionSource.SetResult(null);
@@ -201,11 +199,8 @@ namespace Inceptum.AppServer.Hosting
                 if (m_Process != null && !m_Process.HasExited)
                 {
                     m_Process.Kill();
+
                 }
-                m_Process = null;
-                m_ApplicationHost = null;
-                m_AppHostFactory = null;
-                m_ProcessKilledEvent.Set();
             }
         }
 
@@ -285,14 +280,10 @@ namespace Inceptum.AppServer.Hosting
             {
                 if (beforeStart != null)
                     beforeStart();
-                /*
-                if (IsMisconfigured)
-                    throw new ConfigurationErrorsException("Instance is misconfigured");
-                */
 
                 createHost(debug);
-                //while ( WaitHandle.WaitAny(new WaitHandle[] { m_ProcessKilledEvent, m_HostRegisteredEvent }, 300)  == WaitHandle.WaitTimeout && (m_Process != null && !m_Process.HasExited))
-                while (!m_HostRegisteredEvent.WaitOne(300) && (m_Process != null && !m_Process.HasExited))
+                
+                while (!m_HostRegisteredEvent.WaitOne(300) && m_Process != null && !m_Process.HasExited )
                 {
                     Logger.DebugFormat("Waiting for hosted process to start...");
                 }
@@ -414,9 +405,7 @@ namespace Inceptum.AppServer.Hosting
 #endif
 
             m_HostRegisteredEvent.Reset();
-            m_ProcessKilledEvent.Reset();
             m_Process = Process.Start(procSetup);
-
             m_JobObject.AddProcess(m_Process);
         }
 
@@ -489,7 +478,7 @@ namespace Inceptum.AppServer.Hosting
         {
             lock (m_SyncRoot)
             {
-                if ((Status != HostedAppStatus.Started && Status != HostedAppStatus.Starting) || (m_Process != null && !m_Process.HasExited))
+                if ((Status != HostedAppStatus.Started && Status != HostedAppStatus.Starting) || m_Process == null || !m_Process.HasExited)
                     return;
                 Logger.ErrorFormat("Instance '{0}' process has unexpectedly stopped", Name);
                 lock (m_SyncRoot)
