@@ -21,14 +21,16 @@ namespace Inceptum.AppServer
         void RediscoverApps();
         void Start();
         void Stop();
-        void KillInstanceProcess(string name);
-        Task StartInstance(string name, bool doDebug);
-        Task StopInstance(string name);
+        
         void AddInstance(ApplicationInstanceInfo config);
+        void DeleteInstance(string name);
         void UpdateInstance(ApplicationInstanceInfo config);
         void SetInstanceVersion(string name, Version version);
-        void DeleteInstance(string name);
 
+        Task StartInstance(string name, bool doDebug);
+        Task StopInstance(string name);
+        void KillInstanceProcess(string name);
         string ExecuteCommand(string instance, InstanceCommand command);
+
     }
 }
