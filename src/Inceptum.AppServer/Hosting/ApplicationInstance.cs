@@ -42,9 +42,9 @@ namespace Inceptum.AppServer.Hosting
         private ServiceHost m_ServiceHost;
         private HostedAppStatus m_Status;
         private string m_User;
-        private CancellationTokenSource m_CancellationTokenSource=new CancellationTokenSource();
-        private readonly AutoResetEvent m_HostRegisteredEvent=new AutoResetEvent(false);
-        public ApplicationInstance(string name, AppServerContext context,ILogger logger, JobObject jobObject)
+        private readonly CancellationTokenSource m_CancellationTokenSource = new CancellationTokenSource();
+        private readonly AutoResetEvent m_HostRegisteredEvent = new AutoResetEvent(false);
+        public ApplicationInstance(string name, AppServerContext context, ILogger logger, JobObject jobObject)
         {
             var completionSource = new TaskCompletionSource<object>();
             completionSource.SetResult(null);
@@ -54,15 +54,12 @@ namespace Inceptum.AppServer.Hosting
             Name = name;
             Logger = logger;
             m_Context = context;
-            IsMisconfigured = true;
             resetIpcHost();
         }
 
         public string Name { get; set; }
-        public string Environment { get; set; }
-        public ILogger Logger { get; set; }
-        public bool HasToBeRecreated { get; set; }
-        public bool IsMisconfigured { get; set; }
+        private string Environment { get; set; }
+        private ILogger Logger { get; set; }
 
         public HostedAppStatus Status
         {
@@ -216,8 +213,8 @@ namespace Inceptum.AppServer.Hosting
                     m_ServiceHost = null;
                 }
                 var serviceHost = new ServiceHost(this);
-                serviceHost.AddServiceEndpoint(typeof (IApplicationInstance),
-                    new NetNamedPipeBinding {ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue},
+                serviceHost.AddServiceEndpoint(typeof(IApplicationInstance),
+                    new NetNamedPipeBinding { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue },
                     new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/instances/" + Name));
                 serviceHost.Faulted += (o, args) =>
                 {
@@ -264,7 +261,7 @@ namespace Inceptum.AppServer.Hosting
 
 
 
-   
+
 
         private async Task doStart(bool debug, Action beforeStart)
         {
@@ -282,10 +279,10 @@ namespace Inceptum.AppServer.Hosting
                     beforeStart();
 
                 createHost(debug);
-                
-                while (!m_HostRegisteredEvent.WaitOne(300) && m_Process != null && !m_Process.HasExited )
+
+                while (!m_HostRegisteredEvent.WaitOne(300) && m_Process != null && !m_Process.HasExited)
                 {
-                    Logger.DebugFormat("Waiting for hosted process to start...");
+                    Logger.DebugFormat("Waiting for instance '{0}' hosting process to start...", Name);
                 }
             }
             catch (Exception e)
@@ -295,7 +292,7 @@ namespace Inceptum.AppServer.Hosting
                 lock (m_SyncRoot)
                 {
                     m_CurrentTask = doStop();
-                } 
+                }
             }
 
 
@@ -360,17 +357,17 @@ namespace Inceptum.AppServer.Hosting
 
         private void createHost(bool debug)
         {
-            string path = Path.GetFullPath(new[] {m_Context.AppsDirectory, Name}.Aggregate(Path.Combine));
+            string path = Path.GetFullPath(new[] { m_Context.AppsDirectory, Name }.Aggregate(Path.Combine));
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             string args = Name;
-/*
+            /*
 
-            foreach (var configFile in m_ApplicationParams.ConfigFiles)
-            {
-                copyConfig(path, configFile, Path.GetFileName(configFile));
-            }
-*/
+                        foreach (var configFile in m_ApplicationParams.ConfigFiles)
+                        {
+                            copyConfig(path, configFile, Path.GetFileName(configFile));
+                        }
+            */
             if (debug)
                 args += " -debug";
 
@@ -439,8 +436,8 @@ namespace Inceptum.AppServer.Hosting
                 if (Status == HostedAppStatus.Stopped || Status == HostedAppStatus.Stopping)
                     throw new InvalidOperationException("Instance is " + Status);
 
-                Logger.InfoFormat("Scheduling command '{0}' execution with  instance '{1}'",command.Name, Name);
-                
+                Logger.InfoFormat("Scheduling command '{0}' execution with  instance '{1}'", command.Name, Name);
+
                 var executeTask = doExecute(command, m_CurrentTask);
                 m_CurrentTask = safeTask(executeTask);
 
@@ -466,7 +463,7 @@ namespace Inceptum.AppServer.Hosting
             await Task.Yield();
             await currentTask;
             m_CancellationTokenSource.Token.ThrowIfCancellationRequested();
-            Logger.InfoFormat("Executing command '{0}' with  instance '{1}'", command.Name,Name);
+            Logger.InfoFormat("Executing command '{0}' with  instance '{1}'", command.Name, Name);
 
             InstanceCommand cmd = Commands.FirstOrDefault(c => c.Name == command.Name);
             if (cmd == null)
@@ -484,7 +481,7 @@ namespace Inceptum.AppServer.Hosting
                 lock (m_SyncRoot)
                 {
                     m_CurrentTask = doStop();
-                } 
+                }
             }
         }
     }
