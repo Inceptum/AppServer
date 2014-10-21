@@ -9,7 +9,7 @@ using Inceptum.AppServer;
 [assembly: AssemblyTitle("Inceptum.AppServer.TestApp")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyCompany("Test")]
 [assembly: AssemblyProduct("Inceptum.AppServer.TestApp")]
 [assembly: AssemblyCopyright("Copyright © Microsoft 2011")]
 [assembly: AssemblyTrademark("")]
