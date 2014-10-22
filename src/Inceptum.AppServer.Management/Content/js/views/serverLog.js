@@ -17,7 +17,8 @@ define([
                 "Info":"text-info",
                 "Debug":"muted"
             },
-            initialize: function(){
+            initialize: function (options) {
+                this.selectedInstance = options.selectedInstance;
                 _.bindAll(this, "onMessageReceived","onReconnected","applyFilter");
                 var self=this;
                 this.connection = $.connection(context.signalRUrl('/log'));
@@ -50,12 +51,12 @@ define([
             events:{
                 "change #filter": "applyFilter"
             },
-            applyFilter:function(){
-                if(this.filter.val()==="All")
-                   this.log.find("p").show();
-                else{
-                   this.log.find("p").hide();
-                   this.log.find('p[data-source="'+this.filter.val()+'"]').show();
+            applyFilter: function () {
+                if (this.filter.val() === "All")
+                    this.log.find("p").show();
+                else {
+                    this.log.find("p").hide();
+                    this.log.find('p[data-source="' + this.filter.val() + '"]').show();
                 }
             },
             onReconnected:function() {
@@ -102,7 +103,11 @@ define([
                     //SignalR is loaded via requireJs. In IE window load event is already fired at connection start. Thus signalr would wait forever if waitForPageLoad is true
                     waitForPageLoad: false
                 }).done();
-                this.connectionStateLabel= $(this.el).find(".connectionState").hide();
+                this.connectionStateLabel = $(this.el).find(".connectionState").hide();
+
+                if (this.selectedInstance) {
+                    this.filter.val(this.selectedInstance);
+                }
             },
             'dispose':function(){
                 this.connection.stop();

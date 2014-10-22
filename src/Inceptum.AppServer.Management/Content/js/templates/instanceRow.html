@@ -23,6 +23,9 @@
         <% if(model.DefaultConfiguration!=null) {%>
             <a class="btn btn-mini" title="Configuration" href="#configurations/<%= model.DefaultConfiguration %>"><i class="icon-cog"></i></a>
         <%}%>
+            
+            <a class="btn btn-mini" title="Logs" href="#serverLog/<%=model.Name%>"><i class="icon-warning-sign"></i></a>
+
         <% if(model.IsDebuggable) {%>
             <a class="btn btn-mini cmd debug" title="Debug"><i class="icon-random"></i></a>
         <%}%>

@@ -54,6 +54,7 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
 			'': 'serverStatus',
 			'serverStatus': 'serverStatus',
 			'serverLog': 'serverLog',
+			'serverLog/:instanceName': 'serverLog',
 			'applications': 'applications',
 			'applications/:vendor/:app': 'applications',
 			'applications/:vendor/:app/instances/create': 'createInstance',
@@ -71,9 +72,9 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
             ]);
             this.headerView.selectMenuItem("server");
 		},
-		'serverLog': function(){
+		'serverLog': function(instanceName){
             this.showViews([
-                new ServerLogView(),
+                new ServerLogView({ selectedInstance: instanceName }),
                 new ServerSideBarView({active:"serverLog"})
             ]);
             this.headerView.selectMenuItem("server");
