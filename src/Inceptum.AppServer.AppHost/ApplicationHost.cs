@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -72,7 +73,13 @@ namespace Inceptum.AppServer.Hosting
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr LoadLibrary(string lpFileName);
 
-
+        public string UrlSafeInstanceName
+        {
+            get
+            {
+                return  WebUtility.UrlEncode(m_InstanceName);
+            }
+        }
 
         private Dictionary<AssemblyName, Lazy<Assembly>> m_LoadedAssemblies;
         private IApplicationInstance m_Instance;
@@ -84,7 +91,7 @@ namespace Inceptum.AppServer.Hosting
         public ApplicationHost(string instanceName)
         {
             m_InstanceName = instanceName;
-            m_ServiceAddress = new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/" + m_InstanceName).ToString();
+            m_ServiceAddress = new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/" + UrlSafeInstanceName).ToString();
         }
 
         #region Initialization
@@ -132,7 +139,7 @@ namespace Inceptum.AppServer.Hosting
              createServiceHost();
 
 
-            var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/instances/" + m_InstanceName;
+             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/instances/" + UrlSafeInstanceName;
             var factory = new ChannelFactory<IApplicationInstance>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), new EndpointAddress(uri));
             m_Instance = factory.CreateChannel();
             var instanceParams = m_Instance.GetInstanceParams();

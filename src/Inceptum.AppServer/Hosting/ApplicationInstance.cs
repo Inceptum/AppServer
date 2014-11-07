@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reactive.Subjects;
 using System.Reflection;
 using System.Security;
@@ -58,6 +59,14 @@ namespace Inceptum.AppServer.Hosting
         }
 
         public string Name { get; set; }
+
+        public string UrlSafeInstanceName
+        {
+            get
+            {
+                return WebUtility.UrlEncode(Name);
+            }
+        }
         private string Environment { get; set; }
         private ILogger Logger { get; set; }
 
@@ -215,7 +224,7 @@ namespace Inceptum.AppServer.Hosting
                 var serviceHost = new ServiceHost(this);
                 serviceHost.AddServiceEndpoint(typeof(IApplicationInstance),
                     new NetNamedPipeBinding { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue },
-                    new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/instances/" + Name));
+                    new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/instances/" + UrlSafeInstanceName));
                 serviceHost.Faulted += (o, args) =>
                 {
                     Logger.DebugFormat("Creating Host.");
@@ -360,7 +369,7 @@ namespace Inceptum.AppServer.Hosting
             string path = Path.GetFullPath(new[] { m_Context.AppsDirectory, Name }.Aggregate(Path.Combine));
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
-            string args = Name;
+            string args = "\""+Name+"\"";
             /*
 
                         foreach (var configFile in m_ApplicationParams.ConfigFiles)
