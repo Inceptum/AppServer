@@ -4,27 +4,27 @@ using System.Runtime.InteropServices;
 
 namespace Inceptum.AppServer.Hosting
 {
-    public class JobObject : IDisposable
+    public class JobObject : System.Runtime.ConstrainedExecution.CriticalFinalizerObject, IDisposable
     {
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         static extern IntPtr CreateJobObject(IntPtr a, string lpName);
 
-        [DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool SetInformationJobObject(IntPtr hJob, JobObjectInfoType infoType, IntPtr lpJobObjectInfo, UInt32 cbJobObjectInfoLength);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
 
-        [DllImport("Kernel32")]
+        [DllImport("Kernel32.dll", SetLastError = true)]
         private extern static Boolean CloseHandle(IntPtr handle);
 
-
-        private IntPtr handle;
-        private bool disposed;
+        private IntPtr m_Handle = IntPtr.Zero;
 
         public JobObject()
         {
-            handle = CreateJobObject(IntPtr.Zero, null);
+            m_Handle = CreateJobObject(IntPtr.Zero, null);
+            if (m_Handle == IntPtr.Zero)
+                throw new Exception(string.Format("Failed to create job object. Error: {0}", Marshal.GetLastWin32Error()));
 
             var info = new JOBOBJECT_BASIC_LIMIT_INFORMATION
             {
@@ -40,8 +40,13 @@ namespace Inceptum.AppServer.Hosting
             IntPtr extendedInfoPtr = Marshal.AllocHGlobal(length);
             Marshal.StructureToPtr(extendedInfo, extendedInfoPtr, false);
 
-            if (!SetInformationJobObject(handle, JobObjectInfoType.ExtendedLimitInformation, extendedInfoPtr, (uint)length))
+            if (!SetInformationJobObject(m_Handle, JobObjectInfoType.ExtendedLimitInformation, extendedInfoPtr, (uint)length))
                 throw new Exception(string.Format("Unable to set information.  Error: {0}", Marshal.GetLastWin32Error()));
+        }
+
+        ~JobObject()
+        {
+            Dispose(false);
         }
 
         public void Dispose()
@@ -50,26 +55,21 @@ namespace Inceptum.AppServer.Hosting
             GC.SuppressFinalize(this);
         }
 
-        private void Dispose(bool disposing)
+        protected void Dispose(bool disposing)
         {
-            if (disposed)
-                return;
-
-            if (disposing) { }
-
             Close();
-            disposed = true;
         }
 
         public void Close()
         {
-            CloseHandle(handle);
-            handle = IntPtr.Zero;
+            if (m_Handle == IntPtr.Zero) return;
+            CloseHandle(m_Handle);
+            m_Handle = IntPtr.Zero;
         }
 
         public bool AddProcess(IntPtr processHandle)
         {
-            return AssignProcessToJobObject(handle, processHandle);
+            return AssignProcessToJobObject(m_Handle, processHandle);
         }
 
         public bool AddProcess(int processId)
@@ -95,7 +95,6 @@ namespace Inceptum.AppServer.Hosting
         public UInt64 WriteTransferCount;
         public UInt64 OtherTransferCount;
     }
-
 
     [StructLayout(LayoutKind.Sequential)]
     struct JOBOBJECT_BASIC_LIMIT_INFORMATION
