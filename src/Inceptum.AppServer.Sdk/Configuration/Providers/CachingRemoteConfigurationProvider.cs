@@ -71,7 +71,7 @@ namespace Inceptum.AppServer.Configuration.Providers
                 return content;
             }
 
-            m_Logger.InfoFormat("Bundle '{0}' with extra params {1}  was received from remote source." + (m_Logger.IsDebugEnabled ? " Bundle Content:\r\n{2}":""), bundleName, string.Join(",", extraParams.Select(p => "'" + p + "'").ToArray()), content);
+            m_Logger.DebugFormat("Bundle '{0}' with extra params {1}  was received from remote source." + (m_Logger.IsDebugEnabled ? " Bundle Content:\r\n{2}":""), bundleName, string.Join(",", extraParams.Select(p => "'" + p + "'").ToArray()), content);
             
             try
             {
