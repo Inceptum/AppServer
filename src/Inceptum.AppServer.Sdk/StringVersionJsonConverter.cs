@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using Newtonsoft.Json;
+using NuGet;
 
 namespace Inceptum.AppServer
 {
@@ -14,30 +15,30 @@ namespace Inceptum.AppServer
             }
             else
             {
-                var version= (Version)value;
+                var version = (SemanticVersion)value;
                 writer.WriteValue(version.ToString());
             }
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            Version version=null;
+            SemanticVersion version = null;
             if (reader.TokenType == JsonToken.String)
             {
                 if (reader.Value == null || reader.Value.ToString() == string.Empty)
                     return null;
-                if(!Version.TryParse(reader.Value.ToString(),out version))
-                    throw new Exception("Unexpected token when parsing version. Expected String in version format (\\d+.\\d+.\\d+.\\d+)");
+                if (!SemanticVersion.TryParse(reader.Value.ToString(), out version))
+                    throw new Exception("Unexpected token when parsing version.");
             }else if (reader.TokenType != JsonToken.Null)
             {
-                throw new Exception("Unexpected token when parsing version. Expected String in version format (\\d+.\\d+.\\d+.\\d+)");
+                throw new Exception("Unexpected token when parsing version.");
             }
             return version;
         }
 
         public override bool CanConvert(Type objectType)
         {
-            return objectType==typeof(Version);
+            return objectType == typeof(SemanticVersion);
         }
 
 

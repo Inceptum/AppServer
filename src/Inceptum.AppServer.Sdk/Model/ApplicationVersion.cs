@@ -1,5 +1,6 @@
 using System;
 using Newtonsoft.Json;
+using NuGet;
 
 namespace Inceptum.AppServer.Model
 {
@@ -8,7 +9,7 @@ namespace Inceptum.AppServer.Model
         public string Description { get; set; }
                 
         [JsonConverter(typeof(StringVersionJsonConverter))]
-        public Version Version { get; set; }
+        public SemanticVersion Version { get; set; }
 
         [JsonIgnore]
         public string Browser { get; set; }

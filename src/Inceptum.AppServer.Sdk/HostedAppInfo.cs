@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using NuGet;
 
 namespace Inceptum.AppServer
 {
@@ -12,7 +13,7 @@ namespace Inceptum.AppServer
     {
 
 
-        public HostedAppInfo(string name,string vendor, Version version,string appType, IDictionary<AssemblyName, string> assembliesToLoad, IEnumerable<string> nativeDllToLoad = null)
+        public HostedAppInfo(string name,string vendor, SemanticVersion version,string appType, IDictionary<AssemblyName, string> assembliesToLoad, IEnumerable<string> nativeDllToLoad = null)
         {
             AssembliesToLoad = new Dictionary<AssemblyName, string>(assembliesToLoad);
             NativeDllToLoad = (nativeDllToLoad??new string[0]).ToArray();
@@ -23,7 +24,7 @@ namespace Inceptum.AppServer
             Vendor = vendor;
         }
 
-        public HostedAppInfo(string name, string vendor, Version version)
+        public HostedAppInfo(string name, string vendor, SemanticVersion version)
         {
             Name = name;
             Version = version;
@@ -37,7 +38,7 @@ namespace Inceptum.AppServer
         public string Description { get; set; }
         public string AppType { get; set; }
         public string[] ConfigFiles { get; set; }
-        public Version Version { get; set; }
+        public SemanticVersion Version { get; set; }
 
         public string[] NativeDllToLoad { get; private set; }
         public bool Debug { get; set; }

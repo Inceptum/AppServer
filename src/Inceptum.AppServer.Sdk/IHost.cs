@@ -3,7 +3,7 @@
 using System.Threading.Tasks;
 using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Model;
-
+using NuGet;
 
 namespace Inceptum.AppServer
 {
@@ -25,7 +25,7 @@ namespace Inceptum.AppServer
         void AddInstance(ApplicationInstanceInfo config);
         void DeleteInstance(string name);
         void UpdateInstance(ApplicationInstanceInfo config);
-        void SetInstanceVersion(string name, Version version);
+        void SetInstanceVersion(string name, SemanticVersion version);
 
         Task StartInstance(string name, bool doDebug);
         Task StopInstance(string name);

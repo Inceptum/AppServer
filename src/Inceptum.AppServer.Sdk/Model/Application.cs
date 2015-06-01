@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using Newtonsoft.Json;
+using NuGet;
 
 namespace Inceptum.AppServer.Model
 {
@@ -14,7 +15,7 @@ namespace Inceptum.AppServer.Model
         public string Vendor { get; private set; }
         public string Repository { get; private set; }
 
-        public Application(string repository,string id, string vendor, Dictionary<Version, string> versions)
+        public Application(string repository,string id, string vendor, Dictionary<SemanticVersion, string> versions)
         {
             Repository = repository;
             Name = id;
@@ -38,7 +39,7 @@ namespace Inceptum.AppServer.Model
 
         int IComparer<ApplicationVersion>.Compare(ApplicationVersion x, ApplicationVersion y)
         {
-            return -1 * Comparer<Version>.Default.Compare(x.Version, y.Version);
+            return -1 * Comparer<SemanticVersion>.Default.Compare(x.Version, y.Version);
         }
 
         public override string ToString()

@@ -2,6 +2,7 @@
 using Castle.Core.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using NuGet;
 
 namespace Inceptum.AppServer.Model
 {
@@ -13,7 +14,7 @@ namespace Inceptum.AppServer.Model
         public string ApplicationId { get; set; }
         public string ApplicationVendor { get; set; }
         [JsonConverter(typeof(StringVersionJsonConverter))]
-        public Version Version { get; set; }
+        public SemanticVersion Version { get; set; }
         public bool AutoStart { get; set; }
 
         public string User

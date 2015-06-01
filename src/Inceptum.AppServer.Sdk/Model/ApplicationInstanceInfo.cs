@@ -3,6 +3,7 @@ using Castle.Core.Logging;
 using Inceptum.AppServer.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using NuGet;
 
 namespace Inceptum.AppServer.Model
 {
@@ -15,7 +16,7 @@ namespace Inceptum.AppServer.Model
         public string ApplicationVendor { get; set; }
 
         [JsonConverter(typeof (StringVersionJsonConverter))]
-        public Version Version { get; set; }
+        public SemanticVersion Version { get; set; }
 
         [JsonConverter(typeof (StringEnumConverter))]
         public HostedAppStatus Status { get; set; }
@@ -25,7 +26,7 @@ namespace Inceptum.AppServer.Model
         public bool IsDebuggable { get; set; }
 
         [JsonConverter(typeof(StringVersionJsonConverter))]
-        public Version ActualVersion { get; set; }
+        public SemanticVersion ActualVersion { get; set; }
 
         public string Environment { get; set; }
 
