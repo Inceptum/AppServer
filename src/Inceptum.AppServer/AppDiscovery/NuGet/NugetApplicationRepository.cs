@@ -54,7 +54,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             {
                 ApplicationId = package.Id,
                 Vendor = string.Join(", ", package.Authors),
-                Version = package.Version.Version,
+                Version = package.Version,
                 Description = package.Description 
             });
         }
@@ -63,14 +63,14 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         {
 
             string installPath = path;
-            Version installedVersion=null;
+            SemanticVersion installedVersion=null;
             var versionFile = Path.Combine(installPath, "version");
             var projectManager = new ProjectManagerWrapper(application.ApplicationId,m_LocalSharedRepository, installPath, m_Logger, m_DependenciesRepository);
 
 
             if (File.Exists(versionFile))
             {
-                installedVersion = Version.Parse(File.ReadAllText(versionFile));
+                installedVersion = SemanticVersion.Parse(File.ReadAllText(versionFile));
             }
 
             if (installedVersion == application.Version) 
@@ -80,7 +80,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             {
                 string packageId = application.ApplicationId;
                 var package = (from p in projectManager.GetInstalledPackages(packageId)
-                    where p.Id == packageId && p.Version == new SemanticVersion(installedVersion)
+                    where p.Id == packageId && p.Version == installedVersion
                     select p).ToList<IPackage>().FirstOrDefault<IPackage>();
                 if (package != null)
                     projectManager.UninstallPackage(package, true);
@@ -94,7 +94,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             {
                 cleanUpInstallFolder(installPath);
             }
-            projectManager.InstallPackage(application.ApplicationId, new SemanticVersion(application.Version));
+            projectManager.InstallPackage(application.ApplicationId, application.Version);
             File.WriteAllText(versionFile, application.Version.ToString());
         }
 

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Castle.Core.Logging;
 using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.AppDiscovery.NuGet;
 using Inceptum.AppServer.Model;
+using NuGet;
+using ILogger = Castle.Core.Logging.ILogger;
 
 namespace Inceptum.AppServer.Hosting
 {
@@ -131,7 +132,7 @@ namespace Inceptum.AppServer.Hosting
         }
 */
 
-        public void Install(Application application,Version version, string path)
+        public void Install(Application application,SemanticVersion version, string path)
         {
             var repository = m_ApplicationRepositories.Single(r=>r.Name==application.Repository);
             lock (repository)
@@ -140,7 +141,7 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-        public void Upgrade(Application application, Version version, string path)
+        public void Upgrade(Application application, SemanticVersion version, string path)
         {
             var repository = m_ApplicationRepositories.Single(r => r.Name == application.Repository);
             lock (repository)

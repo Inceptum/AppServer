@@ -4,6 +4,7 @@ using System.Threading;
 using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Model;
 using Newtonsoft.Json;
+using NuGet;
 using OpenRasta.Web;
 
 namespace Inceptum.AppServer.Management.Handlers
@@ -107,7 +108,7 @@ namespace Inceptum.AppServer.Management.Handlers
         }
 
         [HttpOperation(HttpMethod.PUT, ForUriName = "version")]
-        public void Version(string instance, [JsonConverter(typeof(StringVersionJsonConverter))]Version version)
+        public void Version(string instance, [JsonConverter(typeof(StringVersionJsonConverter))]SemanticVersion version)
         {
             m_Host.SetInstanceVersion(instance, version);
         }

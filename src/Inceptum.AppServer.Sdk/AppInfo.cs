@@ -1,11 +1,12 @@
 ﻿using System;
+using NuGet;
 
 namespace Inceptum.AppServer
 {
     [Serializable]
     public class AppInfo
     {
-        public AppInfo(string name, Version version)
+        public AppInfo(string name, SemanticVersion version)
         {
             Name = name;
             Version = version;
@@ -13,7 +14,7 @@ namespace Inceptum.AppServer
 
         public string Name { get; private set; }
 
-        public Version Version { get; private set; }
+        public SemanticVersion Version { get; private set; }
 
         public static bool operator ==(AppInfo info1, AppInfo info2)
         {

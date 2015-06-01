@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using NuGet;
 
 namespace Inceptum.AppServer.AppDiscovery
 {
@@ -9,7 +10,7 @@ namespace Inceptum.AppServer.AppDiscovery
         public string Vendor { get; set; } 
         public string Description { get; set; } 
         public string ApplicationId { get; set; }
-        public Version Version { get; set; }
+        public SemanticVersion Version { get; set; }
 
         protected bool Equals(ApplicationInfo other)
         {

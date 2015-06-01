@@ -14,7 +14,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Security;
-using Castle.Core.Logging;
 using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
@@ -24,6 +23,9 @@ using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.Windsor;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet;
+using ILogger = Castle.Core.Logging.ILogger;
+using NullLogger = Castle.Core.Logging.NullLogger;
 
 namespace Inceptum.AppServer.Hosting
 {
@@ -332,7 +334,7 @@ namespace Inceptum.AppServer.Hosting
             updateInstances();
         }
 
-        public void SetInstanceVersion(string name, Version version)
+        public void SetInstanceVersion(string name, SemanticVersion version)
         {
             Logger.DebugFormat("Setting instance '{0}' version to {1}",name,version);
             try

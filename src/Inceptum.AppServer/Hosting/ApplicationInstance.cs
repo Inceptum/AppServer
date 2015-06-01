@@ -18,6 +18,8 @@ using Castle.Services.Logging.NLogIntegration;
 using Castle.Windsor;
 using Inceptum.AppServer.Model;
 using Inceptum.AppServer.Utils;
+using NuGet;
+using ILogger = Castle.Core.Logging.ILogger;
 
 namespace Inceptum.AppServer.Hosting
 {
@@ -29,7 +31,7 @@ namespace Inceptum.AppServer.Hosting
         private readonly object m_ServiceHostLock = new object();
         private readonly Subject<HostedAppStatus> m_StatusSubject = new Subject<HostedAppStatus>();
         private readonly object m_SyncRoot = new object();
-        private Version m_ActualVersion;
+        private SemanticVersion m_ActualVersion;
         private ChannelFactory<IApplicationHost> m_AppHostFactory;
         private IApplicationHost m_ApplicationHost;
         private Task m_CurrentTask;
@@ -92,7 +94,7 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-        public Version ActualVersion
+        public SemanticVersion ActualVersion
         {
             get
             {
@@ -236,7 +238,7 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
-        public void UpdateConfig(Version actualVersion, string environment, string user, string password, LoggerLevel logLevel, string defaultConfiguration,
+        public void UpdateConfig(SemanticVersion actualVersion, string environment, string user, string password, LoggerLevel logLevel, string defaultConfiguration,
             long maxLogSize, LogLimitReachedAction logLimitReachedAction)
         {
             m_MaxLogSize = maxLogSize;
