@@ -3,42 +3,32 @@ using Castle.DynamicProxy;
 
 namespace Inceptum.AppServer.Hosting
 {
-    public class MarshalableProxy:MarshalByRefObject
+    public class MarshalableProxy : MarshalByRefObject
     {
-        
-
         public override object InitializeLifetimeService()
         {
             // prevents proxy from expiration
             return null;
         }
 
-        public static T Generate<T>(T instance)
+        public static T Generate<T>(T instanceToProxy) where T : class
         {
-            Type t = typeof(T);
-            if (!t.IsInterface)
+            if (instanceToProxy == null) throw new ArgumentNullException("instanceToProxy");
+
+            if (!typeof(T).IsInterface)
             {
                 throw new ArgumentException("Type must be an interface");
             }
-            try
-            {
-                //T instance = container.Resolve<T>();
-                if (typeof(MarshalByRefObject).IsAssignableFrom(instance.GetType()))
-                {
-                    return instance;
-                }
 
-                var generator = new ProxyGenerator();
-                var generatorOptions = new ProxyGenerationOptions { BaseTypeForInterfaceProxy = typeof(MarshalableProxy) };
-                var proxy = (T)generator.CreateInterfaceProxyWithTarget(t, instance, generatorOptions);
-                return proxy;
-
-            }
-            catch (Castle.MicroKernel.ComponentNotFoundException)
+            if (instanceToProxy is MarshalByRefObject)
             {
-                return default(T);
+                return instanceToProxy;
             }
+
+            var generator = new ProxyGenerator();
+            var generatorOptions = new ProxyGenerationOptions { BaseTypeForInterfaceProxy = typeof(MarshalableProxy) };
+            var proxy = (T)generator.CreateInterfaceProxyWithTarget(typeof(T), instanceToProxy, generatorOptions);
+            return proxy;
         }
-
     }
 }

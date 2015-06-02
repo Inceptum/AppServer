@@ -12,10 +12,9 @@ namespace Inceptum.AppServer
         private readonly IManageableConfigurationProvider m_LocalStorageConfigurationProvider;
         private readonly IManageableConfigurationProvider m_ExternalProvider;
 
-        public AppServerExternalConfigurationProvider(ILogger logger, IManageableConfigurationProvider localProvider, IManageableConfigurationProvider externalProvider) 
+        public AppServerExternalConfigurationProvider(ILogger logger, IManageableConfigurationProvider localProvider, IManageableConfigurationProvider externalProvider)
         {
-            if (localProvider == null)
-                throw new ArgumentNullException("localProvider");
+            if (localProvider == null) throw new ArgumentNullException("localProvider");
             if (externalProvider == null) throw new ArgumentNullException("externalProvider");
             m_LocalStorageConfigurationProvider = localProvider;
             m_ExternalProvider = externalProvider;
@@ -26,14 +25,14 @@ namespace Inceptum.AppServer
             var appServerConfigurationinfo = m_LocalStorageConfigurationProvider.GetConfiguration("appserver");
 
             return m_ExternalProvider.GetConfigurations()
-                                     .Where(c => c.Name.ToLower() != "appserver")
-                                     .Concat(new[] {appServerConfigurationinfo})
+                                     .Where(c => !string.Equals(c.Name, "appserver", StringComparison.OrdinalIgnoreCase))
+                                     .Concat(new[] { appServerConfigurationinfo })
                                      .ToArray();
         }
 
         private IManageableConfigurationProvider selectProvider(string configuration)
         {
-            return configuration.ToLower() == "appserver"
+            return string.Equals(configuration, "appserver", StringComparison.OrdinalIgnoreCase)
                        ? m_LocalStorageConfigurationProvider
                        : m_ExternalProvider;
         }

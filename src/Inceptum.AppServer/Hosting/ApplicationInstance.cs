@@ -274,14 +274,11 @@ namespace Inceptum.AppServer.Hosting
 
         private async Task doStart(bool debug, Action beforeStart)
         {
-
             await m_CurrentTask;
             await Task.Yield();
-            if (m_CancellationTokenSource.IsCancellationRequested)
-                return;
-            Logger.InfoFormat("Starting instance '{0}'. Debug mode: {1}", Name, debug);
-
-
+            if (m_CancellationTokenSource.IsCancellationRequested) return;
+            
+            Logger.InfoFormat("Starting instance '{0}'. Debug mode: {1}", Name, debug);            
             try
             {
                 if (beforeStart != null)
@@ -333,8 +330,7 @@ namespace Inceptum.AppServer.Hosting
             await Task.Yield();
 
             Logger.InfoFormat("Stopping instance '{0}'", Name);
-
-
+            
             try
             {
                 if (m_ApplicationHost != null && !m_Process.HasExited)
@@ -366,7 +362,7 @@ namespace Inceptum.AppServer.Hosting
 
         private void createHost(bool debug)
         {
-            string path = Path.GetFullPath(new[] { m_Context.AppsDirectory, Name }.Aggregate(Path.Combine));
+            string path = Path.GetFullPath(Path.Combine(m_Context.AppsDirectory, Name));
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             string args = "\""+Name+"\"";
@@ -379,7 +375,6 @@ namespace Inceptum.AppServer.Hosting
             */
             if (debug)
                 args += " -debug";
-
 
             string directoryName = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? "";
             var procSetup = new ProcessStartInfo
@@ -459,13 +454,11 @@ namespace Inceptum.AppServer.Hosting
             try
             {
                 await task;
-            }
+            }            
             catch (Exception)
-            {
+            {                      
             }
         }
-
-
 
         private async Task<string> doExecute(InstanceCommand command, Task currentTask)
         {

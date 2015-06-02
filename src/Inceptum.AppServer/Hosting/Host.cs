@@ -27,12 +27,12 @@ using Newtonsoft.Json.Linq;
 
 namespace Inceptum.AppServer.Hosting
 {
-    class Host:IHost,IDisposable
+    class Host : IHost, IDisposable
     {
         private ILogger Logger { get; set; }
         public string Name { get; set; }
         private readonly List<ApplicationInstance> m_Instances = new List<ApplicationInstance>();
-        private InstanceConfig[] m_InstancesConfiguration =new InstanceConfig[0];
+        private InstanceConfig[] m_InstancesConfiguration = new InstanceConfig[0];
 
         private readonly IApplicationInstanceFactory m_InstanceFactory;
         private readonly AppServerContext m_Context;
@@ -43,17 +43,17 @@ namespace Inceptum.AppServer.Hosting
         private readonly ApplicationRepository m_ApplicationRepository;
         private ServiceHost m_ConfigurationProviderServiceHost;
         private ServiceHost m_LogCacheServiceHost;
-        private readonly object m_ServiceHostLock=new object();
+        private readonly object m_ServiceHostLock = new object();
         private readonly JobObject m_JobObject;
         private readonly ILogCache m_LogCache;
         private readonly PeriodicalBackgroundWorker m_InstanceChecker;
-        private bool m_IsStopped=true;
+        private bool m_IsStopped = true;
 
         public Host(ILogCache logCache, IManageableConfigurationProvider serverConfigurationProvider, IConfigurationProvider applicationConfigurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepository applicationRepository, ILogger logger = null)
         {
             m_LogCache = logCache;
             m_JobObject = new JobObject();
- 
+
 
             m_ApplicationRepository = applicationRepository;
             m_ServerConfigurationProvider = serverConfigurationProvider;
@@ -61,7 +61,7 @@ namespace Inceptum.AppServer.Hosting
             m_Listeners = listeners;
             m_InstanceFactory = instanceFactory;
             Logger = logger ?? NullLogger.Instance;
-        
+
             Name = Environment.MachineName;
             try
             {
@@ -76,15 +76,14 @@ namespace Inceptum.AppServer.Hosting
             {
                 Logger.WarnFormat(e, "Failed to get server name from configuration , using default:{0}", Name);
             }
-        
 
             m_Context = new AppServerContext
             {
                 Name = Name,
-                AppsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "apps"),
+                AppsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "apps"),
                 BaseDirectory = AppDomain.CurrentDomain.BaseDirectory
             };
-            m_InstanceChecker = new PeriodicalBackgroundWorker("InstanceChecker",1000,checkInstances);
+            m_InstanceChecker = new PeriodicalBackgroundWorker("InstanceChecker", 1000, checkInstances);
             resetConfigurationProviderServiceHost();
             resetLogCacheServiceHost();
         }
@@ -112,28 +111,28 @@ namespace Inceptum.AppServer.Hosting
                     m_ConfigurationProviderServiceHost.Close();
                     m_ConfigurationProviderServiceHost = null;
                 }
+
                 var serviceHost = createServiceHost(m_ApplicationConfigurationProvider);
-
-
                 serviceHost.AddServiceEndpoint(typeof(IConfigurationProvider), WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), "ConfigurationProvider");
 
+                EventHandler faulted = null;
+                faulted = (o, args) =>
+                    {
+                        Logger.Debug("Recreating ConfigurationProvider service host.");
+                        serviceHost.Faulted -= faulted;
+                        resetConfigurationProviderServiceHost();
+                    };
+                serviceHost.Faulted += faulted;
+
                 serviceHost.Open();
-                serviceHost.Faulted += (o, args) =>
-                {
-                    Logger.DebugFormat("Creating ConfigurationProvider service host.");
-                    resetConfigurationProviderServiceHost();
-                };
                 m_ConfigurationProviderServiceHost = serviceHost;
             }
         }
 
         private ServiceHost createServiceHost(object serviceInstance)
         {
-            var serviceHost = new ServiceHost(serviceInstance, new[] {new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id)});
+            var serviceHost = new ServiceHost(serviceInstance, new[] { new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id) });
             var debug = serviceHost.Description.Behaviors.Find<ServiceDebugBehavior>();
-            
-
-            // if not found - add behavior with setting turned on 
             if (debug == null)
                 serviceHost.Description.Behaviors.Add(new ServiceDebugBehavior { IncludeExceptionDetailInFaults = true });
             else
@@ -152,17 +151,22 @@ namespace Inceptum.AppServer.Hosting
                 }
                 var serviceHost = createServiceHost(m_LogCache);
                 serviceHost.AddServiceEndpoint(typeof(ILogCache), WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), "LogCache");
-                serviceHost.Faulted += (o, args) =>
+
+                EventHandler faulted = null;
+                faulted = (o, args) =>
                 {
-                    Logger.DebugFormat("Creating LogCache service host.");
-                    resetLogCacheServiceHost();
+                    Logger.Debug("Recreating LogCache service host.");
+                    serviceHost.Faulted -= faulted;
+                    resetConfigurationProviderServiceHost();
                 };
+                serviceHost.Faulted += faulted;
+
                 serviceHost.Open();
                 m_LogCacheServiceHost = serviceHost;
             }
         }
 
-     
+
         public string MachineName
         {
             get { return Environment.MachineName; }
@@ -170,7 +174,8 @@ namespace Inceptum.AppServer.Hosting
 
         public Application[] Applications
         {
-            get {
+            get
+            {
                 return m_ApplicationRepository.Applications;
             }
         }
@@ -181,30 +186,30 @@ namespace Inceptum.AppServer.Hosting
             {
                 lock (m_SyncRoot)
                 {
-                  
+
                     return (from cfg in m_InstancesConfiguration
-                                join instance in m_Instances on cfg.Name equals instance.Name into t
-                                from instance in t
-                                orderby Tuple.Create(cfg.Environment,cfg.Name)
-                                select new ApplicationInstanceInfo
-                                           {
-                                               Name = cfg.Name,
-                                               Id =cfg.Name,
-                                               ApplicationId = cfg.ApplicationId,
-                                               ApplicationVendor = cfg.ApplicationVendor,
-                                               Environment = cfg.Environment,
-                                               Status = instance.Status,
-                                               Version = cfg.Version,
-                                               AutoStart = cfg.AutoStart,
-                                               ActualVersion=instance.ActualVersion,
-                                               Commands = instance.Commands,
-                                               User = cfg.User,
-                                               LogLevel = cfg.LogLevel,
-                                               DefaultConfiguration = cfg.DefaultConfiguration,
-                                               MaxLogSize=cfg.MaxLogSize,
-                                               LogLimitReachedAction = cfg.LogLimitReachedAction,
-                                               IsDebuggable = m_ApplicationRepository.Applications.Where(a=>a.Vendor==cfg.ApplicationVendor && a.Name==cfg.ApplicationId).Select(a=>a.Debug).FirstOrDefault()
-                                           }).ToArray();
+                            join instance in m_Instances on cfg.Name equals instance.Name into t
+                            from instance in t
+                            orderby Tuple.Create(cfg.Environment, cfg.Name)
+                            select new ApplicationInstanceInfo
+                                       {
+                                           Name = cfg.Name,
+                                           Id = cfg.Name,
+                                           ApplicationId = cfg.ApplicationId,
+                                           ApplicationVendor = cfg.ApplicationVendor,
+                                           Environment = cfg.Environment,
+                                           Status = instance.Status,
+                                           Version = cfg.Version,
+                                           AutoStart = cfg.AutoStart,
+                                           ActualVersion = instance.ActualVersion,
+                                           Commands = instance.Commands,
+                                           User = cfg.User,
+                                           LogLevel = cfg.LogLevel,
+                                           DefaultConfiguration = cfg.DefaultConfiguration,
+                                           MaxLogSize = cfg.MaxLogSize,
+                                           LogLimitReachedAction = cfg.LogLimitReachedAction,
+                                           IsDebuggable = m_ApplicationRepository.Applications.Where(a => a.Vendor == cfg.ApplicationVendor && a.Name == cfg.ApplicationId).Select(a => a.Debug).FirstOrDefault()
+                                       }).ToArray();
                 }
             }
         }
@@ -214,7 +219,7 @@ namespace Inceptum.AppServer.Hosting
         {
             m_IsStopped = false;
             RediscoverApps();
-            Logger.InfoFormat("Reading instances config");
+            Logger.Info("Reading instances config");
             updateInstances();
             IEnumerable<Task> tasks;
             lock (m_SyncRoot)
@@ -222,9 +227,9 @@ namespace Inceptum.AppServer.Hosting
                 tasks = m_InstancesConfiguration
                         .Where(c => c.AutoStart)
                         .Select(c => c.Name)
-                        .Select(instance => Task.Factory.StartNew(() =>startInstance(instance,true)));
-                Logger.InfoFormat("Starting instances");                
+                        .Select(instance => Task.Factory.StartNew(() => startInstance(instance, true)));
             }
+            Logger.InfoFormat("Starting instances");
             Task.WaitAll(tasks.ToArray());
         }
 
@@ -234,13 +239,13 @@ namespace Inceptum.AppServer.Hosting
                 throw new ObjectDisposedException("Host is disposed");
 
             m_ApplicationRepository.RediscoverApps();
-            notefyApplicationsChanged();
+            notifyApplicationsChanged();
         }
 
 
         private void createInstance(InstanceConfig config)
         {
-            var instance = m_InstanceFactory.Create(config.Name,  m_Context);
+            var instance = m_InstanceFactory.Create(config.Name, m_Context);
             m_Instances.Add(instance);
             instance.Subscribe(status => notifyInstancesChanged(instance.Name + ":" + instance.Status));
         }
@@ -256,34 +261,36 @@ namespace Inceptum.AppServer.Hosting
             if (string.IsNullOrEmpty(config.Environment))
                 throw new ArgumentException("Instance environment is not provided");
 
-            if (m_ApplicationRepository.Applications.All(x => x.Name != config.ApplicationId && x.Vendor==config.ApplicationVendor))
-                throw new ArgumentException("Application '" + config.ApplicationVendor+"(c) "+config.ApplicationId + "' not found");
+            if (m_ApplicationRepository.Applications.All(x => x.Name != config.ApplicationId && x.Vendor == config.ApplicationVendor))
+                throw new ArgumentException("Application '" + config.ApplicationVendor + "(c) " + config.ApplicationId + "' not found");
 
         }
 
 
-        private void notifyInstancesChanged(string comment=null)
+        private void notifyInstancesChanged(string comment = null)
         {
             foreach (var listener in m_Listeners)
             {
                 try
                 {
                     listener.InstancesChanged(comment);
-                }catch(Exception e)
+                }
+                catch (Exception e)
                 {
                     Logger.WarnFormat(e, "Failed to deliver instances changed notification");
                 }
             }
         }
 
-        private void notefyApplicationsChanged(string comment = null)
+        private void notifyApplicationsChanged(string comment = null)
         {
             foreach (var listener in m_Listeners)
             {
                 try
                 {
                     listener.ApplicationsChanged(comment);
-                }catch(Exception e)
+                }
+                catch (Exception e)
                 {
                     Logger.WarnFormat(e, "Failed to deliver instances changed notification");
                 }
@@ -314,8 +321,8 @@ namespace Inceptum.AppServer.Hosting
                                     ? null
                                     : Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(config.Password ?? ""), new byte[0], DataProtectionScope.LocalMachine)),
                     LogLevel = config.LogLevel,
-                    DefaultConfiguration=config.DefaultConfiguration,
-                    MaxLogSize=config.MaxLogSize,
+                    DefaultConfiguration = config.DefaultConfiguration,
+                    MaxLogSize = config.MaxLogSize,
                     LogLimitReachedAction = config.LogLimitReachedAction
                 };
                 instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Concat(new[] { cfg }).ToArray(), Formatting.Indented);
@@ -334,7 +341,7 @@ namespace Inceptum.AppServer.Hosting
 
         public void SetInstanceVersion(string name, Version version)
         {
-            Logger.DebugFormat("Setting instance '{0}' version to {1}",name,version);
+            Logger.DebugFormat("Setting instance '{0}' version to {1}", name, version);
             try
             {
                 string instances;
@@ -346,7 +353,7 @@ namespace Inceptum.AppServer.Hosting
                     var instanceConfig = m_InstancesConfiguration.FirstOrDefault(x => x.Name == name);
                     if (instanceConfig == null)
                         throw new ConfigurationErrorsException(string.Format("Instance named '{0}' not found", name));
-                    
+
                     instanceConfig.Version = version;
 
                     instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(c => c.Name != instanceConfig.Name).Concat(new[] { instanceConfig }).ToArray(), Formatting.Indented);
@@ -375,7 +382,7 @@ namespace Inceptum.AppServer.Hosting
                 validateInstanceConfig(config);
                 if (m_InstancesConfiguration.All(x => x.Name != config.Id))
                     throw new ConfigurationErrorsException(string.Format("Instance named '{0}' not found", config.Name));
-                if (config.Name!=config.Id && m_InstancesConfiguration.Any(x => x.Name == config.Name))
+                if (config.Name != config.Id && m_InstancesConfiguration.Any(x => x.Name == config.Name))
                     throw new ConfigurationErrorsException(string.Format("Can not rename instance '{0}' to {1}. Instance with this name already exists", config.Id, config.Name));
                 var originalPassword = m_InstancesConfiguration.First(c => c.Name == config.Id).Password;
                 var cfg = new InstanceConfig
@@ -384,15 +391,15 @@ namespace Inceptum.AppServer.Hosting
                     Version = config.Version,
                     ApplicationId = config.ApplicationId,
                     ApplicationVendor = config.ApplicationVendor,
-                    Environment =  config.Environment,
+                    Environment = config.Environment,
                     AutoStart = config.AutoStart,
                     User = config.User,
                     Password = string.IsNullOrEmpty(config.Password)
-                        ?originalPassword
-                        :Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(config.Password ?? ""), new byte[0], DataProtectionScope.LocalMachine)) ,
+                        ? originalPassword
+                        : Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(config.Password ?? ""), new byte[0], DataProtectionScope.LocalMachine)),
                     LogLevel = config.LogLevel,
-                    DefaultConfiguration=config.DefaultConfiguration,
-                    MaxLogSize=config.MaxLogSize,
+                    DefaultConfiguration = config.DefaultConfiguration,
+                    MaxLogSize = config.MaxLogSize,
                     LogLimitReachedAction = config.LogLimitReachedAction
                 };
 
@@ -435,7 +442,7 @@ namespace Inceptum.AppServer.Hosting
 
         public string ExecuteCommand(string name, InstanceCommand command)
         {
-            Logger.InfoFormat("Executing command {0} with instance {1} ",command.Name, name);
+            Logger.InfoFormat("Executing command {0} with instance {1} ", command.Name, name);
             try
             {
                 Task<string> task;
@@ -450,11 +457,16 @@ namespace Inceptum.AppServer.Hosting
                     task = instance.ExecuteCommand(command);
                 }
                 var result = task.ConfigureAwait(false).GetAwaiter().GetResult();
-                return string.IsNullOrWhiteSpace(result)?string.Format("Command '{0}' has executed",command.Name):result;
+                return string.IsNullOrWhiteSpace(result) ? string.Format("Command '{0}' has executed", command.Name) : result;
+            }
+            catch (AggregateException ae)
+            {
+                Logger.WarnFormat(ae.Flatten(), "Instance {0} failed to execute command {1}", name, command.Name);
+                throw ae.Flatten();
             }
             catch (Exception e)
             {
-                Logger.WarnFormat(e, " Instance {0} failed to execute command {1} ", name,command.Name);
+                Logger.WarnFormat(e, "Instance {0} failed to execute command {1}", name, command.Name);
                 throw;
             }
         }
@@ -507,7 +519,7 @@ namespace Inceptum.AppServer.Hosting
             return startInstance(name, false, doDebug);
         }
 
-        private Task startInstance(string name, bool safe, bool doDebug=false)
+        private Task startInstance(string name, bool safe, bool doDebug = false)
         {
             Logger.InfoFormat(" Starting instance {0}  ", name);
             try
@@ -526,16 +538,13 @@ namespace Inceptum.AppServer.Hosting
                 var config = m_InstancesConfiguration.FirstOrDefault(i => i.Name == name);
                 if (config == null)
                     throw new InvalidOperationException(string.Format("Configuration of instance {0} not found", name));
-                var application = m_ApplicationRepository.Applications.FirstOrDefault(a => a.Name == config.ApplicationId && a.Vendor==config.ApplicationVendor);
+                var application = m_ApplicationRepository.Applications.FirstOrDefault(a => a.Name == config.ApplicationId && a.Vendor == config.ApplicationVendor);
                 if (application == null)
                     throw new InvalidOperationException(string.Format("Application {0} not found", config.ApplicationId));
 
                 var version = config.Version ?? application.Versions.Select(v => v.Version).OrderByDescending(v => v).FirstOrDefault();
 
-                
-                instance.UpdateConfig(version,config.Environment,config.User,config.Password,config.LogLevel,config.DefaultConfiguration,config.MaxLogSize,config.LogLimitReachedAction);
-
-
+                instance.UpdateConfig(version, config.Environment, config.User, config.Password, config.LogLevel, config.DefaultConfiguration, config.MaxLogSize, config.LogLimitReachedAction);
 
                 return instance.Start(application.Debug && doDebug, () => m_ApplicationRepository.Install(application, version, Path.Combine(m_Context.AppsDirectory, config.Name) + "\\"));
             }
@@ -548,20 +557,19 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-        private  void updateInstances()
+        private void updateInstances()
         {
             Logger.DebugFormat("Updating instances");
 
             var bundle = m_ServerConfigurationProvider.GetBundle("AppServer", "instances");
-            var configs = JsonConvert.DeserializeObject<InstanceConfig[]>(bundle).GroupBy(i=>i.Name).Select(g=>g.First());
-
+            var configs = JsonConvert.DeserializeObject<InstanceConfig[]>(bundle).GroupBy(i => i.Name).Select(g => g.First());
 
             lock (m_SyncRoot)
             {
                 m_InstancesConfiguration = configs.ToArray();
                 foreach (var config in m_InstancesConfiguration.Where(config => m_Instances.All(i => i.Name != config.Name)))
                 {
-                    Logger.DebugFormat("Creating new instance '{0}'",config.Name);
+                    Logger.DebugFormat("Creating new instance '{0}'", config.Name);
                     createInstance(config);
                 }
                 notifyInstancesChanged();
@@ -573,22 +581,21 @@ namespace Inceptum.AppServer.Hosting
         public Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged
         {
             //TODO: fake!!!
-            get {return new Subject<Tuple<HostedAppInfo, HostedAppStatus>[]>();}
+            get { return new Subject<Tuple<HostedAppInfo, HostedAppStatus>[]>(); }
         }
 
 
         public void Stop()
         {
-            if(m_IsStopped)
+            if (m_IsStopped)
                 throw new ObjectDisposedException("Host not started");
-             Logger.InfoFormat("Host is stopping");
-            m_IsStopped= true;
+            Logger.InfoFormat("Host is stopping");
+            m_IsStopped = true;
             IEnumerable<Task> tasks;
             lock (m_SyncRoot)
             {
                 Logger.InfoFormat("Stopping instances");
-                tasks = m_Instances.Where(instance=>instance.Status!=HostedAppStatus.Stopped&& instance.Status!=HostedAppStatus.Stopping)
-                    .Select(instance => instance.Stop(true));
+                tasks = m_Instances.Where(instance => instance.Status != HostedAppStatus.Stopped && instance.Status != HostedAppStatus.Stopping).Select(instance => instance.Stop(true));
             }
 
             Task.WaitAll(tasks.ToArray());
@@ -598,10 +605,10 @@ namespace Inceptum.AppServer.Hosting
             }
             m_Instances.Clear();
             Logger.InfoFormat("Host is stopped");
-       }
+        }
         public void Dispose()
         {
-           
+
             m_InstanceChecker.Dispose();
             m_JobObject.Dispose();
         }

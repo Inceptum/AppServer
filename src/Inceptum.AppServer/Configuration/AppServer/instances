@@ -1,18 +1,16 @@
 [
   {
-    "Name": "ssss",
-    "ApplicationId": "Unistream.Messenger.Backend",
-    "ApplicationVendor": null,
-    "Version": null,
-    "AutoStart": true,
-    "Environment": "dit"
-  },
-  {
-    "Name": "loans",
-    "ApplicationId": "Unistream.Integration.Loans",
-    "ApplicationVendor": "Unistream",
+    "Name": "testapp",
+    "ApplicationId": "TestApp",
+    "ApplicationVendor": "Test",
     "Version": null,
     "AutoStart": false,
-    "Environment": "dev"
+    "User": "",
+    "Password": null,
+    "Environment": "dev",
+    "LogLevel": "Debug",
+    "DefaultConfiguration": "testapp",
+    "MaxLogSize": 0,
+    "LogLimitReachedAction": "LogToOversizedFolder"
   }
 ]

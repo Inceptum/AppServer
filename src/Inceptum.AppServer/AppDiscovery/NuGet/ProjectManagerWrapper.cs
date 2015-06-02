@@ -7,18 +7,14 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
     {
         private readonly ApplicationProjectManager m_ProjectManager;
         private readonly Castle.Core.Logging.ILogger m_Logger;
-        private string m_PackageId;
 
-        public ProjectManagerWrapper(string packageId,string sharedRepository,string applicationRoot, Castle.Core.Logging.ILogger logger, IPackageRepository dependenciesRepository)
+        public ProjectManagerWrapper(string packageId,string sharedRepositoryDir,string applicationRoot, Castle.Core.Logging.ILogger logger, IPackageRepository dependenciesRepository)
         {
-            m_PackageId = packageId;
             m_Logger = logger;
-            string sharedRepositoryDirectory = sharedRepository;
-  
-            var sharedRepositoryFileSystem = new PhysicalFileSystem(sharedRepositoryDirectory);
+
+            var sharedRepositoryFileSystem = new PhysicalFileSystem(sharedRepositoryDir);
             var pathResolver = new DefaultPackagePathResolver(sharedRepositoryFileSystem);
             var localSharedRepository=new SharedPackageRepository(pathResolver, sharedRepositoryFileSystem, sharedRepositoryFileSystem);
-
 
             IProjectSystem project = new ApplicationProjectSystem(applicationRoot) { Logger = this };
             var referenceRepository = new PackageReferenceRepository(project, packageId, localSharedRepository);

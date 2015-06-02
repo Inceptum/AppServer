@@ -25,10 +25,10 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
             m_ApplicationRepository = PackageRepositoryFactory.Default.CreateRepository(getRepositoryPath(applicationRepository));
             IPackageRepository[] dependencyRepositories = dependenciesRepositories.Select(r => PackageRepositoryFactory.Default.CreateRepository(r)).ToArray();
- 
+
             m_DependenciesRepository = new AggregateRepository(
                 new[] { m_ApplicationRepository }.Concat(dependencyRepositories)
-                ) { ResolveDependenciesVertically =true};
+                ) { ResolveDependenciesVertically = true };
 
             m_LocalSharedRepository = Path.GetFullPath("packages\\");
         }
@@ -61,20 +61,17 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
         public void Install(string path, ApplicationInfo application)
         {
-
-            string installPath = path;
-            Version installedVersion=null;
-            var versionFile = Path.Combine(installPath, "version");
-            var projectManager = new ProjectManagerWrapper(application.ApplicationId,m_LocalSharedRepository, installPath, m_Logger, m_DependenciesRepository);
-
+            var versionFile = Path.Combine(path, "version");
+            Version installedVersion = null;
 
             if (File.Exists(versionFile))
             {
                 installedVersion = Version.Parse(File.ReadAllText(versionFile));
             }
 
-            if (installedVersion == application.Version) 
-                return;
+            if (installedVersion == application.Version) return;
+
+            var projectManager = new ProjectManagerWrapper(application.ApplicationId,m_LocalSharedRepository, path, m_Logger, m_DependenciesRepository);
 
             if (installedVersion != null)
             {
@@ -87,12 +84,12 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 else
                 {
                     m_Logger.WarnFormat("Failed to find package {0} version {1} from which instance was installed. Will clean up folder manually instead of package uninstall ",packageId, installedVersion);
-                    cleanUpInstallFolder(installPath);
+                    cleanUpInstallFolder(path);
                 }
             }
             else
             {
-                cleanUpInstallFolder(installPath);
+                cleanUpInstallFolder(path);
             }
             projectManager.InstallPackage(application.ApplicationId, new SemanticVersion(application.Version));
             File.WriteAllText(versionFile, application.Version.ToString());

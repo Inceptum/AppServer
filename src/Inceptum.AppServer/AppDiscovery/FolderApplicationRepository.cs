@@ -34,7 +34,7 @@ namespace Inceptum.AppServer.AppDiscovery
                 .SelectMany(searchPattern => Directory.GetFiles(folder, searchPattern))
                 .Select(file => new { path = file, AssemblyDefinition = Hosting.CeceilExtencions.TryReadAssembly(file) }).ToArray();
 
-            var apps =( from file in dlls
+            var apps =(from file in dlls
                 let asm = file.AssemblyDefinition
                 where asm != null
                 let appAttribute = asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof (HostedApplicationAttribute).FullName)
@@ -46,26 +46,21 @@ namespace Inceptum.AppServer.AppDiscovery
                 where types.Any()
                 select Tuple.Create(new ApplicationInfo {Debug=true,ApplicationId = applicationId, Vendor = vendor, Version = asm.Name.Version},file.path)).ToArray();
 
-          
-
-            if (apps.Length> 1)
-                throw new InvalidOperationException(string.Format("Folder {0} contains several applications: {1}{2}", folder, Environment.NewLine,string.Join(","+Environment.NewLine, apps.Select(a=>a.ToString()))));
-
-
             if (apps.Length == 0)
                 throw new InvalidOperationException(string.Format("Folder {0}  does not contain application", folder));
-            return apps.Single();
+
+            if (apps.Length > 1)
+                throw new InvalidOperationException(string.Format("Folder {0} contains several applications: {1}{2}", folder, Environment.NewLine, string.Join("," + Environment.NewLine, apps.Select(a => a.ToString()))));
+
+            return apps[0];
         }
 
         public void Install(string installPath, ApplicationInfo application)
         {
-            
-         
             var folder = m_Folders.First(f => getApplication(f).Item1 == application);
             m_Logger.WarnFormat("Cleaning up install folder '{0}'", installPath);
             var binFolder = Path.GetFullPath(Path.Combine(installPath, "bin"));
             var contentFolder = Path.GetFullPath(Path.Combine(installPath, "content"));
-
 
             if (Directory.Exists(contentFolder))
             {
@@ -73,8 +68,7 @@ namespace Inceptum.AppServer.AppDiscovery
                 Directory.Delete(contentFolder, true);
             }
             Directory.CreateDirectory(contentFolder);
-
-
+            
             string sourceContentFolder = Path.Combine(folder, "Content");
             if (Directory.Exists(sourceContentFolder))
             {
@@ -100,7 +94,7 @@ namespace Inceptum.AppServer.AppDiscovery
                 else
                     File.Copy(file, Path.Combine(installPath, fileName), true);
             }
-
+            
 	        var cultures = CultureInfo.GetCultures(CultureTypes.SpecificCultures);
 			foreach (var directory in Directory.GetDirectories(folder, "??").Where(directory => cultures.Any(c =>  Path.GetFileName(directory).Equals(c.TwoLetterISOLanguageName, StringComparison.InvariantCultureIgnoreCase))))
 			{
