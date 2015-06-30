@@ -205,15 +205,14 @@ namespace Inceptum.AppServer.Hosting
                                     a=>a.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof(IHostedApplication).FullName))
                                         .Select(t => t.FullName + ", " + a.FullName)
                                     ).ToArray();
-            string appType = appTypes.First();
-
+            
             if (appTypes.Length > 1)
                 throw new  InvalidOperationException(string.Format("Instance {0} bin folder contains several types implementing IHostedApplication: {1}",m_InstanceName, string.Join(",",appTypes)));
-
 
             if (appTypes.Length == 0)
                 throw new  InvalidOperationException(string.Format("Instance {0} bin folder does not contain type implementing IHostedApplication",m_InstanceName));
 
+            string appType = appTypes[0];
 
             var instanceCommands = initContainer(Type.GetType(appType), instanceParams.LogLevel,instanceParams.MaxLogSize,instanceParams.LogLimitReachedAction);
 
