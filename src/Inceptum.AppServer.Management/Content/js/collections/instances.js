@@ -3,7 +3,7 @@ define(['jquery', 'backbone', 'underscore','models/instance','context'], functio
         model:instanceModel,
         url:context.httpUrl('/api/instances'),
         comparator: function (config) {
-            console.log([config.get("Environment"),config.get("Name")]);
+            //console.log([config.get("Environment"),config.get("Name")]);
             return [config.get("Environment"),config.get("Name")];
         }
 

@@ -10,16 +10,24 @@ define([
         var View = Backbone.View.extend({
             el:'#content',
             initialize: function(){
-                _(this).bindAll('submit');
+                _(this).bindAll('submit','reset','render');
                 this.application=this.options.application;
+                this.activeItem=this.options.active;
+
                 if(!this.model)
                     this.model=new instanceModel({"ApplicationId":this.application.attributes.Name,"ApplicationVendor":this.application.attributes.Vendor});
                 else
                     this.model=this.model.clone();
+                this.model.bind('change', this.reset);
+                this.application.bind('change', this.reset);
             },
             events:{
                 "change":"change",
                 "click #submit":"submit"
+            },
+
+            reset:function(model){
+                this.render();
             },
             render: function(){
                 this.template = _.template( template, { model: this.model.toJSON() } );
@@ -40,7 +48,6 @@ define([
                 
                 configurations.each(function (config) {
                     var option = $("<option></option>");
-                    console.log(config);
                     if (self.model.get("DefaultConfiguration") === config.id)
                         option.attr("selected", "selected");
                     option.text(config.id).attr("value", config.id).appendTo(defaultConfigurationSelect);
