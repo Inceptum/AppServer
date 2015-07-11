@@ -5,17 +5,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Subjects;
-using System.Reflection;
 using System.Security.Cryptography;
-using System.ServiceModel;
-using System.ServiceModel.Channels;
-using System.ServiceModel.Description;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Security;
 using Castle.Core.Logging;
-using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
 using Inceptum.AppServer.Configuration;
@@ -23,7 +16,6 @@ using Inceptum.AppServer.Notification;
 using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.Windsor;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Inceptum.AppServer.Hosting
 {
@@ -38,12 +30,10 @@ namespace Inceptum.AppServer.Hosting
         private readonly AppServerContext m_Context;
         private readonly IEnumerable<IHostNotificationListener> m_Listeners;
         private readonly IManageableConfigurationProvider m_ServerConfigurationProvider;
-        private readonly IConfigurationProvider m_ApplicationConfigurationProvider;
         private readonly object m_SyncRoot = new object();
         private readonly ApplicationRepository m_ApplicationRepository;
-        private ServiceHostWrapper<IConfigurationProvider> m_ConfigurationProviderServiceHost;
-        private ServiceHostWrapper<ILogCache> m_LogCacheServiceHost;
-        private readonly object m_ServiceHostLock = new object();
+        private readonly ServiceHostWrapper<IConfigurationProvider> m_ConfigurationProviderServiceHost;
+        private readonly ServiceHostWrapper<ILogCache> m_LogCacheServiceHost;
         private readonly JobObject m_JobObject;
         private readonly PeriodicalBackgroundWorker m_InstanceChecker;
         private bool m_IsStopped = true;
@@ -265,9 +255,6 @@ namespace Inceptum.AppServer.Hosting
             var application = m_ApplicationRepository.Applications.FirstOrDefault(a => a.Name == config.ApplicationId && a.Vendor == config.ApplicationVendor);
             if (application == null)
                 throw new InvalidOperationException(string.Format("Application {0} not found", config.ApplicationId));
-
-            //var version = config.Version??application.Versions.Last().Version;
-            //m_ApplicationRepository.Install(application,version,Path.Combine(m_Context.AppsDirectory,config.Name)+"\\");
 
             updateInstances();
         }
