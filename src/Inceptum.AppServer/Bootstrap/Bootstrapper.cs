@@ -60,6 +60,10 @@ namespace Inceptum.AppServer.Bootstrap
                     .ImplementedBy<LocalStorageConfigurationProvider>()
                     .Named("localStorageConfigurationProvider")
                     .DependsOn(new { configFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration") }));
+                //Debugger.Launch();
+                var provider = container.Resolve<IManageableConfigurationProvider>();
+                createDefaultConfigurationIfRequired(provider);
+
 
                 var confSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"];
 
@@ -124,6 +128,29 @@ namespace Inceptum.AppServer.Bootstrap
                 container
             };
 
+        }
+
+        private static void createDefaultConfigurationIfRequired(IManageableConfigurationProvider provider)
+        {
+            if (provider.GetConfigurations().All(c => c.Name != "AppServer"))
+            {
+                //Create default configuration
+                provider.CreateConfiguration("AppServer");
+                if (!Directory.Exists("ApplicationRepository"))
+                    Directory.CreateDirectory("ApplicationRepository");
+                provider.CreateOrUpdateBundle("AppServer", "instances", "[]");
+                provider.CreateOrUpdateBundle("AppServer", "server.host", @"{
+  ""name"": ""Inceptum.AppServer"",
+  ""ManagementConsole"": {
+    ""port"": 9223,
+    ""enabled"": true
+  },
+  ""nuget"":{
+		""applicationRepository"":"".\\ApplicationRepository"",
+		""dependenciesRepositories"":[""https://nuget.org/api/v2/""]
+  }
+}");
+            }
         }
     } 
 }
