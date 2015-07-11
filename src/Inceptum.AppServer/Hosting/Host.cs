@@ -41,23 +41,20 @@ namespace Inceptum.AppServer.Hosting
         private readonly IConfigurationProvider m_ApplicationConfigurationProvider;
         private readonly object m_SyncRoot = new object();
         private readonly ApplicationRepository m_ApplicationRepository;
-        private ServiceHost m_ConfigurationProviderServiceHost;
-        private ServiceHost m_LogCacheServiceHost;
+        private ServiceHostWrapper<IConfigurationProvider> m_ConfigurationProviderServiceHost;
+        private ServiceHostWrapper<ILogCache> m_LogCacheServiceHost;
         private readonly object m_ServiceHostLock = new object();
         private readonly JobObject m_JobObject;
-        private readonly ILogCache m_LogCache;
         private readonly PeriodicalBackgroundWorker m_InstanceChecker;
         private bool m_IsStopped = true;
 
         public Host(ILogCache logCache, IManageableConfigurationProvider serverConfigurationProvider, IConfigurationProvider applicationConfigurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepository applicationRepository, ILogger logger = null)
         {
-            m_LogCache = logCache;
             m_JobObject = new JobObject();
 
 
             m_ApplicationRepository = applicationRepository;
             m_ServerConfigurationProvider = serverConfigurationProvider;
-            m_ApplicationConfigurationProvider = applicationConfigurationProvider;
             m_Listeners = listeners;
             m_InstanceFactory = instanceFactory;
             Logger = logger ?? NullLogger.Instance;
@@ -84,8 +81,10 @@ namespace Inceptum.AppServer.Hosting
                 BaseDirectory = AppDomain.CurrentDomain.BaseDirectory
             };
             m_InstanceChecker = new PeriodicalBackgroundWorker("InstanceChecker", 1000, checkInstances);
-            resetConfigurationProviderServiceHost();
-            resetLogCacheServiceHost();
+
+            m_ConfigurationProviderServiceHost = new ServiceHostWrapper<IConfigurationProvider>(Logger, applicationConfigurationProvider, "ConfigurationProvider");
+            m_LogCacheServiceHost = new ServiceHostWrapper<ILogCache>(Logger, logCache, "LogCache");
+          
         }
 
         private void checkInstances()
@@ -100,72 +99,6 @@ namespace Inceptum.AppServer.Hosting
                 instance.VerifySate();
             }
         }
-
-
-        private void resetConfigurationProviderServiceHost()
-        {
-            lock (m_ServiceHostLock)
-            {
-                if (m_ConfigurationProviderServiceHost != null)
-                {
-                    m_ConfigurationProviderServiceHost.Close();
-                    m_ConfigurationProviderServiceHost = null;
-                }
-
-                var serviceHost = createServiceHost(m_ApplicationConfigurationProvider);
-                serviceHost.AddServiceEndpoint(typeof(IConfigurationProvider), WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), "ConfigurationProvider");
-
-                EventHandler faulted = null;
-                faulted = (o, args) =>
-                    {
-                        Logger.Debug("Recreating ConfigurationProvider service host.");
-                        serviceHost.Faulted -= faulted;
-                        resetConfigurationProviderServiceHost();
-                    };
-                serviceHost.Faulted += faulted;
-
-                serviceHost.Open();
-                m_ConfigurationProviderServiceHost = serviceHost;
-            }
-        }
-
-        private ServiceHost createServiceHost(object serviceInstance)
-        {
-            var serviceHost = new ServiceHost(serviceInstance, new[] { new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id) });
-            var debug = serviceHost.Description.Behaviors.Find<ServiceDebugBehavior>();
-            if (debug == null)
-                serviceHost.Description.Behaviors.Add(new ServiceDebugBehavior { IncludeExceptionDetailInFaults = true });
-            else
-                debug.IncludeExceptionDetailInFaults = true;
-            return serviceHost;
-        }
-
-        private void resetLogCacheServiceHost()
-        {
-            lock (m_ServiceHostLock)
-            {
-                if (m_LogCacheServiceHost != null)
-                {
-                    m_LogCacheServiceHost.Close();
-                    m_LogCacheServiceHost = null;
-                }
-                var serviceHost = createServiceHost(m_LogCache);
-                serviceHost.AddServiceEndpoint(typeof(ILogCache), WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), "LogCache");
-
-                EventHandler faulted = null;
-                faulted = (o, args) =>
-                {
-                    Logger.Debug("Recreating LogCache service host.");
-                    serviceHost.Faulted -= faulted;
-                    resetConfigurationProviderServiceHost();
-                };
-                serviceHost.Faulted += faulted;
-
-                serviceHost.Open();
-                m_LogCacheServiceHost = serviceHost;
-            }
-        }
-
 
         public string MachineName
         {
@@ -608,9 +541,10 @@ namespace Inceptum.AppServer.Hosting
         }
         public void Dispose()
         {
-
             m_InstanceChecker.Dispose();
             m_JobObject.Dispose();
+            m_ConfigurationProviderServiceHost.Dispose();
+            m_LogCacheServiceHost.Dispose();
         }
     }
 }

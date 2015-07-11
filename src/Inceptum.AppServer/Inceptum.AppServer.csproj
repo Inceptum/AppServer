@@ -197,6 +197,7 @@
     <Compile Include="AppDiscovery\IApplicationRepository.cs" />
     <Compile Include="AppDiscovery\NuGet\ApplicationProjectManager.cs" />
     <Compile Include="AppDiscovery\NuGet\NugetApplicationRepository.cs" />
+    <Compile Include="Hosting\ServiceHostWrapper.cs" />
     <Compile Include="Utils\AppDomainRenderer.cs" />
     <Compile Include="Bootstrap\LoggingInstaller.cs" />
     <Compile Include="Hosting\ApplicationInstance.cs" />
