@@ -132,7 +132,7 @@ namespace Inceptum.AppServer.Bootstrap
 
         private static void createDefaultConfigurationIfRequired(IManageableConfigurationProvider provider)
         {
-            if (provider.GetConfigurations().All(c => c.Name != "AppServer"))
+            if (provider.GetConfigurations().All(c => c.Name.ToLower() != "appserver"))
             {
                 //Create default configuration
                 provider.CreateConfiguration("AppServer");
