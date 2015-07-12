@@ -34,7 +34,7 @@ define([
             },
             change: function(event){
                 var target = event.target;
-                var parameter= _.find(this.command.Parameters,function(v){return v.Name==target.name});
+                var parameter= _.find(this.command.parameters,function(v){return v.name==target.name});
                 if(event.target.type=="checkbox")
                     parameter.Value=target.value!="";
                 else

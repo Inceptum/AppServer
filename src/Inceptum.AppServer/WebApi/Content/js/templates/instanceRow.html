@@ -15,7 +15,7 @@
                 <span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
-                <% _.each(model.commands, function(command) { %>  <li><a data-command="<%= command.Name %>" class="command" href="#"><%= command.Name %></a></li> <% }); %>
+                <% _.each(model.commands, function(command) { %>  <li><a data-command="<%= command.name %>" class="command" href="#"><%= command.name %></a></li> <% }); %>
             </ul>
             </div>
         <%}%>
