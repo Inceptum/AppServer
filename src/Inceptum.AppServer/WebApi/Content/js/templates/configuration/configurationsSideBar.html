@@ -1,0 +1,17 @@
+<style>
+    a.bundleName.active{
+        font-weight: bold;
+    }
+
+</style>
+
+<div class="well" style="padding: 8px 0;">
+    <ul class="nav nav-list">
+        <li class="nav-header">Configurations</li>
+        <li><a href="#" class="create"><i class="icon-plus"></i>Create new</a></li>
+        <% _.each(model,function(config) { %>
+        <li data-id="<%= config.name %>"><a href="#configurations/<%= config.name %>"><i class="icon-list-alt"></i> <%= config.name %></a></li>
+        <% }); %>
+    </ul>
+
+</div>

@@ -6,12 +6,16 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reflection;
+using System.Web.Http;
+using System.Web.Http.Dispatcher;
+using System.Web.Http.Filters;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
 using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
+using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.AppDiscovery.NuGet;
@@ -21,6 +25,8 @@ using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Management;
 using Inceptum.AppServer.Notification;
+using Inceptum.AppServer.WebApi;
+using Inceptum.AppServer.WebApi.Filters;
 using Inceptum.AppServer.Windsor;
 using Microsoft.AspNet.SignalR;
 
@@ -103,7 +109,7 @@ namespace Inceptum.AppServer.Bootstrap
                     .Register(
                         Component.For<IApplicationRepository>().ImplementedBy<NugetApplicationRepository>()
                         );
-
+                configureApiHost(container);
                 var folders = (debugFolders??new string[0]).ToArray();
                 if (folders.Length>0)
                 {
@@ -121,13 +127,34 @@ namespace Inceptum.AppServer.Bootstrap
             var sw = Stopwatch.StartNew();
             var host = container.Resolve<IHost>();
             host.Start();
+
+            var apiHost = container.Resolve<ApiHost>();
+            apiHost.Start();
             logger.InfoFormat("Initialization complete in {0}ms",sw.ElapsedMilliseconds);
             return new CompositeDisposable
             {
+                apiHost,
                 Disposable.Create(host.Stop),
                 container
             };
 
+        }
+
+        private static void configureApiHost(IWindsorContainer container)
+        {
+            container.Register(
+                Classes.FromAssemblyContaining<CustomExceptionFilter>()
+                       .IncludeNonPublicTypes()
+                       .BasedOn<IFilter>()
+                       .WithServiceBase(),
+                Classes.FromThisAssembly()
+                    .IncludeNonPublicTypes()
+                    .BasedOn<ApiController>()
+                    .LifestyleScoped(),
+                Component.For<IHttpControllerActivator>().ImplementedBy<WindsorHttpControllerActivator>(),
+                Component.For<ApiHost.HostConfiguration>().DependsOnBundle("server.host", "ApiHost", "{environment}", "{machineName}"),
+                Component.For<ApiHost>()
+            );
         }
 
         private static void createDefaultConfigurationIfRequired(IManageableConfigurationProvider provider)

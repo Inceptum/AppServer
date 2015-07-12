@@ -1,0 +1,151 @@
+<div class="page-header">
+    <h3><%=model.name%>
+    </h3>
+</div>
+
+<form class="form-horizontal">
+    <div class="control-group">
+        <label class="control-label" for="inputName">Name</label>
+        <div class="controls">
+            <input type="text" id="inputName" name="name" placeholder="Name" value="<%=model.name%>">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="inputApplication">Application</label>
+        <div class="controls">
+            <dd>
+                <label>
+                    <a href="#/applications/<%=model.applicationVendor%>/<%=model.applicationId%>"><%=model.applicationVendor%>(c) <%=model.applicationId%></a>
+                </label>
+            </dd>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="environment">Environment</label>
+        <div class="controls">
+            <input type="text" id="environment" name="environment" placeholder="environment" value="<%=model.environment%>">
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="inputVersion">Version</label>
+        <div class="controls">
+            <select id="inputVersion" placeholder="Version"  name="version"  value="<%=model.version%>">
+                <option value="">Use latest</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="defaultConfiguration">DefaultConfiguration</label>
+        <div class="controls">
+            <select id="defaultConfiguration" name="defaultConfiguration" value="<%=model.defaultConfiguration%>">>
+                <option value=""></option>
+            </select>
+        </div>
+    </div>
+
+
+    <div class="control-group">
+        <label class="control-label" for="user">User</label>
+        <div class="controls">
+            <input type="text" id="user" name="user" placeholder="Use AppServer user" value="<%=model.user%>">
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="password">Password</label>
+        <div class="controls">
+            <input type="password" id="password" name="password" placeholder="Password" value="<%=model.password%>">
+        </div>
+    </div>
+
+
+    <div class="control-group">
+        <label class="control-label" for="maxLogSize">Maximum daily log size in bytes (0 for unlimited)</label>
+        <div class="controls">
+            <input type="text" id="maxLogSize" name="maxLogSize" placeholder="Maximum log size" value="<%=model.maxLogSize%>">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="user">On maximum log sized reached</label>
+        <div class="controls" >
+            <select name="logLimitReachedAction">
+                <%
+                console.log(model.logLimitReachedAction);
+                if (model.logLimitReachedAction=="LogToOversizedFolder") { %>
+                <option selected='selected' value="LogToOversizedFolder">Log to logs.oversized folder</option>
+                <% }
+                else{ %>
+                <option value="LogToOversizedFolder">Log to logs.oversized folder</option>
+                <% } %>
+                <% if (model.logLimitReachedAction=="StopLogging") { %>
+                <option selected='selected' value="StopLogging">Stop logging</option>
+                <% }
+                else{ %>
+                <option  value="StopLogging">StopLogging</option>
+                <% } %>
+            </select>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="user">Log level</label>
+        <div class="controls" >
+            <select name="logLevel">
+                <% if (model.logLevel=="Debug") { %>
+                <option selected='selected'>Debug</option>
+                <% }
+                else{ %>
+                <option >Debug</option>
+                <% } %>
+                <% if (model.logLevel=="Info") { %>
+                <option selected='selected'>Info</option>
+                <% }
+                else{ %>
+                <option >Info</option>
+                <% } %>
+                <% if (model.logLevel=="Warn") { %>
+                <option selected='selected'>Warn</option>
+                <% }
+                else{ %>
+                <option >Warn</option>
+                <% } %>
+                <% if (model.logLevel=="Error") { %>
+                <option selected='selected'>Error</option>
+                <% }
+                else{ %>
+                <option >Error</option>
+                <% } %>
+                <% if (model.logLevel=="Fatal") { %>
+                <option selected='selected'>Fatal</option>
+                <% }
+                else{ %>
+                <option >Fatal</option>
+                <% } %>
+                <% if (model.logLevel=="Off") { %>
+                <option selected='selected'>Off</option>
+                <% }
+                else{ %>
+                <option >Off</option>
+                <% } %>
+
+            </select>
+        </div>
+    </div>
+
+    <div class="control-group">
+
+        <div class="controls">
+            <label class="checkbox">
+                Start on server startup <input type="checkbox" id="inputAutostart"  name="autostart" <% if (model.autoStart) { %>checked<%}%>>
+            </label>
+            <div>
+                <a id="submit" class="btn"><i class=" icon-ok"></i> <span>Save</span></a>
+            </div>
+        </div>
+    </div>
+
+
+</form>
