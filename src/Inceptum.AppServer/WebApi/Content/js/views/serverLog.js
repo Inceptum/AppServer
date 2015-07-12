@@ -65,7 +65,6 @@ define([
             onMessageReceived :function (data) {
                 var p;
                 var self = this;
-                console.log(data);
 
                 if (Object.prototype.toString.call(data) === '[object Array]') {
                     _.each(data, function (message) {
