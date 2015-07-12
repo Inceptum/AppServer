@@ -1,15 +1,11 @@
 {
   "ManagementConsole": {
     "port": 9223,
+	"UseHttps": false,
     "enabled": true
   },
   "nuget":{
 		"applicationRepository":"..\\..\\..\\..\\TestData\\NugetRepo",
 		"dependenciesRepositories":["https://nuget.org/api/v2/"]
-  },
-  "ApiHost": {
-    "Port": 9220,
-    "UseHttps": false,
-    "Enabled": true 
   }
 }

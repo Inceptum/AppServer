@@ -1,4 +1,4 @@
-﻿namespace Inceptum.AppServer.Management.Resources
+﻿namespace Inceptum.AppServer.Model
 {
     public class HostInfo
     {

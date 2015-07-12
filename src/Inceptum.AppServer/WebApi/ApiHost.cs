@@ -1,21 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Http.Dispatcher;
 using System.Web.Http.Filters;
 using System.Web.Http.Routing;
-using System.Web.Http.SelfHost;
 using Castle.Core.Logging;
-using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
-using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.WebApi.MessageHandlers;
 using Inceptum.WebApi.Help;
 using Inceptum.WebApi.Help.Builders;
@@ -24,7 +18,6 @@ using Microsoft.Owin.Cors;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Owin;
 
@@ -32,7 +25,6 @@ namespace Inceptum.AppServer.WebApi
 {
     internal sealed class ApiHost : IDisposable
     {
-        private const int VERSION = 1;
         private readonly HostConfiguration m_HostConfiguration;
         private readonly IHttpControllerActivator m_HttpControllerActivator;
         private readonly IFilter[] m_Filters;
@@ -94,8 +86,6 @@ namespace Inceptum.AppServer.WebApi
                     .MapSignalR(hubConfig)
                     .MapSignalR<LogConnection>("/log");
             });
-
-
         }
 
         private HttpConfiguration configureHost(HttpConfiguration config)

@@ -23,7 +23,6 @@ using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Providers;
 using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Logging;
-using Inceptum.AppServer.Management;
 using Inceptum.AppServer.Notification;
 using Inceptum.AppServer.WebApi;
 using Inceptum.AppServer.WebApi.Filters;
@@ -96,7 +95,6 @@ namespace Inceptum.AppServer.Bootstrap
                     //Management
                     .Register(
                         Component.For<SignalRhost>(),
-                        Component.For<ManagementConsole>().DependsOn(new { container }),
                         Component.For<IHostNotificationListener>().ImplementedBy<UiNotifier>()
                         )
                     //App hostoing
@@ -152,7 +150,7 @@ namespace Inceptum.AppServer.Bootstrap
                     .BasedOn<ApiController>()
                     .LifestyleScoped(),
                 Component.For<IHttpControllerActivator>().ImplementedBy<WindsorHttpControllerActivator>(),
-                Component.For<ApiHost.HostConfiguration>().DependsOnBundle("server.host", "ApiHost", "{environment}", "{machineName}"),
+                Component.For<ApiHost.HostConfiguration>().DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
                 Component.For<ApiHost>()
             );
         }

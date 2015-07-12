@@ -95,6 +95,7 @@
     <Compile Include="Model\ApplicationInstanceInfo.cs" />
     <Compile Include="Model\ApplicationParams.cs" />
     <Compile Include="Model\ApplicationVersion.cs" />
+    <Compile Include="Model\HostInfo.cs" />
     <Compile Include="Model\InstanceCommand.cs" />
     <Compile Include="Model\InstanceConfig.cs" />
     <Compile Include="Configuration\ComponentRegistrationExtentions.cs" />

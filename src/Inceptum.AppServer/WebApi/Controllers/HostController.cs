@@ -1,7 +1,6 @@
 ﻿using System.Web.Http;
 using System.Web.Http.Description;
-using Inceptum.AppServer.Management.Handlers;
-using Inceptum.AppServer.Management.Resources;
+using Inceptum.AppServer.Model;
 
 namespace Inceptum.AppServer.WebApi.Controllers
 {
@@ -30,7 +29,7 @@ namespace Inceptum.AppServer.WebApi.Controllers
                 Name = m_Host.Name,
                 MachineName = m_Host.MachineName,
                 Mode = "Standalone",
-                Version = typeof (HostHandler).Assembly.GetName().Version.ToString()
+                Version = GetType().Assembly.GetName().Version.ToString()
             });
         }
     }
