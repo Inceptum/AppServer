@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
@@ -52,7 +53,7 @@ namespace Inceptum.AppServer.WebApi
                 return;
             }
 
-            string baseUrl = string.Format(@"{0}://localhost:{1}", m_HostConfiguration.UseHttps ? "https" : "http", m_HostConfiguration.Port);
+            string baseUrl = string.Format(@"{0}://{1}:{2}", m_HostConfiguration.UseHttps ? "https" : "http", m_HostConfiguration.Host??"*", m_HostConfiguration.Port);
 
             m_Logger.InfoFormat("Starting WebAPI host on {0}", baseUrl);
 
@@ -199,15 +200,15 @@ namespace Inceptum.AppServer.WebApi
 
         internal sealed class HostConfiguration
         {
-            public HostConfiguration(int port, bool useHttps, bool enabled)
+            public HostConfiguration(int port,  bool enabled)
             {
                 if (port <= 0) throw new ArgumentException("port must be > 0");
 
                 Port = port;
-                UseHttps = useHttps;
                 Enabled = enabled;
             }
 
+            public string Host { get; set; }
             public int Port { get; private set; }
 
             public bool UseHttps { get; private set; }
@@ -227,14 +228,14 @@ namespace Inceptum.AppServer.WebApi
                     .RegisterHelpBuilder(new ApiDocumentationBuilder(help, "API"))
                     .RegisterHelpBuilder(new MarkdownHelpBuilder(GetType().Assembly, "Inceptum.AppServer.WebApi.Help."))
                     .RegisterHelpBuilder(new TypesDocumentationBuilder(config, getTypesToDocument(), "API/Types"))
-                //.AutoDocumentedTypes(typeof(CommandModel), typeof(OperationCreationModel), typeof(CommandStatusModel), typeof(ConfirmationModel))
+                  //  .AutoDocumentedTypes(getTypesToDocument().ToArray())
                 );
             // Note[tv]: sample objects are objects, not strings!
             config.SetSampleObjects(new Dictionary<Type, object>
             {
 
 //                { typeof (ClientModel), JObject.Parse(Encoding.UTF8.GetString(HelpResources.ClientModel_Sample)).ToObject<ClientModel>() },
-                {typeof (Application), createSampleSecurityContext()},
+                {typeof (ApplicationInstanceInfo), createApplicationInstanceInfo()},
 
             });
             /*   var json = Encoding.UTF8.GetString(HelpResources.GetDetails_Response);
@@ -285,7 +286,7 @@ namespace Inceptum.AppServer.WebApi
         }
 
 
-        private static ApplicationInstanceInfo createSampleSecurityContext()
+        private static ApplicationInstanceInfo createApplicationInstanceInfo()
         {
             return new ApplicationInstanceInfo()
             {

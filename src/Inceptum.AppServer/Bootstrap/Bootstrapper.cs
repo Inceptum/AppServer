@@ -168,7 +168,8 @@ namespace Inceptum.AppServer.Bootstrap
   ""name"": ""Inceptum.AppServer"",
   ""ManagementConsole"": {
     ""port"": 9223,
-    ""enabled"": true
+    ""enabled"": true,
+    ""host"": ""*""
   },
   ""nuget"":{
 		""applicationRepository"":"".\\ApplicationRepository"",

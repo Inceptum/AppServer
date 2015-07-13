@@ -1,7 +1,7 @@
 {
   "ManagementConsole": {
     "port": 9223,
-	"UseHttps": false,
+	"host": "*",
     "enabled": true
   },
   "nuget":{
