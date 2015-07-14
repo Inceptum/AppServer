@@ -11,11 +11,13 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
+using System.Web.Http.Results;
 using Castle.Core.Logging;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Model;
+using Newtonsoft.Json.Linq;
 
 namespace Inceptum.AppServer.WebApi.Controllers
 {
@@ -153,13 +155,16 @@ namespace Inceptum.AppServer.WebApi.Controllers
         /// <param name="overrides">The overrides.</param>
         /// <returns></returns>
         [HttpGet]
-        [ResponseType(typeof(string))]
+        [ResponseType(typeof(object))]
         public IHttpActionResult GetBundleWithOverrides(string configuration, string bundle,string overrides=null)
         {
             try
             {
                 var bundleContent = m_Provider.GetBundle(configuration, bundle, overrides == null ? new string[0] : overrides.Split(new[] { '/' }));
-                return Ok (bundleContent);
+
+                var response = this.Request.CreateResponse(HttpStatusCode.OK);
+                response.Content = new StringContent(bundleContent, Encoding.UTF8, "application/json");
+                return new ResponseMessageResult(response);
             }
             catch (BundleNotFoundException e)
             {
