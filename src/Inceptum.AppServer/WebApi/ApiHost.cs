@@ -74,7 +74,7 @@ namespace Inceptum.AppServer.WebApi
             Stop();
         }
 
-        private IDisposable runHost(string baseUrl)
+        private IDisposable runHost( string baseUrl)
         {
             return WebApp.Start(baseUrl, appBuilder =>
             {
@@ -114,6 +114,7 @@ namespace Inceptum.AppServer.WebApi
 
             config.MapHttpAttributeRoutes();
             configureRoutes(config);
+
             configureHelp(config);
             
             config.MessageHandlers.Insert(0, new StaticContentMessageHandler());
@@ -220,14 +221,22 @@ namespace Inceptum.AppServer.WebApi
         {
             config.UseHelpPage(
                 help => help
-                    .WithDocumentationProvider(new XmlDocumentationProvider(Environment.CurrentDirectory))
-                    .WithContentProvider(new LocalizableContentProvider(new HelpStaticContentProvider(help.DefaultContentProvider)))
-                    // Builders
-                    .RegisterHelpBuilder(new DelegatingBuilder(buildDisclaimer))
-                    .RegisterHelpBuilder(new ErrorsDocumentationBuilder())
-                    .RegisterHelpBuilder(new ApiDocumentationBuilder(help, "API"))
-                    .RegisterHelpBuilder(new MarkdownHelpBuilder(GetType().Assembly, "Inceptum.AppServer.WebApi.Help."))
-                    .RegisterHelpBuilder(new TypesDocumentationBuilder(config, getTypesToDocument(), "API/Types"))
+                        .WithDocumentationProvider(new XmlDocumentationProvider(Environment.CurrentDirectory))
+                        .WithContentProvider(new LocalizableContentProvider(new HelpStaticContentProvider(help.DefaultContentProvider)))
+                        // Builders
+                        .RegisterHelpBuilder(new DelegatingBuilder(buildDisclaimer))
+                        .RegisterHelpBuilder(new ErrorsDocumentationBuilder())
+                        .RegisterHelpBuilder(new ApiDocumentationBuilder(help, "API"))
+                        .RegisterHelpBuilder(new MarkdownHelpBuilder(GetType().Assembly, "Inceptum.AppServer.WebApi.Help."))
+                        .RegisterHelpBuilder(new TypesDocumentationBuilder(config, getTypesToDocument(), "API/Types"))
+                        .SamplesBaseUri = new Uri(string.Format(@"{0}://{1}:{2}",
+                                                        m_HostConfiguration.UseHttps ? "https" : "http",
+                                                        m_HostConfiguration.Host == "*" || m_HostConfiguration.Host == "+" 
+                                                            ? System.Net.Dns.GetHostEntry("").HostName 
+                                                            : m_HostConfiguration.Host, 
+                                                        m_HostConfiguration.Port))
+                
+                    
                   //  .AutoDocumentedTypes(getTypesToDocument().ToArray())
                 );
             // Note[tv]: sample objects are objects, not strings!
