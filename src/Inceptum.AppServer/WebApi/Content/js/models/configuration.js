@@ -16,6 +16,15 @@ define(['jquery', 'backbone', 'underscore', 'collections/bundles'], function ($,
                     this.unset("bundles");
                 }
             });
+            this.loadedFromServer = false;
+        },
+        parse: function (response) {
+            this.loadedFromServer = true;
+            return response;
+        },
+        isNew: function () {
+            //backbone determines whether the model is new as id==null. Since configuration uses id equal to name, backbone approach does not work
+            return !this.loadedFromServer;
         },
         idAttribute:"name",
         getBundle:function (id) {
