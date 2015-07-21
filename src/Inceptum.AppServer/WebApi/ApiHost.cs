@@ -201,6 +201,8 @@ namespace Inceptum.AppServer.WebApi
 
         internal sealed class HostConfiguration
         {
+            private string m_Host;
+
             public HostConfiguration(int port,  bool enabled)
             {
                 if (port <= 0) throw new ArgumentException("port must be > 0");
@@ -209,7 +211,12 @@ namespace Inceptum.AppServer.WebApi
                 Enabled = enabled;
             }
 
-            public string Host { get; set; }
+            public string Host
+            {
+                get { return m_Host??"*"; }
+                set { m_Host = value; }
+            }
+
             public int Port { get; private set; }
 
             public bool UseHttps { get; private set; }

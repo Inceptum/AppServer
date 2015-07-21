@@ -39,6 +39,10 @@ namespace Inceptum.AppServer.Bootstrap
             container.Install(new LoggingInstaller());
             var logger = container.Resolve<ILoggerFactory>().Create(typeof(Bootstrapper));
 
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            {
+                logger.Fatal("AppServer crashed",(Exception)args.ExceptionObject);
+            };
             logger.Info("Initializing...");
             logger.Info("Creating container");
             try
