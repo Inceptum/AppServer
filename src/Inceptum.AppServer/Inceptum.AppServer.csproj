@@ -101,8 +101,7 @@
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Inceptum.WebApi.Help">
-      <HintPath>..\packages\Inceptum.WebApi.Help.1.0.0.16\lib\net45\Inceptum.WebApi.Help.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Inceptum.WebApi.Help.1.0.1.2\lib\net45\Inceptum.WebApi.Help.dll</HintPath>
     </Reference>
     <Reference Include="itextsharp">
       <HintPath>..\packages\iTextSharp.5.5.5\lib\itextsharp.dll</HintPath>

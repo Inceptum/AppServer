@@ -7,19 +7,23 @@ namespace Inceptum.AppServer.WebApi.Controllers
     /// <summary>
     /// Host
     /// </summary>
+    /// <remarks>
+    /// Host endpoint provides information about application host
+    /// </remarks>
     public class HostController : ApiController
     {
         private readonly IHost m_Host;
 
+        /// <summary></summary>
+        /// <param name="host"></param>
         public HostController(IHost host)
         {
             m_Host = host;
         }
 
         /// <summary>
-        /// Retrieve host information.
-        /// </summary>
-        /// <returns></returns>
+        /// Host information
+        /// </summary>        
         [HttpGet]
         [ResponseType(typeof (HostInfo))]
         public IHttpActionResult Index()
