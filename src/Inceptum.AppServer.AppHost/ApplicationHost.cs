@@ -87,6 +87,7 @@ namespace Inceptum.AppServer.Hosting
         private InstanceContext m_InstanceContext;
         private readonly string m_ServiceAddress;
         private readonly object m_ServiceHostLock=new object();
+        private LoggingConfiguration m_LoggingConfig;
 
         public ApplicationHost(string instanceName)
         {
@@ -442,6 +443,7 @@ namespace Inceptum.AppServer.Hosting
 
         private void updateLoggingConfig(LoggingConfiguration config, string logLevel, long maxLogSize, LogLimitReachedAction logLimitReachedAction)
         {
+            m_LoggingConfig = config;
             var minLogLevel = mapLogLevel(logLevel);
 
             var fileTarget = new FileTarget
@@ -528,6 +530,23 @@ namespace Inceptum.AppServer.Hosting
             var methodInfo = m_HostedApplication.GetType().GetMethod(command.Name);
             var result=methodInfo.Invoke(m_HostedApplication, methodInfo.GetParameters().Select(p=>parseCommandParameterValue(p,command)).ToArray());
             return result == null ? null : result.ToString();
+        }
+
+        public void ChangeLogLevel(string level)
+        {
+            var logLevel = mapLogLevel(level);
+            foreach (var l in new[] {LogLevel.Debug, LogLevel.Info, LogLevel.Warn, LogLevel.Error, LogLevel.Fatal})
+            {
+                foreach (var rule in m_LoggingConfig.LoggingRules)
+                {
+                    if (l < logLevel)
+                        rule.DisableLoggingForLevel(l);
+                    else
+                        rule.EnableLoggingForLevel(l);
+                }
+
+            }
+            LogManager.ReconfigExistingLoggers();
         }
 
         private object parseCommandParameterValue(ParameterInfo parameter,InstanceCommand command)

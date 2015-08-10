@@ -473,6 +473,35 @@ namespace Inceptum.AppServer.Hosting
             return m_ApplicationHost.Execute(command);
         }
 
+        public Task<object> ChangeLogLevel(string logLevel)
+        {
+            lock (m_SyncRoot)
+            {
+                if (m_IsDisposing)
+                    return Task.FromResult<object>(null);
+                if (Status == HostedAppStatus.Stopped || Status == HostedAppStatus.Stopping)
+                    return Task.FromResult<object>(null);
+
+                Logger.InfoFormat("Scheduling log level change to '{0}' for instance '{1}'", logLevel, Name);
+
+                var changeLogLevelTask = doChangeLogLevel(logLevel, m_CurrentTask);
+                m_CurrentTask = safeTask(changeLogLevelTask);
+
+                return changeLogLevelTask;
+            }
+        }
+        private async Task<object> doChangeLogLevel(string logLevel, Task currentTask)
+        {
+            await Task.Yield();
+            await currentTask;
+            m_CancellationTokenSource.Token.ThrowIfCancellationRequested();
+            Logger.InfoFormat("Changing log level to '{0}' for instance '{1}'", logLevel, Name);
+
+         
+            m_ApplicationHost.ChangeLogLevel(logLevel);
+            return null;
+        }
+
         public void VerifySate()
         {
             lock (m_SyncRoot)

@@ -324,7 +324,9 @@ namespace Inceptum.AppServer.Hosting
                 };
 
                 instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(c => c.Name != config.Id).Concat(new[] { cfg }).ToArray(), Formatting.Indented);
-                m_Instances.First(i => i.Name == config.Id).Rename(cfg.Name);
+                var instance = m_Instances.First(i => i.Name == config.Id);
+                instance.ChangeLogLevel(config.LogLevel.ToString());
+                instance.Rename(cfg.Name);
             }
 
             m_ServerConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);

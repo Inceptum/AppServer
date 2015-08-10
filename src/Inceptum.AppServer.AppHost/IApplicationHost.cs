@@ -2,6 +2,7 @@
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Logging;
 using System.ServiceModel;
+using NLog;
 
 namespace Inceptum.AppServer.Hosting
 {
@@ -13,5 +14,7 @@ namespace Inceptum.AppServer.Hosting
         void Stop();
         [OperationContract]
         string Execute(InstanceCommand command);
+        [OperationContract]
+        void ChangeLogLevel(string level);
     }
 }
