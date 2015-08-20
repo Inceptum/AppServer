@@ -60,6 +60,8 @@ namespace Inceptum.AppServer.Model
             get { return m_LogLevel; }
             set { m_LogLevel = value; }
         }
+
+        public int StartOrder { get; set; }
     }
 
    

@@ -135,16 +135,22 @@
     </div>
 
     <div class="control-group">
-
         <div class="controls">
             <label class="checkbox">
-                Start on server startup <input type="checkbox" id="inputAutostart"  name="autostart" <% if (model.autoStart) { %>checked<%}%>>
+                Start on server startup <input type="checkbox" id="inputAutostart" name="autostart" <% if (model.autoStart) { %>checked<%}%>>
             </label>
-            <div>
+         </div>
+    </div>
+     <div class="control-group">
+        <label class="control-label" for="maxLogSize">Start order</label>
+         <div class="controls">
+             <input  type="text" id="inputStartOrder"  name="startOrder" value="<%=model.startOrder%>">
+         </div>
+    </div>
+     <div class="control-group">
+         <div class="controls">
                 <a id="submit" class="btn"><i class=" icon-ok"></i> <span>Save</span></a>
             </div>
-        </div>
-    </div>
-
+     </div>
 
 </form>

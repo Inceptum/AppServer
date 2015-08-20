@@ -5,7 +5,7 @@ define([
     'models/instance',
     'collections/configurations',
     'text!templates/instanceEdit.html',
-    'views/alerts'],
+    'views/alerts', 'spinedit'],
     function($, Backbone, _, instanceModel,configurations, template,alerts){
         var View = Backbone.View.extend({
             el:'#content',
@@ -29,7 +29,7 @@ define([
             reset:function(model){
                 this.render();
             },
-            render: function(){
+            render: function () {
                 this.template = _.template( template, { model: this.model.toJSON() } );
                 $(this.el).html(this.template);
 
@@ -46,6 +46,13 @@ define([
 
                 var defaultConfigurationSelect = $(this.el).find("#defaultConfiguration");
                 
+                $('#inputStartOrder').spinedit({
+                    minimum: 0,
+                    maximum: 2147483647,
+                    step: 1
+                });
+                
+
                 configurations.each(function (config) {
                     var option = $("<option></option>");
                     if (self.model.get("defaultConfiguration") === config.id)
@@ -81,14 +88,8 @@ define([
                 else
                     change[target.name] = target.value;
                 this.model.set(change);
-
-            /*    // Run validation rule (if any) on changed item
-                var check = this.model.validateItem(target.id);
-                if (check.isValid === false) {
-                    utils.addValidationError(target.id, check.message);
-                } else {
-                    utils.removeValidationError(target.id);
-                }*/
+/*                console.log(target.name);
+                console.log(this.model);*/
             },
             'dispose':function(){
             }

@@ -335,6 +335,8 @@
     <Content Include="Scripts\mdd_modal_background.png" />
     <Content Include="Scripts\mdd_styles.css" />
     <Content Include="Scripts\mdd_toolbar.png" />
+    <Content Include="WebApi\Content\css\bootstrap-spinedit.css" />
+    <Content Include="WebApi\Content\js\libs\bootstrap-spinedit.js" />
     <EmbeddedResource Include="WebApi\Content\css\bootstrap-datepicker.css" />
     <EmbeddedResource Include="WebApi\Content\css\bootstrap-notify.css" />
     <EmbeddedResource Include="WebApi\Content\css\bootstrap-responsive.css" />

@@ -124,6 +124,7 @@ namespace Inceptum.AppServer.Hosting
                                            Status = instance.Status,
                                            Version = cfg.Version,
                                            AutoStart = cfg.AutoStart,
+                                           StartOrder = cfg.StartOrder??int.MaxValue,
                                            ActualVersion = instance.ActualVersion,
                                            Commands = instance.Commands,
                                            User = cfg.User,
@@ -145,15 +146,22 @@ namespace Inceptum.AppServer.Hosting
             Logger.Info("Reading instances config");
             updateInstances();
             IEnumerable<Task> tasks;
+            IGrouping<int, InstanceConfig>[] startGroups;
             lock (m_SyncRoot)
             {
-                tasks = m_InstancesConfiguration
-                        .Where(c => c.AutoStart)
-                        .Select(c => c.Name)
-                        .Select(instance => Task.Factory.StartNew(() => startInstance(instance, true)));
+                startGroups = m_InstancesConfiguration
+                    .Where(c => c.AutoStart)
+                    .GroupBy(c=>c.StartOrder??Int32.MaxValue)
+                    .OrderBy(c=>c.Key).ToArray();
             }
-            Logger.InfoFormat("Starting instances");
-            Task.WaitAll(tasks.ToArray());
+
+                            
+            foreach (var startGroup in startGroups)
+            {
+                Logger.InfoFormat("Starting instances with start order {0}",startGroup.Key);
+                tasks = startGroup.Select(instance => Task.Factory.StartNew(() => startInstance(instance.Name, true)));
+                Task.WaitAll(tasks.ToArray());
+            }
         }
 
         public void RediscoverApps()
@@ -239,6 +247,7 @@ namespace Inceptum.AppServer.Hosting
                     ApplicationVendor = config.ApplicationVendor,
                     Environment = config.Environment,
                     AutoStart = config.AutoStart,
+                    StartOrder = config.StartOrder,
                     User = config.User,
                     Password = string.IsNullOrEmpty(config.Password)
                                     ? null
@@ -313,6 +322,7 @@ namespace Inceptum.AppServer.Hosting
                     ApplicationVendor = config.ApplicationVendor,
                     Environment = config.Environment,
                     AutoStart = config.AutoStart,
+                    StartOrder=config.StartOrder,
                     User = config.User,
                     Password = string.IsNullOrEmpty(config.Password)
                         ? originalPassword

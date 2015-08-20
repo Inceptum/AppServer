@@ -19,7 +19,8 @@ require.config({
         "jquery.ui.widget": "libs/jquery.ui.widget",
         "bootbox": "libs/bootbox",
         "jsonlint":"libs/jsonlint",
-        "datepicker":"libs/bootstrap-datepicker"
+        "datepicker":"libs/bootstrap-datepicker",
+        "spinedit": "libs/bootstrap-spinedit"
     },
     'shim':
     {
@@ -30,6 +31,9 @@ require.config({
             deps: ["bootstrap"]
         },
         "datepicker":{
+            deps: ["bootstrap"]
+        },
+        "spinedit": {
             deps: ["bootstrap"]
         },
         "throttle":{
