@@ -404,6 +404,41 @@ namespace Inceptum.AppServer.Hosting
         }
 
 
+
+        public void Debug(string name)
+        {
+            try
+            {
+                Task task=null;
+                lock (m_SyncRoot)
+                {
+                    if (m_IsStopped)
+                        throw new ObjectDisposedException("Host is disposed");
+
+                    ApplicationInstance instance = m_Instances.FirstOrDefault(i => i.Name == name);
+                    if (instance == null)
+                        return;
+                    if(instance.Status==HostedAppStatus.Stopped)
+                        task=startInstance(name, false, true);
+                    else if(instance.Status==HostedAppStatus.Started)
+                        task = instance.Debug();
+                }
+                if (task != null)
+                    task.ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            catch (AggregateException ae)
+            {
+                Logger.WarnFormat(ae.Flatten(), "Failed to lounch debugger for instance {0} ", name);
+                throw ae.Flatten();
+            }
+            catch (Exception e)
+            {
+                Logger.WarnFormat(e, "Failed to lounch debugger for instance", name);
+                throw;
+            }
+        }
+
+
         public Task StopInstance(string name)
         {
             Logger.InfoFormat("Stopping instance {0}  ", name);

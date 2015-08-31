@@ -72,7 +72,8 @@ define([
                 if(this.model.get("status")=="Started")
                 {
                     $(this.el).find(".restart").removeClass('disabled').removeAttr('disabled','disabled');
-                    $(this.el).find(".stop").removeClass('disabled').removeAttr('disabled','disabled');
+                    $(this.el).find(".stop").removeClass('disabled').removeAttr('disabled', 'disabled');
+                    $(this.el).find(".debug").removeClass('disabled').removeAttr('disabled', 'disabled');
                 }
                 if(this.model.get("status")=="Stopped")
                 {

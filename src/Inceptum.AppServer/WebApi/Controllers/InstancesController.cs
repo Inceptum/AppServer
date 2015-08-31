@@ -131,7 +131,7 @@ namespace Inceptum.AppServer.WebApi.Controllers
         [HttpPost]
         public IHttpActionResult Debug(string id)
         {
-            m_Host.StartInstance(id, true);
+            m_Host.Debug(id);
             return Ok();
         }
 
@@ -195,7 +195,6 @@ namespace Inceptum.AppServer.WebApi.Controllers
             return Ok(new CommandResult { Message = m_Host.ExecuteCommand(id, command) });
         }
 
-        
           
         
         /// <summary>

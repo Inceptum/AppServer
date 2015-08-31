@@ -583,6 +583,11 @@ namespace Inceptum.AppServer.Hosting
             LogManager.ReconfigExistingLoggers();
         }
 
+        public void Debug()
+        {
+            Debugger.Launch();
+        }
+
         private object parseCommandParameterValue(ParameterInfo parameter,InstanceCommand command)
         {
             var instanceCommandParam = command.Parameters.FirstOrDefault(p => p.Name == parameter.Name);

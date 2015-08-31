@@ -502,6 +502,34 @@ namespace Inceptum.AppServer.Hosting
             return null;
         }
 
+
+         public Task Debug()
+        {
+            lock (m_SyncRoot)
+            {
+                if (m_IsDisposing)
+                    return Task.FromResult<object>(null);
+                if (Status == HostedAppStatus.Stopped || Status == HostedAppStatus.Stopping)
+                    return Task.FromResult<object>(null);
+
+                var debugTask = doDebug(m_CurrentTask);
+                m_CurrentTask = safeTask(debugTask);
+
+                return debugTask;
+            }
+        }
+
+        private async Task<object> doDebug(Task currentTask)
+        {
+            await Task.Yield();
+            await currentTask;
+
+
+            m_ApplicationHost.Debug();
+            return null;
+        }
+
+
         public void VerifySate()
         {
             lock (m_SyncRoot)

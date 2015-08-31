@@ -16,5 +16,7 @@ namespace Inceptum.AppServer.Hosting
         string Execute(InstanceCommand command);
         [OperationContract]
         void ChangeLogLevel(string level);
+        [OperationContract]
+        void Debug();
     }
 }
