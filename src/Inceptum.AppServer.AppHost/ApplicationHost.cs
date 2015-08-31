@@ -13,8 +13,11 @@ using System.Text;
 using System.Threading;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
+using Castle.MicroKernel;
+using Castle.MicroKernel.Handlers;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
+using Castle.Windsor.Diagnostics;
 using Castle.Windsor.Installer;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.AppHost;
@@ -32,6 +35,36 @@ using InstanceContext=Inceptum.AppServer.InstanceContext;
 
 namespace Inceptum.AppServer.Hosting
 {
+
+    public class MisconfiguredComponentsLogger
+    {
+        private readonly ILogger m_Logger;
+
+        public MisconfiguredComponentsLogger(ILogger logger)
+        {
+            m_Logger = logger;
+        }
+
+        public void Log(IKernel kernel)
+        {
+            
+            var diagnostic = new PotentiallyMisconfiguredComponentsDiagnostic(kernel);
+            IHandler[] handlers = diagnostic.Inspect();
+            if (handlers != null && handlers.Any())
+            {
+                var builder = new StringBuilder();
+                builder.AppendFormat("Misconfigured components ({0})\r\n", handlers.Count());
+                foreach (IHandler handler in handlers)
+                {
+                    var info = (IExposeDependencyInfo)handler;
+                    var inspector = new DependencyInspector(builder);
+                    info.ObtainDependencyDetails(inspector);
+                }
+                m_Logger.Debug(builder.ToString());
+            }
+        }
+    }
+
     public static class CeceilExtencions
     {
         public static AssemblyDefinition TryReadAssembly(string file)
@@ -415,6 +448,8 @@ namespace Inceptum.AppServer.Hosting
                                      .Where(m => m.GetParameters().All(p => allowedTypes.Contains(p.ParameterType)))
                                      .Select(m => new InstanceCommand( m.Name,m.GetParameters().Select(p => new InstanceCommandParam{Name = p.Name,Type = p.ParameterType.Name}).ToArray()));
                 m_HostedApplication.Start();
+                container.Register(Component.For<MisconfiguredComponentsLogger>());
+                container.Resolve<MisconfiguredComponentsLogger>().Log(container.Kernel);
                 m_Container = container;
                 return commands.ToArray();
             }
@@ -438,7 +473,6 @@ namespace Inceptum.AppServer.Hosting
                 throw new ApplicationException(string.Format("Failed to start: {0}", e));
             } 
         }
-
 
 
         private void updateLoggingConfig(LoggingConfiguration config, string logLevel, long maxLogSize, LogLimitReachedAction logLimitReachedAction)
