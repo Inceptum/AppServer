@@ -27,15 +27,12 @@ using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.Windsor;
 using Mono.Cecil;
 using NLog;
-using NLog.Conditions;
 using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
-using InstanceContext=Inceptum.AppServer.InstanceContext;
 
 namespace Inceptum.AppServer.Hosting
 {
-
     public class MisconfiguredComponentsLogger
     {
         private readonly ILogger m_Logger;

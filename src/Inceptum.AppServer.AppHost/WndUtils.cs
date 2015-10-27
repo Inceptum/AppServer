@@ -5,8 +5,14 @@ using System.Runtime.InteropServices;
 
 namespace Inceptum.AppServer.AppHost
 {
-    public class WndUtils
+    class WndUtils
     {
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern int SetWindowText(IntPtr hWnd, string windowName);
+
+        [DllImport("kernel32.dll")]
+        public static extern bool SetConsoleTitle(string text);
+
         [DllImport("ntdll.dll")]
         private static extern int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, ref PROCESS_BASIC_INFORMATION processInformation, int processInformationLength, out int returnLength);
 
@@ -39,7 +45,6 @@ namespace Inceptum.AppServer.AppHost
                 return null;
             }
         }
-
     }
 
     /// <summary>
