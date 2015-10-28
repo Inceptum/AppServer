@@ -228,7 +228,11 @@ namespace Inceptum.AppServer.Hosting
                 serviceHost.Faulted += (o, args) =>
                 {
                     Logger.DebugFormat("Creating Host.");
-                    resetIpcHost();
+                    Task.Factory.StartNew(() =>
+                    {
+                        Thread.Sleep(1000);
+                        resetIpcHost();
+                    });
                 };
                 serviceHost.Open();
                 m_ServiceHost = serviceHost;
