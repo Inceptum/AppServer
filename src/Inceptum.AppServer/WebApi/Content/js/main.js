@@ -2,6 +2,13 @@
 require.config({
     //To get timely, correct error triggers in IE, force a define/shim exports check.
     //enforceDefine: true,
+	packages: [{
+        name: "codemirror",
+        main: "lib/codemirror",
+		location: "libs/codemirror"
+	}],
+	
+	
     'paths': {
         "noext": 'libs/noext',
         "underscore": "libs/underscore-min",
@@ -13,8 +20,9 @@ require.config({
         "throttle":"libs/jquery.ba-throttle-debounce.min",
         "signalr": "libs/jquery.signalR-1.1.2",
         "json2": "libs/json2.min",
-        "codemirror": "libs/codemirror/codemirror",
-        "codemirrorjs": "libs/codemirror/mode/javascript",
+//        "codemirror": "libs/codemirror/codemirror",
+        //"codemirrorsearch": "libs/codemirror/search",
+        //"codemirrorjs": "libs/codemirror/mode/javascript",
         "fileupload": "libs/jquery.fileupload",
         "jquery.ui.widget": "libs/jquery.ui.widget",
         "bootbox": "libs/bootbox",
@@ -38,9 +46,6 @@ require.config({
         },
         "throttle":{
             deps: ["jquery"]
-        },
-        "codemirrorjs":{
-            deps: ["codemirror"]
         },
         "signalr": {
             deps: ["json2"],

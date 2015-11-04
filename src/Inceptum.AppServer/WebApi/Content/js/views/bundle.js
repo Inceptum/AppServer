@@ -3,10 +3,11 @@ define([
     'backbone',
     'underscore',
     'text!templates/bundle.html',
-    'views/alerts','jsonlint','libs/prettify',
-    'codemirrorjs',
+    'views/alerts','jsonlint',
+'codemirror','codemirror/mode/javascript/javascript','codemirror/addon/search/search','codemirror/addon/search/matchesonscrollbar',	
+	'libs/prettify',
     'shortcut'],
-    function ($, Backbone, _, template,alerts,jsonlint) {
+    function ($, Backbone, _, template,alerts,jsonlint,CodeMirror) {
         var View = Backbone.View.extend({
             el:'#content',
             initialize:function () {
@@ -167,7 +168,7 @@ define([
                 this.codeMirror = CodeMirror.fromTextArea($(this.el).find("#code").get()[0], {
                     lineNumbers:true,
                     matchBrackets:true,
-                    mode:"javascript",
+                    mode: "application/json",
                     lineNumberFormatter:function (integer) {
                         return integer + ".";
                     }
@@ -181,14 +182,14 @@ define([
                 prettyPrint();
                 shortcut.add("F11", this.toggleFullScreen);
                 shortcut.add("ctrl+p", this.togglePreview);
-                shortcut.add("ctrl+f", this.verify);
+                shortcut.add("ctrl+alt+f", this.verify);
                 shortcut.add("ctrl+s", this.save);
 
             },
             dispose: function () {
                 shortcut.remove("F11");
                 shortcut.remove("ctrl+p");
-                shortcut.remove("ctrl+f");
+                shortcut.remove("ctrl+alt+f");
                 shortcut.remove("ctrl+s");
             }
         });
