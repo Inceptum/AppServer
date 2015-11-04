@@ -12,6 +12,7 @@ define([
 	'views/serverStatus',
 	'views/serverLog',
     'views/appsSideBar',
+    'views/applications',
     'views/instance',
     'views/application',
     'views/instanceEdit',
@@ -21,7 +22,7 @@ define([
 ],
 function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleModel, HeaderView,
          ServerSideBarView, ServerStatusView, ServerLogView,
-         AppsSideBarView, instanceView, AppView,
+         AppsSideBarView,ApplicationsView, instanceView, AppView,
          InstanceEditView,ConfigurationView,BundleView,ConfigurationsSideBarView){
 	var Router = Backbone.Router.extend({
 		initialize: function(){
@@ -95,7 +96,9 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
             this.headerView.selectMenuItem("applications");
 		},
 		'applications': function(vendor,app){
-            var views=[new AppsSideBarView({applications:this.apps, active:{vendor:vendor,name:app}})];
+            var views=[
+				new AppsSideBarView({applications:this.apps, active:{vendor:vendor,name:app}})
+				];
             var application;
             if(app)
                //application = this.apps.get({vendor:"InceptumSoft",name:"TestApp"});
@@ -103,6 +106,8 @@ function($, Backbone, _,Applications,Instances,Configurations,HostModel,BundleMo
 
             if(application)
                 views.push(new AppView({model:application,instances:this.instances}));
+			else
+				views.push(new ApplicationsView({model:this.hostModel,instances:this.instances}));
 
             this.showViews(views);
             this.headerView.selectMenuItem("applications");

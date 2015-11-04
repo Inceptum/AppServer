@@ -335,6 +335,7 @@
     <Content Include="Scripts\mdd_modal_background.png" />
     <Content Include="Scripts\mdd_styles.css" />
     <Content Include="Scripts\mdd_toolbar.png" />
+    <EmbeddedResource Include="WebApi\Content\js\views\applications.js" />
     <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\comment\comment.js" />
     <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\comment\continuecomment.js" />
     <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\dialog\dialog.css" />
