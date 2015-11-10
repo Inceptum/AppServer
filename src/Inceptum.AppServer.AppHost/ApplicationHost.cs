@@ -75,6 +75,7 @@ namespace Inceptum.AppServer.Hosting
                 return null;
             }
         }
+
         public static AssemblyDefinition TryReadAssembly(Stream assemblyStream)
         {
             try
@@ -93,12 +94,12 @@ namespace Inceptum.AppServer.Hosting
     {
         private IDisposable m_Container;
         private IHostedApplication m_HostedApplication;
-        private   ILogCache m_LogCache;
-        private   IConfigurationProvider m_ConfigurationProvider;
+        private ILogCache m_LogCache;
+        private IConfigurationProvider m_ConfigurationProvider;
         private string m_Environment;
         private readonly string m_InstanceName;
         private AppServerContext m_Context;
-        readonly ManualResetEvent m_StopEvent=new ManualResetEvent(false);
+        private readonly ManualResetEvent m_StopEvent = new ManualResetEvent(false);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr LoadLibrary(string lpFileName);
@@ -116,7 +117,7 @@ namespace Inceptum.AppServer.Hosting
         private ServiceHost m_ServiceHost;
         private InstanceContext m_InstanceContext;
         private readonly string m_ServiceAddress;
-        private readonly object m_ServiceHostLock=new object();
+        private readonly object m_ServiceHostLock = new object();
         private LoggingConfiguration m_LoggingConfig;
 
         public ApplicationHost(string instanceName)
@@ -141,7 +142,6 @@ namespace Inceptum.AppServer.Hosting
             }
         }
  
-
         private void createServiceHost()
         {
             lock (m_ServiceHostLock)
@@ -169,18 +169,12 @@ namespace Inceptum.AppServer.Hosting
         {
              createServiceHost();
 
-
-             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/instances/" + UrlSafeInstanceName;
+            var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/instances/" + UrlSafeInstanceName;
             var factory = new ChannelFactory<IApplicationInstance>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), new EndpointAddress(uri));
             m_Instance = factory.CreateChannel();
             var instanceParams = m_Instance.GetInstanceParams();
-
             
             AppDomain.CurrentDomain.UnhandledException += onUnhandledException;
-
-            
-           
-
 
             m_Environment = instanceParams.Environment;
             m_Context = instanceParams.AppServerContext;
@@ -211,7 +205,6 @@ namespace Inceptum.AppServer.Hosting
                 m_LoadedAssemblies.Add(new AssemblyName(assemblyName), new Lazy<Assembly>(() => loadAssembly(path)));
             }
 
- 
             foreach (string dll in dlls.Where(d => d.AssemblyDefinition == null).Select(d=>d.path))
             {
                 if (LoadLibrary(dll) == IntPtr.Zero)
@@ -225,12 +218,12 @@ namespace Inceptum.AppServer.Hosting
             createLogCacheProxy();
 
 
-            var appAssemblies = from file in dlls
-                                let asm = file.AssemblyDefinition
-                                where asm != null
-                                let attribute = asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof (HostedApplicationAttribute).FullName)
-                                where attribute != null
-                                select asm;
+            var appAssemblies =
+                dlls.Select(file => new {file, asm = file.AssemblyDefinition})
+                    .Where(@t => @t.asm != null)
+                    .Select(@t => new {@t, attribute = @t.asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof (HostedApplicationAttribute).FullName)})
+                    .Where(@t => @t.attribute != null)
+                    .Select(@t => @t.@t.asm);
                             
             var appTypes=appAssemblies.SelectMany(
                                     a=>a.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof(IHostedApplication).FullName))
@@ -251,17 +244,21 @@ namespace Inceptum.AppServer.Hosting
 
             m_StopEvent.WaitOne();
             if (m_Container == null)
+            {
                 throw new InvalidOperationException("Host is not started");
-            
-            if (m_ServiceHost != null) try
+            }
+
+            if (m_ServiceHost != null)
+            {
+                try
                 {
                     m_ServiceHost.Close();
                 }
-                catch (Exception e)
+                catch
                 {
                     //There is nothing to do with it
                 }
-
+            }
 
             m_Container.Dispose();
             if (m_ConfigurationProvider != null)
@@ -271,22 +268,24 @@ namespace Inceptum.AppServer.Hosting
 
                     ((ICommunicationObject)m_ConfigurationProvider).Close();
                 }
-                catch (Exception e)
+                catch
                 {
                     //There is nothing to do with it
                 }
             }
+
             if (m_LogCache != null)
             {
                 try
                 {
                     ((ICommunicationObject)m_LogCache).Close();
                 }
-                catch (Exception e)
+                catch
                 {
                     //There is nothing to do with it
                 }
             }
+
             m_Container = null;
             m_HostedApplication = null;
         }
@@ -298,44 +297,30 @@ namespace Inceptum.AppServer.Hosting
 
         private static Assembly loadAssembly(string path)
         {
-            return Assembly.LoadFile(path);
-           /* if (Path.GetFileName(path).Contains("Raven.Database"))
-            {
-                return Assembly.LoadFile(path);
-            }
-            byte[] assemblyBytes = File.ReadAllBytes(path);
-            var pdb = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path) + ".pdb");
-            if (File.Exists(pdb))
-            {
-                byte[] pdbBytes = File.ReadAllBytes(pdb);
-                return Assembly.Load(assemblyBytes, pdbBytes);
-            }
-
-            return Assembly.Load(assemblyBytes);*/
+            return Assembly.LoadFile(Path.GetFullPath(path));
         }
 
         private Assembly onAssemblyResolve(object sender, ResolveEventArgs args)
         {
+            var requestedAssemblyName = new AssemblyName(args.Name);
+
             Assembly[] loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            Assembly assembly =
-                loadedAssemblies.FirstOrDefault(
-                    a => a.FullName == args.Name || a.GetName().Name == new AssemblyName(args.Name).Name || a.GetName().Name == args.Name
-                    );
+            Assembly assembly = loadedAssemblies.FirstOrDefault(a => a.FullName == args.Name || a.GetName().Name == requestedAssemblyName.Name || a.GetName().Name == args.Name);
 
             if (assembly != null)
+            {
                 return assembly;
+            }
 
-            assembly = (from asm in m_LoadedAssemblies
-                        where asm.Key.Name == new AssemblyName(args.Name).Name
-                        orderby asm.Key.Version descending
-                        select asm.Value.Value).FirstOrDefault();
-
+            assembly = m_LoadedAssemblies
+                .Where(asm => asm.Key.Name == requestedAssemblyName.Name)
+                .OrderByDescending(asm => asm.Key.Version)
+                .Select(asm => asm.Value.Value).FirstOrDefault();
 
             return assembly;
         }
 
-
-        private   void createCongigurationProviderProxy()
+        private void createCongigurationProviderProxy()
         {
             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/ConfigurationProvider";
             var factory = new ChannelFactory<IConfigurationProvider>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(),
@@ -353,11 +338,10 @@ namespace Inceptum.AppServer.Hosting
             ((ICommunicationObject)m_ConfigurationProvider).Faulted += clientFault;
         }
 
-        private   void createLogCacheProxy()
+        private void createLogCacheProxy()
         {
             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/LogCache";
-            var factory = new ChannelFactory<ILogCache>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(),
-                new EndpointAddress(uri));
+            var factory = new ChannelFactory<ILogCache>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), new EndpointAddress(uri));
             m_LogCache= factory.CreateChannel();
 
             EventHandler clientFault = null;
@@ -470,8 +454,7 @@ namespace Inceptum.AppServer.Hosting
                 throw new ApplicationException(string.Format("Failed to start: {0}", e));
             } 
         }
-
-
+        
         private void updateLoggingConfig(LoggingConfiguration config, string logLevel, long maxLogSize, LogLimitReachedAction logLimitReachedAction)
         {
             m_LoggingConfig = config;
