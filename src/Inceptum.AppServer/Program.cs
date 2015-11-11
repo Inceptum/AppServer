@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.ServiceProcess;
 using Inceptum.AppServer.Bootstrap;
 
@@ -11,40 +13,61 @@ namespace Inceptum.AppServer
         [LoaderOptimization(LoaderOptimization.MultiDomainHost)]
         public static void Main(params string[] args)
         {
-            var debugFolders =new List<string>();
-            for (int i = 0; i < args.Length; i++)
+            List<string> debugFolders;
+            if (!parseCommandLineArgs(args, out debugFolders))
             {
-                switch (args[i].ToLower())
-                {
-                    case "-debug-folder": 
-                        i++;
-                        if (i < args.Length)
-                            debugFolders.Add(args[i]);
-                        break;
-                    default:
-                        Console.WriteLine("Unknown arg: " + args[i]);
-                        return;
-                }
-            }
-
-            if (!Environment.UserInteractive)
-            {
-                Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-                var servicesToRun = new ServiceBase[] { new ServiceHostSvc(() => createHost(debugFolders)) };
-                ServiceBase.Run(servicesToRun);
                 return;
             }
 
-            using (createHost(debugFolders))
+            var host = Bootstrapper.Start(debugFolders);
+            if (Environment.UserInteractive)
             {
-                Console.ReadLine();
-                
+                Console.Title = getProductNameAndVersion();
+                using (host)
+                {
+                    Console.ReadLine();
+                }
+            }
+            else
+            {
+                Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+                var servicesToRun = new ServiceBase[] {new ServiceHostSvc(() => host)};
+                ServiceBase.Run(servicesToRun);
             }
         }
 
-        private static IDisposable createHost(IEnumerable<string> debugFolders = null)
+        private static bool parseCommandLineArgs(string[] args, out List<string> debugFolders)
         {
-            return Bootstrapper.Start(debugFolders);
+            debugFolders = new List<string>();
+            for (var i = 0; i < args.Length; i++)
+            {
+                switch (args[i].ToLower())
+                {
+                    case "-debug-folder":
+                        i++;
+                        if (i < args.Length)
+                        {
+                            debugFolders.Add(args[i]);
+                        }
+                        break;
+                    default:
+                        Console.WriteLine("Unknown arg: " + args[i]);
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static string getProductNameAndVersion()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+
+            var productVersion = versionInfo.FileVersion;
+
+            return string.Format("AppServer, {0}", productVersion);
         }
     }
 }
