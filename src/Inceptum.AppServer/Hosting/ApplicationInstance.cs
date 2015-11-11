@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -45,6 +46,7 @@ namespace Inceptum.AppServer.Hosting
         private string m_User;
         private readonly CancellationTokenSource m_CancellationTokenSource = new CancellationTokenSource();
         private readonly AutoResetEvent m_HostRegisteredEvent = new AutoResetEvent(false);
+
         public ApplicationInstance(string name, AppServerContext context, ILogger logger, JobObject jobObject)
         {
             var completionSource = new TaskCompletionSource<object>();
@@ -59,7 +61,6 @@ namespace Inceptum.AppServer.Hosting
         }
 
         public string Name { get; set; }
-
         public string UrlSafeInstanceName
         {
             get
@@ -69,7 +70,6 @@ namespace Inceptum.AppServer.Hosting
         }
         private string Environment { get; set; }
         private ILogger Logger { get; set; }
-
         public HostedAppStatus Status
         {
             get
@@ -91,7 +91,6 @@ namespace Inceptum.AppServer.Hosting
                 m_StatusSubject.OnNext(value);
             }
         }
-
         public Version ActualVersion
         {
             get
@@ -102,7 +101,6 @@ namespace Inceptum.AppServer.Hosting
                 }
             }
         }
-
         internal InstanceCommand[] Commands { get; private set; }
 
         public void ReportFailure(string error)
@@ -139,7 +137,6 @@ namespace Inceptum.AppServer.Hosting
             m_HostRegisteredEvent.Set();
 
         }
-
 
         public InstanceParams GetInstanceParams()
         {
@@ -196,7 +193,6 @@ namespace Inceptum.AppServer.Hosting
 
         #endregion
 
-
         public void KillProcess()
         {
             lock (m_SyncRoot)
@@ -209,8 +205,6 @@ namespace Inceptum.AppServer.Hosting
                 }
             }
         }
-
-
 
         private void resetIpcHost()
         {
@@ -239,7 +233,6 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-
         public void UpdateConfig(Version actualVersion, string environment, string user, string password, LoggerLevel logLevel, string defaultConfiguration,
             long maxLogSize, LogLimitReachedAction logLimitReachedAction)
         {
@@ -252,7 +245,6 @@ namespace Inceptum.AppServer.Hosting
             m_User = user;
             Environment = environment;
         }
-
 
         public Task Start(bool debug, Action beforeStart)
         {
@@ -271,10 +263,6 @@ namespace Inceptum.AppServer.Hosting
                 return m_CurrentTask;
             }
         }
-
-
-
-
 
         private async Task doStart(bool debug, Action beforeStart)
         {
@@ -307,7 +295,6 @@ namespace Inceptum.AppServer.Hosting
 
 
         }
-
 
         public Task Stop(bool abort)
         {
@@ -368,24 +355,22 @@ namespace Inceptum.AppServer.Hosting
         {
             string path = Path.GetFullPath(Path.Combine(m_Context.AppsDirectory, Name));
             if (!Directory.Exists(path))
+            {
                 Directory.CreateDirectory(path);
-            string args = "\""+Name+"\"";
-            /*
+            }
 
-                        foreach (var configFile in m_ApplicationParams.ConfigFiles)
-                        {
-                            copyConfig(path, configFile, Path.GetFileName(configFile));
-                        }
-            */
+            string args = "\""+Name+"\"";
             if (debug)
+            {
                 args += " -debug";
+            }
 
             string directoryName = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? "";
             var procSetup = new ProcessStartInfo
             {
                 FileName = Path.Combine(directoryName, "AppHost", "AppHost.exe"),
                 Arguments = args,
-                WorkingDirectory = path,
+                WorkingDirectory = path
             };
 
             if (!string.IsNullOrWhiteSpace(m_User))
@@ -401,29 +386,25 @@ namespace Inceptum.AppServer.Hosting
                 procSetup.UseShellExecute = false;
             }
 
-
-#if !DEBUG
-            if (!debug)
+            //todo: AppServerConfiguration { CreateNoWindow, ConfSvcUrl }
+            bool createNoWindow;
+            if (bool.TryParse(ConfigurationManager.AppSettings["ApplicationInstance.Process.CreateNoWindow"], out createNoWindow))
             {
-                procSetup.CreateNoWindow = true;
+                procSetup.CreateNoWindow = createNoWindow;
             }
+            else
+            {
+#if !DEBUG
+                if (!debug)
+                {
+                    procSetup.CreateNoWindow = true;
+                }
 #endif
+            }
 
             m_HostRegisteredEvent.Reset();
             m_Process = Process.Start(procSetup);
             m_JobObject.AddProcess(m_Process);
-        }
-
-        private void copyConfig(string path, string providedConfig, string configFileName)
-        {
-            string configPath = Path.Combine(path, configFileName);
-            string defaultConfigPath = Path.Combine(path, configFileName + ".default");
-            if (providedConfig != null && File.Exists(providedConfig))
-            {
-                if (!File.Exists(configPath))
-                    File.Copy(providedConfig, configPath);
-                File.Copy(providedConfig, defaultConfigPath, true);
-            }
         }
 
         public void Rename(string name)
@@ -494,6 +475,7 @@ namespace Inceptum.AppServer.Hosting
                 return changeLogLevelTask;
             }
         }
+
         private async Task<object> doChangeLogLevel(string logLevel, Task currentTask)
         {
             await Task.Yield();
@@ -506,8 +488,7 @@ namespace Inceptum.AppServer.Hosting
             return null;
         }
 
-
-         public Task Debug()
+        public Task Debug()
         {
             lock (m_SyncRoot)
             {
@@ -532,8 +513,7 @@ namespace Inceptum.AppServer.Hosting
             m_ApplicationHost.Debug();
             return null;
         }
-
-
+        
         public void VerifySate()
         {
             lock (m_SyncRoot)
