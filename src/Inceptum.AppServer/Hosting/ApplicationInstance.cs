@@ -391,6 +391,10 @@ namespace Inceptum.AppServer.Hosting
             if (bool.TryParse(ConfigurationManager.AppSettings["ApplicationInstance.Process.CreateNoWindow"], out createNoWindow))
             {
                 procSetup.CreateNoWindow = createNoWindow;
+                if (procSetup.CreateNoWindow)
+                {
+                    procSetup.UseShellExecute = false;
+                }
             }
             else
             {
