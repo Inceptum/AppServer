@@ -7,7 +7,27 @@ define([
     'views/confirm',
     'views/commandPopup',
     'views/alerts'],
-    function($, Backbone, _,instanceView, template,confirmView,commandPopupView,alerts){
+    function ($, Backbone, _, instanceView, template, confirmView, commandPopupView, alerts) {
+
+        var store = function(key, value) {
+            if (sessionStorage && sessionStorage.setItem) {
+                sessionStorage.setItem('Inceptum.AppServer.' + key, JSON.stringify(value));
+            }
+        };
+        var restore = function (key) {
+            if (sessionStorage && sessionStorage.getItem) {
+                var val = sessionStorage.getItem('Inceptum.AppServer.' + key);
+                if (val) {
+                    try {
+                        return JSON.parse(val);
+                    } catch (e) {
+
+                    } 
+                }
+            }
+            return undefined;
+        };
+
         var View = Backbone.View.extend({
             el: '#main',
             initialize: function () {
@@ -34,6 +54,7 @@ define([
                 "keyup #nameFilter": "applyNameFilter"
             },
             applyNameFilter: function () {
+                store('InstancesList.NameFilter', this.nameFilter.val());
                 this.reset();
             },
             add : function(instance) {
@@ -44,7 +65,6 @@ define([
                     instance.get('environment').toLowerCase().indexOf(this.nameFilter.val().toLowerCase()) == -1)&&
                     instance.get('applicationId').toLowerCase().indexOf(this.nameFilter.val().toLowerCase()) == -1)
                     return;
-
 
                 var view = new instanceView({
                     tagName : 'tr',
@@ -57,7 +77,6 @@ define([
                 view.bind("stop",this.stop);
                 view.bind("kill",this.kill);
                 view.bind("command",this.command);
-
 
 
                 //TODO: sort order id not preserved
@@ -112,6 +131,10 @@ define([
                 });
 
                 this.nameFilter = $(this.el).find('#nameFilter');
+                this.nameFilter.val(restore('InstancesList.NameFilter'));
+                if (this.nameFilter.val()) {
+                    this.applyNameFilter();
+                }
 
                 $.connection.hub.start();
                 // We keep track of the rendered state of the view
