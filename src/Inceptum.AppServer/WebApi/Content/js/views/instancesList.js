@@ -122,7 +122,9 @@ define([
                 this.instances.each(this.add);
                 console.log('reset');
             },
-            render: function(){
+            render: function () {
+                var that = this;
+
                 this.template = _.template(template, {});
                 $(this.el).empty();
                 $(this.el).append(this.template);
@@ -132,9 +134,11 @@ define([
 
                 this.nameFilter = $(this.el).find('#nameFilter');
                 this.nameFilter.val(restore('InstancesList.NameFilter'));
-                if (this.nameFilter.val()) {
-                    this.applyNameFilter();
-                }
+                setTimeout(function() {
+                    if (that.nameFilter.val()) {
+                        that.applyNameFilter();
+                    }
+                }, 0);
 
                 $.connection.hub.start();
                 // We keep track of the rendered state of the view
