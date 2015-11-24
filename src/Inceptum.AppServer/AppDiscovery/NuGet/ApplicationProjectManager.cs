@@ -13,49 +13,29 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
     {
         private readonly string m_PackageId;
         private readonly IPackageRepository m_SharedRepository;
+        private readonly DependencyVersion m_VersionStrategy;
 
-        public ApplicationProjectManager(string packageId, IPackageRepository sourceRepository, IPackagePathResolver pathResolver, IProjectSystem project, IPackageRepository localRepository,
-            IPackageRepository sharedRepository)
+        public ApplicationProjectManager(string packageId, IPackageRepository sourceRepository, IPackagePathResolver pathResolver,
+            IProjectSystem project, IPackageRepository localRepository, IPackageRepository sharedRepository, DependencyVersion versionStrategy)
             : base(sourceRepository, pathResolver, project, localRepository)
         {
             m_PackageId = packageId;
             m_SharedRepository = sharedRepository;
-        }
-
-        private void execute(IPackage package, IPackageOperationResolver resolver)
-        {
-            var source = resolver.ResolveOperations(package);
-            if (source.Any())
-            {
-                foreach (var operation in source)
-                {
-                    Execute(operation);
-                }
-            }
-            else
-            {
-                if (!LocalRepository.Exists(package))
-                {
-                    return;
-                }
-                Logger.Log(MessageLevel.Info, NuGetResources.Log_ProjectAlreadyReferencesPackage, Project.ProjectName, package.GetFullName());
-            }
+            m_VersionStrategy = versionStrategy;
         }
 
         public override void AddPackageReference(IPackage package, bool ignoreDependencies, bool allowPrereleaseVersions)
         {
-            //TODO[KN]: crappy nuget does not install some packages. Second run helps
-            for (var i = 0; i < 1; i++)
-            {
-                var walker = new UpdateWalker(LocalRepository, SourceRepository,
-                    new DependentsWalker(SourceRepository, Project.TargetFramework), ConstraintProvider,
-                    Project.TargetFramework, Logger, !ignoreDependencies, allowPrereleaseVersions)
-                {
-                    AcceptedTargets = PackageTargets.All,
-                    DependencyVersion = DependencyVersion.Highest
-                };
-                execute(package, walker);
-            }
+            var dependentsResolver = new DependentsWalker(SourceRepository, Project.TargetFramework);
+
+            var walker = new UpdateWalker(LocalRepository, SourceRepository,
+                dependentsResolver, ConstraintProvider, Project.TargetFramework, Logger,
+                updateDependencies: !ignoreDependencies, allowPrereleaseVersions: allowPrereleaseVersions);
+
+            walker.AcceptedTargets = PackageTargets.All;
+            walker.DependencyVersion = m_VersionStrategy;
+
+            execute(package, walker);
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
@@ -144,6 +124,25 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             {
                 m_SharedRepository.AddPackage(package);
                 LocalRepository.AddPackage(package);
+            }
+        }
+
+        private void execute(IPackage package, IPackageOperationResolver resolver)
+        {
+            var source = resolver.ResolveOperations(package).ToList();
+            if (source.Any())
+            {
+                foreach (PackageOperation operation in source)
+                {
+                    Execute(operation);
+                }
+            }
+            else
+            {
+                if (LocalRepository.Exists(package))
+                {
+                    Logger.Log(MessageLevel.Info, NuGetResources.Log_ProjectAlreadyReferencesPackage, Project.ProjectName, package.GetFullName());
+                }
             }
         }
     }

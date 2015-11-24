@@ -7,10 +7,12 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
     {
         private readonly Castle.Core.Logging.ILogger m_Logger;
         private readonly ApplicationProjectManager m_ProjectManager;
+        private readonly bool m_AllowPrereleaseVersions;
 
-        public ProjectManagerWrapper(string packageId, string sharedRepositoryDir, string applicationRoot, Castle.Core.Logging.ILogger logger, IPackageRepository dependenciesRepository)
+        public ProjectManagerWrapper(string packageId, string sharedRepositoryDir, string applicationRoot, Castle.Core.Logging.ILogger logger, IPackageRepository dependenciesRepository, DependencyVersion versionStrategy, bool allowPrereleaseVersions)
         {
             m_Logger = logger;
+            m_AllowPrereleaseVersions = allowPrereleaseVersions;
 
             var sharedRepositoryFileSystem = new PhysicalFileSystem(sharedRepositoryDir);
             var pathResolver = new DefaultPackagePathResolver(sharedRepositoryFileSystem);
@@ -18,7 +20,9 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
             IProjectSystem project = new ApplicationProjectSystem(applicationRoot) {Logger = this};
             var referenceRepository = new PackageReferenceRepository(project, packageId, localSharedRepository);
-            m_ProjectManager = new ApplicationProjectManager(packageId, dependenciesRepository, pathResolver, project, referenceRepository, localSharedRepository) {Logger = this};
+
+            m_ProjectManager = new ApplicationProjectManager(packageId, dependenciesRepository, pathResolver, project, referenceRepository, localSharedRepository, versionStrategy);
+            m_ProjectManager.Logger = this;
         }
 
         public IPackageRepository LocalRepository
@@ -57,7 +61,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
         public void InstallPackage(string packageId, SemanticVersion version)
         {
-            m_ProjectManager.AddPackageReference(packageId, ignoreDependencies: false, allowPrereleaseVersions: true, version: version);
+            m_ProjectManager.AddPackageReference(packageId, ignoreDependencies: false, allowPrereleaseVersions: m_AllowPrereleaseVersions, version: version);
         }
 
         public void UninstallPackage(IPackage package, bool removeDependencies)

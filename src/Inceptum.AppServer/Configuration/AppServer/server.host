@@ -6,6 +6,8 @@
   },
   "nuget":{
 		"applicationRepository":"..\\..\\..\\..\\TestData\\NugetRepo",
-		"dependenciesRepositories":["https://nuget.org/api/v2/"]
+		"dependenciesRepositories":["https://nuget.org/api/v2/"],
+		"dependencyVersion": "Highest",
+		"allowPrereleaseVersions": true,
   }
 }

@@ -14,25 +14,48 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         private readonly IPackageRepository m_ApplicationRepository;
         private readonly IPackageRepository m_DependenciesRepository;
         private readonly string m_LocalSharedRepository;
+        private readonly DependencyVersion m_DependencyVersion;
+        private readonly bool m_AllowPrereleaseVersions;
         private readonly ILogger m_Logger;
 
         public NugetApplicationRepository(ILogger logger, IManageableConfigurationProvider configurationProvider)
         {
             m_Logger = logger;
+            m_LocalSharedRepository = Path.GetFullPath("packages\\");
+
             var bundleString = configurationProvider.GetBundle("AppServer", "server.host", "{environment}", "{machineName}");
+
             dynamic bundle = JObject.Parse(bundleString).SelectToken("nuget");
+
             var applicationRepository = (string) bundle.applicationRepository;
-            var dependenciesRepositories = ((JArray) bundle.dependenciesRepositories).Select(t => t.ToString()).Select(getRepositoryPath).ToArray();
-            ;
+
+            if (!Enum.TryParse(Convert.ToString(bundle.dependencyVersion), out m_DependencyVersion))
+            {
+                m_DependencyVersion = DependencyVersion.Highest;    
+            }
+            if (!Boolean.TryParse(Convert.ToString(bundle.allowPrereleaseVersions), out m_AllowPrereleaseVersions))
+            {
+                m_AllowPrereleaseVersions = true;
+            }
 
             m_ApplicationRepository = PackageRepositoryFactory.Default.CreateRepository(getRepositoryPath(applicationRepository));
+
+            var dependenciesRepositories = ((JArray)bundle.dependenciesRepositories).Select(t => t.ToString()).Select(getRepositoryPath).ToArray();
             var dependencyRepositories = dependenciesRepositories.Select(r => PackageRepositoryFactory.Default.CreateRepository(r)).ToArray();
 
-            m_DependenciesRepository = new AggregateRepository(
-                new[] {m_ApplicationRepository}.Concat(dependencyRepositories)
-                ) {ResolveDependenciesVertically = true};
+            m_DependenciesRepository = new AggregateRepository(new[] {m_ApplicationRepository}.Concat(dependencyRepositories)) {ResolveDependenciesVertically = true};
+        }
 
+        public NugetApplicationRepository(ILogger logger, string applicationsRepositorySource, string[] dependencyRepositoriesSet, bool allowPrereleaseVersions, DependencyVersion dependencyVersion)
+        {
+            m_Logger = logger;
+            m_AllowPrereleaseVersions = allowPrereleaseVersions;
+            m_DependencyVersion = dependencyVersion;
             m_LocalSharedRepository = Path.GetFullPath("packages\\");
+            m_ApplicationRepository = PackageRepositoryFactory.Default.CreateRepository(applicationsRepositorySource);
+
+            var dependencyRepositories = dependencyRepositoriesSet.Select(r => PackageRepositoryFactory.Default.CreateRepository(r)).ToArray();
+            m_DependenciesRepository = new AggregateRepository(new[] { m_ApplicationRepository }.Concat(dependencyRepositories)) { ResolveDependenciesVertically = true };
         }
 
         public IEnumerable<ApplicationInfo> GetAvailableApps()
@@ -57,22 +80,26 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 installedVersion = Version.Parse(File.ReadAllText(versionFile));
             }
 
-            if (installedVersion == application.Version) return;
+            if (installedVersion == application.Version)
+            {
+                return;
+            }
 
-            var projectManager = new ProjectManagerWrapper(application.ApplicationId, m_LocalSharedRepository, path, m_Logger, m_DependenciesRepository);
-
+            var projectManager = new ProjectManagerWrapper(application.ApplicationId, m_LocalSharedRepository, path, m_Logger, m_DependenciesRepository, m_DependencyVersion, m_AllowPrereleaseVersions);
             if (installedVersion != null)
             {
                 var packageId = application.ApplicationId;
-                var package = (from p in projectManager.GetInstalledPackages(packageId)
-                    where p.Id == packageId && p.Version == new SemanticVersion(installedVersion)
-                    select p).ToList().FirstOrDefault();
+
+                var package = projectManager.GetInstalledPackages(packageId)
+                    .FirstOrDefault(p => p.Id == packageId && p.Version == new SemanticVersion(installedVersion));
+
                 if (package != null)
+                {
                     projectManager.UninstallPackage(package, true);
+                }
                 else
                 {
-                    m_Logger.WarnFormat("Failed to find package {0} version {1} from which instance was installed. Will clean up folder manually instead of package uninstall ", packageId,
-                        installedVersion);
+                    m_Logger.WarnFormat("Failed to find package {0} version {1} from which instance was installed. Will clean up folder manually instead of package uninstall ", packageId, installedVersion);
                     cleanUpInstallFolder(path);
                 }
             }
@@ -80,7 +107,9 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             {
                 cleanUpInstallFolder(path);
             }
+
             projectManager.InstallPackage(application.ApplicationId, new SemanticVersion(application.Version));
+
             File.WriteAllText(versionFile, application.Version.ToString());
         }
 
@@ -94,7 +123,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             get { return "nuget"; }
         }
 
-        private string getRepositoryPath(string repository)
+        private static string getRepositoryPath(string repository)
         {
             if (!Uri.IsWellFormedUriString(repository, UriKind.RelativeOrAbsolute))
             {
@@ -118,7 +147,6 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 m_Logger.WarnFormat("Deleting {0} folder", binFolder);
                 Directory.Delete(binFolder, true);
             }
-
 
             var contentFolder = Path.GetFullPath(Path.Combine(installPath, "content"));
             if (Directory.Exists(contentFolder))

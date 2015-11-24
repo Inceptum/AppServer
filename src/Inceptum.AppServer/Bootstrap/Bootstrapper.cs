@@ -122,7 +122,6 @@ namespace Inceptum.AppServer.Bootstrap
                 throw;
             }
             
-             
             logger.Info("Starting application host");
             var sw = Stopwatch.StartNew();
             var host = container.Resolve<IHost>();
