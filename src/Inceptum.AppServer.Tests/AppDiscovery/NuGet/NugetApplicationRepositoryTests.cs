@@ -9,6 +9,7 @@ using NUnit.Framework;
 
 namespace Inceptum.AppServer.Tests.AppDiscovery.NuGet
 {
+    [Ignore]
     [TestFixture]
     internal class NugetApplicationRepositoryTests
     {
