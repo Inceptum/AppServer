@@ -4,10 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -16,8 +13,8 @@ using Castle.Core.Logging;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using Inceptum.AppServer.Configuration;
-using Inceptum.AppServer.Model;
-using Newtonsoft.Json.Linq;
+using Inceptum.AppServer.Utils;
+using Inceptum.AppServer.WebApi.Messages;
 
 namespace Inceptum.AppServer.WebApi.Controllers
 {
@@ -34,8 +31,6 @@ namespace Inceptum.AppServer.WebApi.Controllers
             m_Logger = logger;
             m_Provider = provider;
         }
-
-
 
         /// <summary>
         /// List all configurations.
@@ -126,7 +121,6 @@ namespace Inceptum.AppServer.WebApi.Controllers
            return Ok();
         }
 
-
         /// <summary>
         /// Retrieve configuration bundle content.
         /// </summary>
@@ -140,7 +134,6 @@ namespace Inceptum.AppServer.WebApi.Controllers
         {
             return GetBundleWithOverrides(configuration, id);
         }
-
 
         /// <summary>
         /// Retrieve configuration bundle content.
@@ -156,7 +149,7 @@ namespace Inceptum.AppServer.WebApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [ResponseType(typeof(object))]
-        public IHttpActionResult GetBundleWithOverrides(string configuration, string bundle,string overrides=null)
+        public IHttpActionResult GetBundleWithOverrides(string configuration, string bundle, string overrides = null)
         {
             try
             {
@@ -169,16 +162,46 @@ namespace Inceptum.AppServer.WebApi.Controllers
             catch (BundleNotFoundException e)
             {
                 return NotFound();
-
-                //return new OperationResult.NotFound { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
             }
             catch (Exception e)
             {
                 return InternalServerError(e);
-                //return new OperationResult.InternalServerError { Description = e.Message, ResponseResource = e.Message, Title = "Error" };
             }
         }
 
+        [HttpGet]
+        [ResponseType(typeof(BundleSearchResultItem[]))]
+        public IHttpActionResult Search(string term, int maxCount)
+        {
+            if (term == null)
+            {
+                term = string.Empty;
+            }
+
+            try
+            {
+                var configurations = m_Provider.GetConfigurations();
+
+                var result = configurations
+                    .SelectMany(c => c.Bundles)
+                    .Flatten(c => c.Bundles)
+                    .Where(b => SearchUtils.ContainsTerm(b.PureContent, term) || SearchUtils.ContainsTerm(b.Configuration, term) || SearchUtils.ContainsTerm(b.id, term))
+                    .Take(maxCount)
+                    .Select(b => new BundleSearchResultItem
+                    {
+                        Content = SearchUtils.GetAnnotationByTerm(b.PureContent, term, 64),
+                        Configuration = b.Configuration,
+                        id = b.id
+                    })
+                    .ToArray();
+
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                return InternalServerError(e);
+            }
+        }
 
         /// <summary>
         /// Import configuration.
@@ -248,42 +271,6 @@ namespace Inceptum.AppServer.WebApi.Controllers
             {
                 return InternalServerError(e);
             }
-        }
-    }
-
-    class FileResult : IHttpActionResult
-    {
-        private readonly Stream m_Stream;
-        private readonly string m_ContentType;
-        private string m_FileName;
-
-        public FileResult(Stream stream,string fileName, string contentType = null)
-        {
-            m_FileName = fileName;
-            m_Stream = stream;
-            if (stream == null) throw new ArgumentNullException("stream");
-
-            m_ContentType = contentType;
-        }
-
-        public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
-        {
-            return Task.Run(() =>
-            {
-                var response = new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StreamContent(m_Stream)
-                };
-
-                var contentType = m_ContentType ?? MimeMapping.GetMimeMapping(Path.GetExtension(m_FileName));
-                response.Content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
-                response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
-                {
-                    FileName = m_FileName
-                };
-                return response;
-
-            }, cancellationToken);
         }
     }
 }

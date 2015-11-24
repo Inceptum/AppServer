@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Inceptum.AppServer.Configuration
 {
@@ -28,6 +29,7 @@ namespace Inceptum.AppServer.Configuration
         }
     }
 
+    [DebuggerDisplay("id={id}, name={Name}, parent={Parent}, content={PureContent}")]
     public class BundleInfo
     {
         public string id { get; set; }
@@ -46,5 +48,13 @@ namespace Inceptum.AppServer.Configuration
         {
             Bundles = bundles;
         }
+    }
+
+    [DebuggerDisplay("id={id}, Configuration={Configuration}, Content={Content}")]
+    public class BundleSearchResultItem
+    {
+        public string id { get; set; }
+        public string Configuration { get; set; }
+        public string Content { get; set; }
     }
 }

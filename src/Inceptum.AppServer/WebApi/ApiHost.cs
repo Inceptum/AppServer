@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
@@ -10,7 +9,6 @@ using System.Web.Http.Filters;
 using System.Web.Http.Routing;
 using Castle.Core.Logging;
 using Inceptum.AppServer.Configuration;
-using Inceptum.AppServer.Hosting;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
 using Inceptum.AppServer.WebApi.MessageHandlers;
@@ -97,14 +95,12 @@ namespace Inceptum.AppServer.WebApi
             config.MessageHandlers.Insert(0, new DefaultContentTypeMessageHandler());
             config.MessageHandlers.Add(new DefaultHeadersMessageHandler());
 
-
             config.Formatters.Remove(config.Formatters.XmlFormatter);
 
             var jsonFormatter = config.Formatters.JsonFormatter;
             jsonFormatter.SerializerSettings.Converters.Add(new StringEnumConverter());
             jsonFormatter.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
             jsonFormatter.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Ignore;
-            //jsonFormatter.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
             jsonFormatter.SerializerSettings.Formatting = Formatting.Indented;
             jsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             // NOTE[tv]: JsonMediaTypeFormatter ignores deserialization errors.
@@ -140,6 +136,11 @@ namespace Inceptum.AppServer.WebApi
         {
             config.MapHttpAttributeRoutes();
 
+            config.Routes.MapHttpRoute("RESTBundleSearch", "api/configurations/search",
+                new { action = "Search", controller = "configurations" },
+                new { httpMethod = new HttpMethodConstraint(HttpMethod.Get) }
+                );
+
             config.Routes.MapHttpRoute("RESTGetAll", string.Format("api/{{controller}}/"),
                 new { action = "Index" },
                 new { httpMethod = new HttpMethodConstraint(HttpMethod.Get) }
@@ -160,29 +161,23 @@ namespace Inceptum.AppServer.WebApi
                 new { action = "Delete" },
                 new { httpMethod = new HttpMethodConstraint(HttpMethod.Delete), controller = @"^(?:(?!applications).)*$" }
                 );
-
-
-
-            config.Routes.MapHttpRoute("RESTBundleCreate", string.Format("api/configurations/{{configuration}}/bundles"),
+            
+            config.Routes.MapHttpRoute("RESTBundleCreate", "api/configurations/{configuration}/bundles",
                 new { action = "CreateBundle", controller = "configurations" },
                 new { httpMethod = new HttpMethodConstraint(HttpMethod.Post) }
                 );
-            config.Routes.MapHttpRoute("RESTBundleUpdate", string.Format("api/configurations/{{configuration}}/bundles/{{id}}"),
+            config.Routes.MapHttpRoute("RESTBundleUpdate", "api/configurations/{configuration}/bundles/{id}",
                 new { action = "UpdateBundle", controller = "configurations" },
                 new { httpMethod = new HttpMethodConstraint(HttpMethod.Put) }
                 );
-            config.Routes.MapHttpRoute("RESTBundleDelete", string.Format("api/configurations/{{configuration}}/bundles/{{id}}"),
+            config.Routes.MapHttpRoute("RESTBundleDelete", "api/configurations/{configuration}/bundles/{id}",
                 new { action = "DeleteBundle", controller = "configurations" },
                 new { httpMethod = new HttpMethodConstraint(HttpMethod.Delete) }
                 );
-
-
-
-            config.Routes.MapHttpRoute("RESTBundleGetWithOverrides", string.Format("configuration/{{configuration}}/{{bundle}}/{{*overrides}}"),
+            config.Routes.MapHttpRoute("RESTBundleGetWithOverrides", "configuration/{configuration}/{bundle}/{*overrides}",
                 new { action = "GetBundleWithOverrides", controller = "configurations" },
                 new { httpMethod = new HttpMethodConstraint(HttpMethod.Get) }
                 );
-
 
             config.Routes.MapHttpRoute("RESTApplicationsGet", string.Format("api/applications/{{vendor}}/{{application}}"),
                 new { action = "Get", controller = "applications" },
@@ -198,7 +193,6 @@ namespace Inceptum.AppServer.WebApi
                 new { action = "UpdateVersion", controller = "instances" },
                 new { httpMethod = new HttpMethodConstraint(HttpMethod.Put) }
                 );
-
 
             config.Routes.MapHttpRoute("RESTGlobalAction", string.Format("api/{{controller}}/{{action}}"),
                 new { },
@@ -231,13 +225,6 @@ namespace Inceptum.AppServer.WebApi
                 { Samples.BundleInfo.GetType(), Samples.BundleInfo },
 
             });
-            /*   var json = Encoding.UTF8.GetString(HelpResources.GetDetails_Response);
-            config.SetSampleResponse(JObject.Parse(json).ToString(Formatting.Indented),
-                new MediaTypeHeaderValue("application/json"), "Operations", "GetDetails");
-            config.SetSampleResponse((new CommandStatusModel { Status = "Completed" }).ToJObject().ToString(Formatting.Indented), new MediaTypeHeaderValue("application/json"), "Operations", "GetCommand");
-            config.SetSampleResponse((new CommandModel { CommandId = Guid.Empty }).ToJObject().ToString(Formatting.Indented), new MediaTypeHeaderValue("application/json"), "Operations", "Confirm");
-            config.SetSampleResponse((new CommandModel { CommandId = Guid.Empty }).ToJObject().ToString(Formatting.Indented), new MediaTypeHeaderValue("application/json"), "Operations", "Update");
- */
         }
 
         private static IEnumerable<HelpItem> buildDisclaimer()
@@ -269,7 +256,6 @@ namespace Inceptum.AppServer.WebApi
                 Data = string.Format("<div class=\"w50pc\"><h1><p style='color:red'>{0}</p></h1></div>", message /*HelpResources.Disclaimer_Message*/)
             };
         }
-
         private static IEnumerable<Type> getTypesToDocument()
         {
             yield return typeof(Application);

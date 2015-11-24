@@ -3,11 +3,16 @@ define([
     'backbone',
     'underscore',
     'text!templates/bundle.html',
-    'views/alerts','jsonlint',
-'codemirror','codemirror/mode/javascript/javascript','codemirror/addon/search/search','codemirror/addon/search/matchesonscrollbar',	
+    'views/search',
+    'views/alerts',
+    'jsonlint',
+    'codemirror',
+    'codemirror/mode/javascript/javascript',
+    'codemirror/addon/search/search',
+    'codemirror/addon/search/matchesonscrollbar',
 	'libs/prettify',
     'shortcut'],
-    function ($, Backbone, _, template,alerts,jsonlint,CodeMirror) {
+    function ($, Backbone, _, template, SearchView, alerts, jsonlint, CodeMirror) {
         var View = Backbone.View.extend({
             el:'#content',
             initialize:function () {
@@ -132,26 +137,6 @@ define([
                     this.codeMirror.setValue(JSON.stringify(JSON.parse(json), null, "  "));
                     return true;
                 }
-/*
-
-
-                try {
-                    if (this.errorLine)
-                        this.codeMirror.addLineClass(this.errorLine, null, null);
-                    var result = jsonlint.parse(this.codeMirror.getValue());
-                    this.codeMirror.setValue(JSON.stringify(result, null, "  "));
-                    this.verificationErrors.text("").hide();
-                    this.errorLine = undefined;
-                    return true;
-                } catch (ex) {
-                    //alerts.show({type:"error",text:"Failed to "+action+" bundle "+bundleId+". "+JSON.parse(response.responseText).Error});
-                    this.errorLine = (/Parse error on line (\d+)/g).exec(ex.message)[1] * 1 - 1;
-                    this.verificationErrors.html("<strong>Error:</strong> " + ex.message).show();
-                    this.codeMirror.addLineClass(this.errorLine, "error", "error");
-                    this.jumpToLine(this.errorLine);
-                    return false;
-                }
-*/
             },
             jumpToLine:function (i) {
                 this.codeMirror.setCursor(i);
@@ -185,12 +170,18 @@ define([
                 shortcut.add("ctrl+alt+f", this.verify);
                 shortcut.add("ctrl+s", this.save);
 
+                this.searchView = new SearchView();
+                this.searchView.$el = $('#search');
+                this.searchView.render();
             },
             dispose: function () {
                 shortcut.remove("F11");
                 shortcut.remove("ctrl+p");
                 shortcut.remove("ctrl+alt+f");
                 shortcut.remove("ctrl+s");
+                if (this.searchView) {
+                    this.searchView.dispose();
+                }
             }
         });
 

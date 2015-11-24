@@ -250,6 +250,7 @@
     <Compile Include="AppDiscovery\NuGet\NugetApplicationRepository.cs" />
     <Compile Include="Hosting\ServiceHostWrapper.cs" />
     <Compile Include="Utils\ActionDisposable.cs" />
+    <Compile Include="Utils\AppDomainDataRendererImpl.cs" />
     <Compile Include="Utils\AppDomainRenderer.cs" />
     <Compile Include="Bootstrap\LoggingInstaller.cs" />
     <Compile Include="Hosting\ApplicationInstance.cs" />
@@ -260,12 +261,18 @@
     <Compile Include="Logging\LogConnection.cs" />
     <Compile Include="Logging\SignalRhost.cs" />
     <Compile Include="Notification\UiNotificationHub.cs" />
+    <Compile Include="Utils\AppDomainRendererImpl.cs" />
     <Compile Include="Utils\PeriodicalBackgroundWorker.cs" />
     <Compile Include="WebApi\ApiHost.cs" />
     <Compile Include="WebApi\Controllers\ApplicationsController.cs" />
+    <Compile Include="Utils\EnumerableExtensions.cs" />
+    <Compile Include="Utils\SearchUtils.cs" />
+    <Compile Include="WebApi\Messages\CommandResult.cs" />
     <Compile Include="WebApi\Controllers\ConfigurationsController.cs" />
+    <Compile Include="WebApi\Messages\FileResult.cs" />
     <Compile Include="WebApi\Controllers\HostController.cs" />
     <Compile Include="WebApi\Controllers\InstancesController.cs" />
+    <Compile Include="WebApi\Binders\VersionModelBinder.cs" />
     <Compile Include="WebApi\Filters\CustomExceptionFilter.cs" />
     <Compile Include="WebApi\MessageHandlers\DefaultContentTypeMessageHandler.cs" />
     <Compile Include="WebApi\MessageHandlers\DefaultHeadersMessageHandler.cs" />
@@ -340,6 +347,7 @@
     <Content Include="Scripts\mdd_modal_background.png" />
     <Content Include="Scripts\mdd_styles.css" />
     <Content Include="Scripts\mdd_toolbar.png" />
+    <EmbeddedResource Include="WebApi\Content\js\views\search.js" />
     <EmbeddedResource Include="WebApi\Content\js\views\applications.js" />
     <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\comment\comment.js" />
     <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\comment\continuecomment.js" />
@@ -443,7 +451,6 @@
     <EmbeddedResource Include="WebApi\Content\js\libs\bootstrap-datepicker.js" />
     <EmbeddedResource Include="WebApi\Content\js\libs\bootstrap-notify.js" />
     <EmbeddedResource Include="WebApi\Content\js\libs\bootstrap.js" />
-    <EmbeddedResource Include="WebApi\Content\js\libs\bootstrap.min.js" />
     <EmbeddedResource Include="WebApi\Content\js\libs\console-log-wrapper.js" />
     <EmbeddedResource Include="WebApi\Content\js\libs\jquery.ba-throttle-debounce.min.js" />
     <EmbeddedResource Include="WebApi\Content\js\libs\jquery.fileupload.js" />

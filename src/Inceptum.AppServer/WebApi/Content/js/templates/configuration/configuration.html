@@ -1,7 +1,8 @@
 <div class="page-header">
     <h3>
-        <%=model.name%>        
+        <%=model.name%>
         <span class="pull-right">
+            <input id="search" class="input-large" type="text" placeholder="Search" style="height: 12px; margin-top: 10px;">
             <a href="/#configurations/<%=model.name%>/create" id="createBundle" class="btn btn-mini"><i
                     class="icon-file"></i> <strong>Create root bundle</strong></a>
             <a href="/api/configurations/<%=model.name%>/export" id="export" class="btn btn-mini"><i

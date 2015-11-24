@@ -5,14 +5,13 @@ define([
     'views/confirm',
     'views/alerts',
     'text!templates/configuration/configuration.html',
+    'views/search',
     'bootbox',
     'fileupload'],
-    function($, Backbone, _, confirmView,alerts, template){
+    function ($, Backbone, _, confirmView, alerts, template, SearchView) {
         var View = Backbone.View.extend({
             el:'#content',
             initialize: function(){
-//                console.log("!!!");
-
                 _.bindAll(this,"upload","dispose");
             },
             events:{
@@ -85,12 +84,18 @@ define([
                 $(this.el).html(this.template);
 
                 this.importDialog=$("#importDialog");
-                $('#fakeInputFile').val("").next().click(function(){$('#inputFile').click();});
+                $('#fakeInputFile').val("").next().click(function () { $('#inputFile').click(); });
+
+                this.searchView = new SearchView();
+                this.searchView.$el = $('#search');
+                this.searchView.render();
 
                 return this;
             },
-            'dispose':function(){
-
+            'dispose':function() {
+                if (this.searchView) {
+                    this.searchView.dispose();
+                }
             }
         });
 
