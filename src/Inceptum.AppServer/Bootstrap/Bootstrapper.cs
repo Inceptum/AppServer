@@ -107,7 +107,8 @@ namespace Inceptum.AppServer.Bootstrap
                         Component.For<IHost>().ImplementedBy<Host>())
                     //Nuget
                     .Register(
-                        Component.For<IApplicationRepository>().ImplementedBy<NugetApplicationRepository>()
+                        Component.For<IApplicationRepository>().ImplementedBy<NugetApplicationRepository>(),
+                        Component.For<NugetApplicationRepositoryConfiguration>().FromConfiguration("server.host", "nuget", "{environment}", "{machineName}")
                         );
                 configureApiHost(container);
                 var folders = (debugFolders??new string[0]).ToArray();

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Inceptum.AppServer.Configuration;
 using Newtonsoft.Json.Linq;
 using NuGet;
 using ILogger = Castle.Core.Logging.ILogger;
@@ -14,48 +13,21 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         private readonly IPackageRepository m_ApplicationRepository;
         private readonly IPackageRepository m_DependenciesRepository;
         private readonly string m_LocalSharedRepository;
-        private readonly DependencyVersion m_DependencyVersion;
-        private readonly bool m_AllowPrereleaseVersions;
         private readonly ILogger m_Logger;
+        private readonly NugetApplicationRepositoryConfiguration m_Configuration;
 
-        public NugetApplicationRepository(ILogger logger, IManageableConfigurationProvider configurationProvider)
+        public NugetApplicationRepository(ILogger logger, NugetApplicationRepositoryConfiguration configuration)
         {
             m_Logger = logger;
-            m_LocalSharedRepository = Path.GetFullPath("packages\\");
+            m_LocalSharedRepository = Path.GetFullPath(@"packages\");
+            m_Configuration = configuration;
 
-            var bundleString = configurationProvider.GetBundle("AppServer", "server.host", "{environment}", "{machineName}");
+            m_ApplicationRepository = PackageRepositoryFactory.Default.CreateRepository(getRepositoryPath(m_Configuration.ApplicationRepository));
 
-            dynamic bundle = JObject.Parse(bundleString).SelectToken("nuget");
-
-            var applicationRepository = (string) bundle.applicationRepository;
-
-            if (!Enum.TryParse(Convert.ToString(bundle.dependencyVersion), out m_DependencyVersion))
-            {
-                m_DependencyVersion = DependencyVersion.Highest;    
-            }
-            if (!Boolean.TryParse(Convert.ToString(bundle.allowPrereleaseVersions), out m_AllowPrereleaseVersions))
-            {
-                m_AllowPrereleaseVersions = true;
-            }
-
-            m_ApplicationRepository = PackageRepositoryFactory.Default.CreateRepository(getRepositoryPath(applicationRepository));
-
-            var dependenciesRepositories = ((JArray)bundle.dependenciesRepositories).Select(t => t.ToString()).Select(getRepositoryPath).ToArray();
+            var dependenciesRepositories = configuration.DependenciesRepositories.Select(getRepositoryPath).ToArray();
             var dependencyRepositories = dependenciesRepositories.Select(r => PackageRepositoryFactory.Default.CreateRepository(r)).ToArray();
 
             m_DependenciesRepository = new AggregateRepository(new[] {m_ApplicationRepository}.Concat(dependencyRepositories)) {ResolveDependenciesVertically = true};
-        }
-
-        public NugetApplicationRepository(ILogger logger, string applicationsRepositorySource, string[] dependencyRepositoriesSet, bool allowPrereleaseVersions, DependencyVersion dependencyVersion)
-        {
-            m_Logger = logger;
-            m_AllowPrereleaseVersions = allowPrereleaseVersions;
-            m_DependencyVersion = dependencyVersion;
-            m_LocalSharedRepository = Path.GetFullPath("packages\\");
-            m_ApplicationRepository = PackageRepositoryFactory.Default.CreateRepository(applicationsRepositorySource);
-
-            var dependencyRepositories = dependencyRepositoriesSet.Select(r => PackageRepositoryFactory.Default.CreateRepository(r)).ToArray();
-            m_DependenciesRepository = new AggregateRepository(new[] { m_ApplicationRepository }.Concat(dependencyRepositories)) { ResolveDependenciesVertically = true };
         }
 
         public IEnumerable<ApplicationInfo> GetAvailableApps()
@@ -85,7 +57,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 return;
             }
 
-            var projectManager = new ProjectManagerWrapper(application.ApplicationId, m_LocalSharedRepository, path, m_Logger, m_DependenciesRepository, m_DependencyVersion, m_AllowPrereleaseVersions);
+            var projectManager = new ProjectManagerWrapper(application.ApplicationId, m_LocalSharedRepository, path, m_Logger, m_DependenciesRepository, m_Configuration.DependencyVersion, m_Configuration.AllowPrereleaseVersions);
             if (installedVersion != null)
             {
                 var packageId = application.ApplicationId;

@@ -25,9 +25,9 @@ namespace Inceptum.AppServer.Tests.AppDiscovery.NuGet
                 Vendor = "Unistream",
                 Version = Version.Parse("1.0.8.25")
             };
-            var repository = createRepository(true, DependencyVersion.Highest);
+            var repository = CreateRepository(true, DependencyVersion.Highest);
 
-            executeInTempDirectory(testAppPath => repository.Install(testAppPath, applicationInfo));
+            ExecuteInTempDirectory(testAppPath => repository.Install(testAppPath, applicationInfo));
         }
 
         [Test]
@@ -41,9 +41,9 @@ namespace Inceptum.AppServer.Tests.AppDiscovery.NuGet
                 Vendor = "Unistream",
                 Version = Version.Parse("1.0.8.25")
             };
-            var repository = createRepository(false, DependencyVersion.Highest);
+            var repository = CreateRepository(false, DependencyVersion.Highest);
 
-            executeInTempDirectory(testAppPath =>
+            ExecuteInTempDirectory(testAppPath =>
             {
                 repository.Install(testAppPath, applicationInfo);
                 var assemblyFileName = Path.Combine(testAppPath, "bin", "protobuf-net.dll");
@@ -63,9 +63,9 @@ namespace Inceptum.AppServer.Tests.AppDiscovery.NuGet
                 Vendor = "Unistream",
                 Version = Version.Parse("1.0.8.25")
             };
-            var repository = createRepository(false, DependencyVersion.Lowest);
+            var repository = CreateRepository(false, DependencyVersion.Lowest);
 
-            executeInTempDirectory(testAppPath =>
+            ExecuteInTempDirectory(testAppPath =>
             {
                 repository.Install(testAppPath, applicationInfo);
                 var assemblyFileName = Path.Combine(testAppPath, "bin", "protobuf-net.dll");
@@ -74,7 +74,7 @@ namespace Inceptum.AppServer.Tests.AppDiscovery.NuGet
             });
         }
 
-        static void executeInTempDirectory(Action<string> action)
+        static void ExecuteInTempDirectory(Action<string> action)
         {
             string path = Path.Combine(Directory.GetCurrentDirectory(), DateTime.Now.Ticks.ToString());
 
@@ -93,17 +93,23 @@ namespace Inceptum.AppServer.Tests.AppDiscovery.NuGet
             }
         }
 
-        static NugetApplicationRepository createRepository(bool allowPrereleaseVersions, DependencyVersion dependencyVersion)
+        static NugetApplicationRepository CreateRepository(bool allowPrereleaseVersions, DependencyVersion dependencyVersion)
         {
             var logger = new ConsoleLogger();
-            var applicationsRepositorySource = @"E:\Temp\nuget";//"http://nuget.it.unistreambank.ru/nuget/DEV.Apps";
-            var dependencyRepositoriesSet = new[]
+
+            var configuration = new NugetApplicationRepositoryConfiguration
             {
-                "http://nuget.it.unistreambank.ru/nuget/DEV.Libs",
-                "http://nuget.it.unistreambank.ru/nuget/DEV.ThirdParty"
+                AllowPrereleaseVersions = allowPrereleaseVersions,
+                DependencyVersion = dependencyVersion,
+                ApplicationRepository = @"http://nuget.it.unistreambank.ru/nuget/dev.Apps",
+                DependenciesRepositories = new[]
+                {
+                    "http://nuget.it.unistreambank.ru/nuget/DEV.Libs",
+                    "http://nuget.it.unistreambank.ru/nuget/DEV.ThirdParty"
+                }
             };
 
-            var repository = new NugetApplicationRepository(logger, applicationsRepositorySource, dependencyRepositoriesSet, allowPrereleaseVersions, dependencyVersion);
+            var repository = new NugetApplicationRepository(logger, configuration);
 
             return repository;
         }

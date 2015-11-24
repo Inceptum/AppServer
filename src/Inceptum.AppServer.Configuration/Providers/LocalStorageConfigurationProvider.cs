@@ -189,7 +189,7 @@ namespace Inceptum.AppServer.Configuration.Providers
             m_ConfigurationsLock.EnterReadLock();
             try
             {
-                config = m_Configurations.FirstOrDefault(c => c.Name == configuration.ToLower());
+                config = m_Configurations.FirstOrDefault(c => string.Equals(c.Name, configuration, StringComparison.OrdinalIgnoreCase));
             }
             finally
             {
@@ -199,6 +199,7 @@ namespace Inceptum.AppServer.Configuration.Providers
             {
                 throw new ConfigurationErrorsException(string.Format("Configuration {0} not found", configuration));
             }
+
             return config;
         }
 
