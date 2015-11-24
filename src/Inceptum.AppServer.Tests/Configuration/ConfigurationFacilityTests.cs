@@ -6,7 +6,7 @@ using Inceptum.AppServer.Configuration;
 using NUnit.Framework;
 using Rhino.Mocks;
 
-namespace Inceptum.Configuration.Tests.Client
+namespace Inceptum.AppServer.Tests.Configuration
 {
     [TestFixture]
     public class ConfigurationFacilityTests
@@ -59,21 +59,6 @@ namespace Inceptum.Configuration.Tests.Client
             Assert.Catch<ConfigurationErrorsException>(() => new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.Configuration("ibank")), "IConfigurationProvider not found. Register it before registering ConfigurationFacility");
          }
 
-/*
-
-        [Test]
-        public void InitTest()
-        {
-            var windsorContainer = new WindsorContainer().AddFacility<ConfigurationFacility>(f => f.ServiceUrl("http://localhost:8080/").Configuration("testConfiguration"));
-            var provider = windsorContainer.Resolve<IConfigurationProvider>();
-            Assert.That(provider, Is.Not.Null, "Configuration provider was not registered");
-        }        
-        
-        
-*/
-        
-
-
         [TestCase("prop","{\"prop\":{\"longDependency\":999999999999,\"intDependency\":10, \"strDependency\":\"str\"}}",TestName = "with json path ")]
         [TestCase("", "{\"longDependency\":999999999999,\"intDependency\":10, \"strDependency\":\"str\"}", TestName = "without json path ")]
         public void DependencyOnConfigurationTest(string jsonPath, string bundleContent)
@@ -87,8 +72,6 @@ namespace Inceptum.Configuration.Tests.Client
             Assert.That(resolved.IntDependency, Is.EqualTo(10));
             Assert.That(resolved.StrDependency, Is.EqualTo("str"));
         }
-
-
 
         [TestCase("prop", "{\"prop\":{\"longDependency\":999999999999,\"intDependency\":10, \"strDependency\":\"str\"}}", TestName = "with json path")]
         [TestCase("", "{\"longDependency\":999999999999,\"intDependency\":10, \"strDependency\":\"str\"}", TestName = "without json path")]
@@ -117,5 +100,4 @@ namespace Inceptum.Configuration.Tests.Client
             Assert.That(resolved.StrDependency, Is.EqualTo("str"));
         }
     }
-
 }

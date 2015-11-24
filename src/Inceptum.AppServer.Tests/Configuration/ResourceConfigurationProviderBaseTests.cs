@@ -3,7 +3,7 @@ using Inceptum.AppServer.Configuration.Providers;
 using NUnit.Framework;
 using Rhino.Mocks;
 
-namespace Inceptum.Configuration.Tests.Client
+namespace Inceptum.AppServer.Tests.Configuration
 {
     [TestFixture]
     public class ResourceConfigurationProviderBaseTests

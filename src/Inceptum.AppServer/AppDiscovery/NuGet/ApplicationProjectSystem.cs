@@ -8,34 +8,28 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 {
     public class ApplicationProjectSystem : PhysicalFileSystem, IProjectSystem, IFileSystem
     {
+        private const string BIN_DIR = "bin";
+
         public ApplicationProjectSystem(string root)
             : base(root)
         {
         }
 
-        private const string BIN_DIR = "bin";
-
         public string ProjectName
         {
-            get
-            {
-                return  Root;
-            }
+            get { return Root; }
         }
 
         public bool IsBindingRedirectSupported { get; private set; }
 
         public bool FileExistsInProject(string path)
         {
-            return this.FileExists(path);
+            return FileExists(path);
         }
 
         public FrameworkName TargetFramework
         {
-            get
-            {
-                return new FrameworkName(".NETFramework,Version=v4.5");
-            }
+            get { return new FrameworkName(".NETFramework,Version=v4.5"); }
         }
 
 
@@ -45,19 +39,18 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             string fileName = Path.GetFileName(referencePath);
             string fullPath = this.GetFullPath(GetReferencePath(fileName));
 */
-            string fullPath = this.GetFullPath(GetReferencePath(referencePath));
+            var fullPath = GetFullPath(GetReferencePath(referencePath));
 
 /*
             //nuget provides empty stream for references so this is the only way to get the file
             using (var fs = new FileStream(Path.Combine(Root, "packages", referencePath), FileMode.Open))
 */
-                AddFile(fullPath, stream);
+            AddFile(fullPath, stream);
         }
 
 
         public void AddFrameworkReference(string name)
         {
-            
         }
 
         public object GetPropertyValue(string propertyName)
@@ -77,14 +70,13 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 return !Path.GetFileName(path).Equals("app.config", StringComparison.OrdinalIgnoreCase);
 */
             return true;
-          
         }
 
         public string ResolvePath(string path)
         {
             if (path.ToLower().StartsWith("config\\"))
                 return path.Substring(7);
-            return Path.Combine("Content",path);
+            return Path.Combine("Content", path);
         }
 
         public void AddImport(string targetPath, ProjectImportLocation location)
@@ -114,8 +106,5 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         {
             return Path.Combine(BIN_DIR, name);
         }
-
-       
-
     }
 }

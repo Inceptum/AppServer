@@ -108,14 +108,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\ComponentRegistrationExtentionsTests.cs" />
+    <Compile Include="Configuration\Config.cs" />
     <Compile Include="Configuration\ConfigTests.cs" />
     <Compile Include="Configuration\ConfigurationFacilityTests.cs" />
     <Compile Include="Configuration\ConfigurationProviderTests.cs" />
+    <Compile Include="Configuration\ConfigWithNonVirtualMembers.cs" />
+    <Compile Include="Configuration\ConnectionStringsTest1.cs" />
+    <Compile Include="Configuration\ConnectionStringsTest2.cs" />
     <Compile Include="Configuration\DependsOnConnectionStringsTests.cs" />
     <Compile Include="Configuration\FileSystemConfigurationProviderTests.cs" />
     <Compile Include="Configuration\RemoteConfigurationProviderTests.cs" />
     <Compile Include="Configuration\ResourceConfigurationProviderBaseTests.cs" />
+    <Compile Include="IMyComponentFactory.cs" />
     <Compile Include="Investigation.cs" />
+    <Compile Include="Manager.cs" />
+    <Compile Include="MyComponent.cs" />
+    <Compile Include="NugetInvestigation.cs" />
     <Compile Include="NuGet\ApplicationProjectManagerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

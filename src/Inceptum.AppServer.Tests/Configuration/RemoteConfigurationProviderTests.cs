@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Inceptum.AppServer.Configuration.Providers;
 using NUnit.Framework;
-using Rhino.Mocks;
 
-namespace Inceptum.Configuration.Tests.Client
+namespace Inceptum.AppServer.Tests.Configuration
 {
     [TestFixture]
     public class RemoteConfigurationProviderTests
@@ -49,8 +45,5 @@ namespace Inceptum.Configuration.Tests.Client
             Assert.That(resourceName, Is.EqualTo("configuration/testConfiguration/ibank/test1/"), "Wrong resource name  was generated");
 
         }
-
-
-
     }
 }

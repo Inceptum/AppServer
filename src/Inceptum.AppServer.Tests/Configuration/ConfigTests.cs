@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Configuration.Model;
-using Inceptum.AppServer.Configuration.Providers;
 using NUnit.Framework;
 using Rhino.Mocks;
 
@@ -27,7 +26,7 @@ namespace Inceptum.AppServer.Tests.Configuration
                     {"A", "a"}
                 };
 
-            var config = new Config(persister, contentProcessor, "test", bundles);
+            var config = new Inceptum.AppServer.Configuration.Model.Config(persister, contentProcessor, "test", bundles);
             var list = new Dictionary<string,Bundle>();
             config.Visit(b=>list.Add(b.Name,b));
             Assert.That(list.Count(), Is.EqualTo(3), "wrong number of bundles were created");
@@ -37,10 +36,6 @@ namespace Inceptum.AppServer.Tests.Configuration
             Assert.That(list["a.b"].Parent, Is.SameAs(list["a"]), "wrong bundles structure");
             Assert.That(list["a"].Parent, Is.Null, "wrong bundles structure");
             Assert.That(new[] { config["a"], config["a.b"], config["a.b.c"] }, Is.EquivalentTo(new[] { "a", "ab", "abc" }), "wrong bundles content");
-
         }
-        
-
-         
     }
 }
