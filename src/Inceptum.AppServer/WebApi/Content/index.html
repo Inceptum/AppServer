@@ -94,11 +94,20 @@
 		.main {padding-left:400px;}
 		.sidebar {width:380px; float:left;margin-top:60px; }
 		 
-        li.active div.typeahead div.typeahead-head {
+        ul.typeahead.dropdown-menu li {
+            overflow: hidden;
+        }
+        ul.typeahead.dropdown-menu li div.typeahead b.match {
+            text-decoration: underline;
+        }
+        ul.typeahead.dropdown-menu li.active div.typeahead div.typeahead-head {
             color: white;
         }
-        li div.typeahead-head {
+        ul.typeahead.dropdown-menu li div.typeahead-head {
             color: #08c;
+        }
+        input.search-query {
+            border-radius: 4px !important;
         }
     </style>
     <script type="text/javascript">

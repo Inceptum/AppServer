@@ -3,7 +3,6 @@ define([
     'backbone',
     'underscore',
     'text!templates/bundle.html',
-    'views/search',
     'views/alerts',
     'jsonlint',
     'codemirror',
@@ -12,7 +11,7 @@ define([
     'codemirror/addon/search/matchesonscrollbar',
 	'libs/prettify',
     'shortcut'],
-    function ($, Backbone, _, template, SearchView, alerts, jsonlint, CodeMirror) {
+    function ($, Backbone, _, template, alerts, jsonlint, CodeMirror) {
         var View = Backbone.View.extend({
             el:'#content',
             initialize:function () {
@@ -169,19 +168,12 @@ define([
                 shortcut.add("ctrl+p", this.togglePreview);
                 shortcut.add("ctrl+alt+f", this.verify);
                 shortcut.add("ctrl+s", this.save);
-
-                this.searchView = new SearchView();
-                this.searchView.$el = $('#search');
-                this.searchView.render();
             },
             dispose: function () {
                 shortcut.remove("F11");
                 shortcut.remove("ctrl+p");
                 shortcut.remove("ctrl+alt+f");
                 shortcut.remove("ctrl+s");
-                if (this.searchView) {
-                    this.searchView.dispose();
-                }
             }
         });
 

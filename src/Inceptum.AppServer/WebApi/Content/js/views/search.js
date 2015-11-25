@@ -5,34 +5,29 @@ define([
     ],
     function ($, Backbone) {
 
-        function escapeRegExp(str) {
-            return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-        }
-
         var View = Backbone.View.extend({
-            'dispose':function() {
-                
+            autosize: function () {
+                var that = this;
+                setTimeout(function () {
+                    that.$el.parent().find('ul.typeahead.dropdown-menu').css({
+                        width: $(window).width() / 3
+                    });
+                }, 0);
             },
-            render: function() {
+            render: function () {
+                var that = this;
                 var maxCount = 16;
-                $('#search').typeahead({
+                this.$el.typeahead({
                     minLength: 1,
                     items: maxCount,
                     matcher: function() {
                         return true;
                     },
                     highlighter: function(item) {
-                        var query = this.query;
-
-                        var regexp = new RegExp(escapeRegExp(query), 'gi');
-                        var hl = function(x) {
-                            return x.replace(regexp, function (str) { return '<b style="text-decoration: underline;">' + str + '</b>' });
-                        };
-
-                        var html = '<div class="typeahead" style="font-size: 55%;">';
+                        var html = '<div class="typeahead">';
                         html += '<div class="pull-left margin-small">';
-                        html += '<div class="text-left typeahead-head">' + hl(item.configuration) + ' / ' + hl(item.id) + '</div>';
-                        html += '<div class="text-left">' + hl(item.content) + '</div>';
+                        html += '<div class="text-left typeahead-head">' + item.configuration + ' / ' + item.id + '</div>';
+                        html += '<div class="text-left">' + item.content + '</div>';
                         html += '</div>';
                         html += '<div class="clearfix"></div>';
                         html += '</div>';
@@ -53,6 +48,7 @@ define([
                             dataType: 'json',
                             success: function(data) {
                                 process(data);
+                                that.autosize();
                             }
                         });
                     }

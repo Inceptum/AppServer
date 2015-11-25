@@ -65,7 +65,20 @@ namespace Inceptum.AppServer
 
             FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
 
-            var productVersion = versionInfo.FileVersion;
+            string productVersion = versionInfo.FileVersion;
+            if (productVersion == "0.0.0.0")
+            {
+#if DEBUG
+                productVersion = "DEBUG";
+#endif
+#if RELEASE
+                productVersion = "RELEASE";
+#endif
+            }
+            else
+            {
+                productVersion = "v" + productVersion;
+            }
 
             return string.Format("AppServer, {0}", productVersion);
         }
