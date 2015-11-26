@@ -240,8 +240,7 @@
     <Compile Include="AppDiscovery\NuGet\ConfigTransformer.cs" />
     <Compile Include="AppDiscovery\NuGet\NugetApplicationRepositoryConfiguration.cs" />
     <Compile Include="AppDiscovery\NuGet\NugetExtensions.cs" />
-    <Compile Include="AppServerSetup.cs" />
-    <Compile Include="AppServerExternalConfigurationProvider.cs" />
+    <Compile Include="Configuration\AppServerExternalConfigurationProvider.cs" />
     <Compile Include="Hosting\JobObject.cs" />
     <Compile Include="AppDiscovery\NuGet\ProjectManagerWrapper.cs" />
     <Compile Include="AppDiscovery\NuGet\ApplicationProjectSystem.cs" />

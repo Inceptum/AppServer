@@ -41,8 +41,6 @@ namespace Inceptum.AppServer.Hosting
         public Host(ILogCache logCache, IManageableConfigurationProvider serverConfigurationProvider, IConfigurationProvider applicationConfigurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepository applicationRepository, ILogger logger = null)
         {
             m_JobObject = new JobObject();
-
-
             m_ApplicationRepository = applicationRepository;
             m_ServerConfigurationProvider = serverConfigurationProvider;
             m_Listeners = listeners;
@@ -55,9 +53,13 @@ namespace Inceptum.AppServer.Hosting
                 var bundleString = serverConfigurationProvider.GetBundle("AppServer", "server.host", "{machineName}");
                 var setup = JsonConvert.DeserializeObject<AppServerSetup>(bundleString);
                 if (setup.Name != null)
+                {
                     Name = setup.Name;
+                }
                 else
+                {
                     Logger.WarnFormat("Failed to get server name from configuration , using default:{0}", Name);
+                }
             }
             catch (Exception e)
             {
@@ -74,7 +76,6 @@ namespace Inceptum.AppServer.Hosting
 
             m_ConfigurationProviderServiceHost = new ServiceHostWrapper<IConfigurationProvider>(Logger, applicationConfigurationProvider, "ConfigurationProvider");
             m_LogCacheServiceHost = new ServiceHostWrapper<ILogCache>(Logger, logCache, "LogCache");
-          
         }
 
         private void checkInstances()
@@ -138,7 +139,6 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-
         public void Start()
         {
             m_IsStopped = false;
@@ -186,7 +186,6 @@ namespace Inceptum.AppServer.Hosting
             notifyApplicationsChanged();
         }
 
-
         private void createInstance(InstanceConfig config)
         {
             var instance = m_InstanceFactory.Create(config.Name, m_Context);
@@ -209,7 +208,6 @@ namespace Inceptum.AppServer.Hosting
                 throw new ArgumentException("Application '" + config.ApplicationVendor + "(c) " + config.ApplicationId + "' not found");
 
         }
-
 
         private void notifyInstancesChanged(string comment = null)
         {
@@ -416,8 +414,6 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-
-
         public void Debug(string name)
         {
             try
@@ -450,7 +446,6 @@ namespace Inceptum.AppServer.Hosting
                 throw;
             }
         }
-
 
         public Task StopInstance(string name)
         {
@@ -557,13 +552,11 @@ namespace Inceptum.AppServer.Hosting
             Logger.DebugFormat("Instances are updated");
         }
 
-
         public Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged
         {
             //TODO: fake!!!
             get { return new Subject<Tuple<HostedAppInfo, HostedAppStatus>[]>(); }
         }
-
 
         public void Stop()
         {
@@ -586,12 +579,18 @@ namespace Inceptum.AppServer.Hosting
             m_Instances.Clear();
             Logger.InfoFormat("Host is stopped");
         }
+
         public void Dispose()
         {
             m_InstanceChecker.Dispose();
             m_JobObject.Dispose();
             m_ConfigurationProviderServiceHost.Dispose();
             m_LogCacheServiceHost.Dispose();
+        }
+
+        class AppServerSetup
+        {
+            public string Name { get; set; }
         }
     }
 }
