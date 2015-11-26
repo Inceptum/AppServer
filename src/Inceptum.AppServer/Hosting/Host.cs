@@ -142,7 +142,9 @@ namespace Inceptum.AppServer.Hosting
         public void Start()
         {
             m_IsStopped = false;
+
             RediscoverApps();
+
             Logger.Info("Reading instances config");
             updateInstances();
             IGrouping<int, InstanceConfig>[] startGroups;
@@ -153,8 +155,26 @@ namespace Inceptum.AppServer.Hosting
                     .GroupBy(c => c.StartOrder ?? Int32.MaxValue)
                     .OrderBy(c => c.Key).ToArray();
             }
-            var tasks = startGroups.SelectMany(startGroup => startGroup.Select(instance => Task.Factory.StartNew(() => startInstance(instance.Name, true)).ContinueWith(task => Logger.InfoFormat("Started instance with {0} start order {1}", instance.Name, instance.StartOrder)))).ToArray();
-            Task.Factory.ContinueWhenAll(tasks, finishedTasks => Logger.InfoFormat("Started instances with start order"));
+
+            var sw = Stopwatch.StartNew();
+            Task.Factory.StartNew(() =>
+            {
+                foreach (var startGroup in startGroups)
+                {
+                    startGroup
+                            .AsParallel()
+                            .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
+                            .ForAll(instance =>
+                            {
+                                startInstance(instance.Name, safe: true);
+                                Logger.InfoFormat("Started instance with {0} start order {1}", instance.Name, instance.StartOrder);
+                            });
+                }
+            }).ContinueWith(t =>
+            {
+                sw.Stop();
+                Logger.InfoFormat("Started all instances, time = {0}", sw.Elapsed);
+            });
         }
 
         public void RediscoverApps()
