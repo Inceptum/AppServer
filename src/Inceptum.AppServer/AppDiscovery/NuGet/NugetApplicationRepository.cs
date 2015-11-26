@@ -57,7 +57,10 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 return;
             }
 
-            var projectManager = new ProjectManagerWrapper(application.ApplicationId, m_LocalSharedRepository, path, m_Logger, m_DependenciesRepository, m_Configuration.DependencyVersion, m_Configuration.AllowPrereleaseVersions);
+            DependencyVersion dependencyVersion = m_Configuration.DependencyVersion ?? DependencyVersion.Highest;
+            var allowPrereleaseVersions = m_Configuration.AllowPrereleaseVersions ?? true;
+
+            var projectManager = new ProjectManagerWrapper(application.ApplicationId, m_LocalSharedRepository, path, m_Logger, m_DependenciesRepository, dependencyVersion, allowPrereleaseVersions);
             if (installedVersion != null)
             {
                 var packageId = application.ApplicationId;
