@@ -145,23 +145,16 @@ namespace Inceptum.AppServer.Hosting
             RediscoverApps();
             Logger.Info("Reading instances config");
             updateInstances();
-            IEnumerable<Task> tasks;
             IGrouping<int, InstanceConfig>[] startGroups;
             lock (m_SyncRoot)
             {
                 startGroups = m_InstancesConfiguration
                     .Where(c => c.AutoStart)
-                    .GroupBy(c=>c.StartOrder??Int32.MaxValue)
-                    .OrderBy(c=>c.Key).ToArray();
+                    .GroupBy(c => c.StartOrder ?? Int32.MaxValue)
+                    .OrderBy(c => c.Key).ToArray();
             }
-
-                            
-            foreach (var startGroup in startGroups)
-            {
-                Logger.InfoFormat("Starting instances with start order {0}",startGroup.Key);
-                tasks = startGroup.Select(instance => Task.Factory.StartNew(() => startInstance(instance.Name, true)));
-                Task.WaitAll(tasks.ToArray());
-            }
+            var tasks = startGroups.SelectMany(startGroup => startGroup.Select(instance => Task.Factory.StartNew(() => startInstance(instance.Name, true)).ContinueWith(task => Logger.InfoFormat("Started instance with {0} start order {1}", instance.Name, instance.StartOrder)))).ToArray();
+            Task.Factory.ContinueWhenAll(tasks, finishedTasks => Logger.InfoFormat("Started instances with start order"));
         }
 
         public void RediscoverApps()
