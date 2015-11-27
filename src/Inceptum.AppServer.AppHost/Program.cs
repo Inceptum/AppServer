@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using Inceptum.AppServer.AppHost.Interop;
 using Inceptum.AppServer.Hosting;
 
 namespace Inceptum.AppServer.AppHost

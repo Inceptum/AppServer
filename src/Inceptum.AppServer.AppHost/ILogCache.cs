@@ -2,10 +2,10 @@ using System.ServiceModel;
 
 namespace Inceptum.AppServer.Logging
 {
-     [ServiceContract]
+    [ServiceContract]
     public interface ILogCache
     {
-          [OperationContract]
+        [OperationContract]
         void Add(LogEvent message);
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Castle.Windsor.Installer;
 
-namespace Inceptum.AppServer.Windsor
+namespace Inceptum.AppServer.AppHost.Container
 {
     ///<summary>
     /// Factory to install facilities before installers

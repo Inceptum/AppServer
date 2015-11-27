@@ -80,19 +80,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\WcfHelper.cs">
-      <Link>WcfHelper.cs</Link>
-    </Compile>
+    <Compile Include="Mono\Cecil\AssemblyDefinitionFactory.cs" />
+    <Compile Include="Interop\PROCESS_BASIC_INFORMATION.cs" />
+    <Compile Include="Container\MisconfiguredComponentsLogger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ApplicationHost.cs" />
     <Compile Include="IApplicationHost.cs" />
     <Compile Include="IApplicationInstance.cs" />
     <Compile Include="ILogCache.cs" />
-    <Compile Include="InstanceAwareConfigurationProviderWrapper.cs" />
-    <Compile Include="ManagementConsoleTarget.cs" />
-    <Compile Include="PluginInstallerFactory.cs" />
+    <Compile Include="Configuration\InstanceAwareConfigurationProviderWrapper.cs" />
+    <Compile Include="Logging\Targets\ManagementConsoleTarget.cs" />
+    <Compile Include="Container\PluginInstallerFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WndUtils.cs" />
+    <Compile Include="Interop\WndUtils.cs" />
+    <Compile Include="Wcf\WcfHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

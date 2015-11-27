@@ -88,7 +88,7 @@ namespace Inceptum.AppServer.AppDiscovery.FileSystem
         {
             var dlls = new[] {"*.dll", "*.exe"}
                 .SelectMany(searchPattern => Directory.GetFiles(folder, searchPattern))
-                .Select(file => new {path = file, AssemblyDefinition = CeceilExtencions.TryReadAssembly(file)}).ToArray();
+                .Select(file => new {path = file, AssemblyDefinition = AssemblyDefinitionFactory.ReadAssemblySafe(file)}).ToArray();
 
             var apps = (from file in dlls
                 let asm = file.AssemblyDefinition

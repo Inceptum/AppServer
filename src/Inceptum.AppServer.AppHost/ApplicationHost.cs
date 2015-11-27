@@ -6,26 +6,22 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.Text;
 using System.Threading;
-using Castle.Core.Logging;
 using Castle.Facilities.Logging;
-using Castle.MicroKernel;
-using Castle.MicroKernel.Handlers;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
-using Castle.Windsor.Diagnostics;
 using Castle.Windsor.Installer;
+using Inceptum.AppServer.AppHost.Configuration;
+using Inceptum.AppServer.AppHost.Container;
 using Inceptum.AppServer.Configuration;
-using Inceptum.AppServer.AppHost;
+using Inceptum.AppServer.AppHost.Interop;
+using Inceptum.AppServer.AppHost.Logging.Targets;
+using Inceptum.AppServer.AppHost.Wcf;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
-using Inceptum.AppServer.Utils;
-using Inceptum.AppServer.Windsor;
-using Mono.Cecil;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -33,63 +29,7 @@ using NLog.Targets.Wrappers;
 
 namespace Inceptum.AppServer.Hosting
 {
-    public class MisconfiguredComponentsLogger
-    {
-        private readonly ILogger m_Logger;
-
-        public MisconfiguredComponentsLogger(ILogger logger)
-        {
-            m_Logger = logger;
-        }
-
-        public void Log(IKernel kernel)
-        {
-            
-            var diagnostic = new PotentiallyMisconfiguredComponentsDiagnostic(kernel);
-            IHandler[] handlers = diagnostic.Inspect();
-            if (handlers != null && handlers.Any())
-            {
-                var builder = new StringBuilder();
-                builder.AppendFormat("Misconfigured components ({0})\r\n", handlers.Count());
-                foreach (IHandler handler in handlers)
-                {
-                    var info = (IExposeDependencyInfo)handler;
-                    var inspector = new DependencyInspector(builder);
-                    info.ObtainDependencyDetails(inspector);
-                }
-                m_Logger.Debug(builder.ToString());
-            }
-        }
-    }
-
-    public static class CeceilExtencions
-    {
-        public static AssemblyDefinition TryReadAssembly(string file)
-        {
-            try
-            {
-                return AssemblyDefinition.ReadAssembly(file);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        public static AssemblyDefinition TryReadAssembly(Stream assemblyStream)
-        {
-            try
-            {
-                return AssemblyDefinition.ReadAssembly(assemblyStream);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-    }
-    
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single,IncludeExceptionDetailInFaults = true)]
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, IncludeExceptionDetailInFaults = true)]
     internal class ApplicationHost : IApplicationHost 
     {
         private IDisposable m_Container;
@@ -100,9 +40,6 @@ namespace Inceptum.AppServer.Hosting
         private readonly string m_InstanceName;
         private AppServerContext m_Context;
         private readonly ManualResetEvent m_StopEvent = new ManualResetEvent(false);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr LoadLibrary(string lpFileName);
 
         public string UrlSafeInstanceName
         {
@@ -165,6 +102,7 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
+        /// <exception cref="InvalidOperationException"></exception>
         public void Run()
         {
              createServiceHost();
@@ -191,7 +129,7 @@ namespace Inceptum.AppServer.Hosting
             var folder = Path.Combine(m_Context.AppsDirectory, m_InstanceName, "bin");
             var dlls = new[]{"*.dll","*.exe"}
                 .SelectMany(searchPattern => Directory.GetFiles(folder, searchPattern,SearchOption.AllDirectories))
-                .Select(file => new {path = file, AssemblyDefinition = CeceilExtencions.TryReadAssembly(file)  }).ToArray();
+                .Select(file => new {path = file, AssemblyDefinition = AssemblyDefinitionFactory.ReadAssemblySafe(file)  }).ToArray();
                 
             var injectedAssemblies = instanceParams.AssembliesToLoad;
             m_LoadedAssemblies = dlls.Where(d => d.AssemblyDefinition!=null)
@@ -207,7 +145,7 @@ namespace Inceptum.AppServer.Hosting
 
             foreach (string dll in dlls.Where(d => d.AssemblyDefinition == null).Select(d=>d.path))
             {
-                if (LoadLibrary(dll) == IntPtr.Zero)
+                if (WndUtils.LoadLibrary(dll) == IntPtr.Zero)
                 {
                     throw new InvalidOperationException("Failed to load unmanaged dll " + Path.GetFileName(dll) + " from package");
                 }

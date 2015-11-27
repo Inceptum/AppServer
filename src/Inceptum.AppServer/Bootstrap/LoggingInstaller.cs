@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
+using Inceptum.AppServer.AppHost.Logging.Targets;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Notification;
 using Inceptum.AppServer.Utils;
@@ -16,7 +16,6 @@ using NLog.Config;
 namespace Inceptum.AppServer.Bootstrap
 {
     public class LoggingInstaller:IWindsorInstaller
-
     {
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {

@@ -1,7 +1,8 @@
-﻿using NLog;
+﻿using Inceptum.AppServer.Logging;
+using NLog;
 using NLog.Targets;
 
-namespace Inceptum.AppServer.Logging
+namespace Inceptum.AppServer.AppHost.Logging.Targets
 {
     public class ManagementConsoleTarget: TargetWithLayout
     {

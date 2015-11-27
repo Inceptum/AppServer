@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Inceptum.AppServer.Configuration;
 
-namespace Inceptum.AppServer.Hosting
+namespace Inceptum.AppServer.AppHost.Configuration
 {
     internal class InstanceAwareConfigurationProviderWrapper : IConfigurationProvider
     {
