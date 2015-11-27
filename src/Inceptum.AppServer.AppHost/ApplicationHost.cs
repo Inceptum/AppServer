@@ -40,15 +40,6 @@ namespace Inceptum.AppServer.Hosting
         private readonly string m_InstanceName;
         private AppServerContext m_Context;
         private readonly ManualResetEvent m_StopEvent = new ManualResetEvent(false);
-
-        public string UrlSafeInstanceName
-        {
-            get
-            {
-                return  WebUtility.UrlEncode(m_InstanceName);
-            }
-        }
-
         private Dictionary<AssemblyName, Lazy<Assembly>> m_LoadedAssemblies;
         private IApplicationInstance m_Instance;
         private ServiceHost m_ServiceHost;
@@ -60,58 +51,19 @@ namespace Inceptum.AppServer.Hosting
         public ApplicationHost(string instanceName)
         {
             m_InstanceName = instanceName;
-            m_ServiceAddress = new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/" + UrlSafeInstanceName).ToString();
-        }
-
-        #region Initialization
-
-        private void resetServiceHost(object sender, EventArgs e)
-        {
-            lock (m_ServiceHostLock)
-            {
-                if (m_ServiceHost != null)
-                {
-                    m_ServiceHost.Faulted -= resetServiceHost;
-                    m_ServiceHost.Close();
-                    m_ServiceHost = null;
-                }
-                createServiceHost();
-            }
-        }
- 
-        private void createServiceHost()
-        {
-            lock (m_ServiceHostLock)
-            {
-                m_ServiceHost = new ServiceHost(this);
-
-
-                var debug = m_ServiceHost.Description.Behaviors.Find<ServiceDebugBehavior>();
-
-                // if not found - add behavior with setting turned on 
-                if (debug == null)
-                    m_ServiceHost.Description.Behaviors.Add(new ServiceDebugBehavior {IncludeExceptionDetailInFaults = true});
-                else
-                    debug.IncludeExceptionDetailInFaults = true;
-                //TODO: need to do it in better way. String based type resolving is a bug source
-                m_ServiceHost.AddServiceEndpoint(typeof (IApplicationHost), WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), m_ServiceAddress);
-
-
-                m_ServiceHost.Open();
-                m_ServiceHost.Faulted += resetServiceHost;
-            }
+            m_ServiceAddress = new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/" + WebUtility.UrlEncode(m_InstanceName)).ToString();
         }
 
         /// <exception cref="InvalidOperationException"></exception>
         public void Run()
         {
-             createServiceHost();
+            createServiceHost();
 
-            var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/instances/" + UrlSafeInstanceName;
+            var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/instances/" + WebUtility.UrlEncode(m_InstanceName);
             var factory = new ChannelFactory<IApplicationInstance>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), new EndpointAddress(uri));
             m_Instance = factory.CreateChannel();
             var instanceParams = m_Instance.GetInstanceParams();
-            
+
             AppDomain.CurrentDomain.UnhandledException += onUnhandledException;
 
             m_Environment = instanceParams.Environment;
@@ -119,22 +71,22 @@ namespace Inceptum.AppServer.Hosting
             m_InstanceContext = new InstanceContext
             {
                 Name = m_InstanceName,
-                AppServerName= instanceParams.AppServerContext.Name,
-                Environment=m_Environment,
+                AppServerName = instanceParams.AppServerContext.Name,
+                Environment = m_Environment,
                 DefaultConfiguration = instanceParams.DefaultConfiguration
             };
- 
+
             IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
 
             var folder = Path.Combine(m_Context.AppsDirectory, m_InstanceName, "bin");
-            var dlls = new[]{"*.dll","*.exe"}
-                .SelectMany(searchPattern => Directory.GetFiles(folder, searchPattern,SearchOption.AllDirectories))
-                .Select(file => new {path = file, AssemblyDefinition = AssemblyDefinitionFactory.ReadAssemblySafe(file)  }).ToArray();
-                
+            var dlls = new[] { "*.dll", "*.exe" }
+                .SelectMany(searchPattern => Directory.GetFiles(folder, searchPattern, SearchOption.AllDirectories))
+                .Select(file => new { path = file, AssemblyDefinition = AssemblyDefinitionFactory.ReadAssemblySafe(file) }).ToArray();
+
             var injectedAssemblies = instanceParams.AssembliesToLoad;
-            m_LoadedAssemblies = dlls.Where(d => d.AssemblyDefinition!=null)
+            m_LoadedAssemblies = dlls.Where(d => d.AssemblyDefinition != null)
                                      .Where(asm => loadedAssemblies.All(a => a.Name != asm.AssemblyDefinition.Name.Name))
-                                     .Where(asm => injectedAssemblies.All(a => a.Key  != asm.AssemblyDefinition.Name.Name))
+                                     .Where(asm => injectedAssemblies.All(a => a.Key != asm.AssemblyDefinition.Name.Name))
                                      .ToDictionary(asm => new AssemblyName(asm.AssemblyDefinition.FullName), asm => new Lazy<Assembly>(() => loadAssembly(asm.path)));
             foreach (var injectedAssembly in injectedAssemblies)
             {
@@ -143,7 +95,7 @@ namespace Inceptum.AppServer.Hosting
                 m_LoadedAssemblies.Add(new AssemblyName(assemblyName), new Lazy<Assembly>(() => loadAssembly(path)));
             }
 
-            foreach (string dll in dlls.Where(d => d.AssemblyDefinition == null).Select(d=>d.path))
+            foreach (string dll in dlls.Where(d => d.AssemblyDefinition == null).Select(d => d.path))
             {
                 if (WndUtils.LoadLibrary(dll) == IntPtr.Zero)
                 {
@@ -157,26 +109,26 @@ namespace Inceptum.AppServer.Hosting
 
 
             var appAssemblies =
-                dlls.Select(file => new {file, asm = file.AssemblyDefinition})
+                dlls.Select(file => new { file, asm = file.AssemblyDefinition })
                     .Where(@t => @t.asm != null)
-                    .Select(@t => new {@t, attribute = @t.asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof (HostedApplicationAttribute).FullName)})
+                    .Select(@t => new { @t, attribute = @t.asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof(HostedApplicationAttribute).FullName) })
                     .Where(@t => @t.attribute != null)
                     .Select(@t => @t.@t.asm);
-                            
-            var appTypes=appAssemblies.SelectMany(
-                                    a=>a.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof(IHostedApplication).FullName))
+
+            var appTypes = appAssemblies.SelectMany(
+                                    a => a.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof(IHostedApplication).FullName))
                                         .Select(t => t.FullName + ", " + a.FullName)
                                     ).ToArray();
-            
+
             if (appTypes.Length > 1)
-                throw new  InvalidOperationException(string.Format("Instance {0} bin folder contains several types implementing IHostedApplication: {1}",m_InstanceName, string.Join(",",appTypes)));
+                throw new InvalidOperationException(string.Format("Instance {0} bin folder contains several types implementing IHostedApplication: {1}", m_InstanceName, string.Join(",", appTypes)));
 
             if (appTypes.Length == 0)
-                throw new  InvalidOperationException(string.Format("Instance {0} bin folder does not contain type implementing IHostedApplication",m_InstanceName));
+                throw new InvalidOperationException(string.Format("Instance {0} bin folder does not contain type implementing IHostedApplication", m_InstanceName));
 
             string appType = appTypes[0];
 
-            var instanceCommands = initContainer(Type.GetType(appType), instanceParams.LogLevel,instanceParams.MaxLogSize,instanceParams.LogLimitReachedAction);
+            var instanceCommands = initContainer(Type.GetType(appType), instanceParams.LogLevel, instanceParams.MaxLogSize, instanceParams.LogLimitReachedAction);
 
             m_Instance.RegisterApplicationHost(m_ServiceAddress, instanceCommands);
 
@@ -226,6 +178,78 @@ namespace Inceptum.AppServer.Hosting
 
             m_Container = null;
             m_HostedApplication = null;
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void Stop()
+        {
+            m_StopEvent.Set();
+        }
+
+        public string Execute(InstanceCommand command)
+        {
+            var methodInfo = m_HostedApplication.GetType().GetMethod(command.Name);
+            var result = methodInfo.Invoke(m_HostedApplication, methodInfo.GetParameters().Select(p => parseCommandParameterValue(p, command)).ToArray());
+            return result == null ? null : result.ToString();
+        }
+
+        public void ChangeLogLevel(string level)
+        {
+            var logLevel = mapLogLevel(level);
+            foreach (var l in new[] { LogLevel.Debug, LogLevel.Info, LogLevel.Warn, LogLevel.Error, LogLevel.Fatal })
+            {
+                foreach (var rule in m_LoggingConfig.LoggingRules)
+                {
+                    if (l < logLevel)
+                        rule.DisableLoggingForLevel(l);
+                    else
+                        rule.EnableLoggingForLevel(l);
+                }
+
+            }
+            LogManager.ReconfigExistingLoggers();
+        }
+
+        public void Debug()
+        {
+            Debugger.Launch();
+        }
+
+        private void resetServiceHost(object sender, EventArgs e)
+        {
+            lock (m_ServiceHostLock)
+            {
+                if (m_ServiceHost != null)
+                {
+                    m_ServiceHost.Faulted -= resetServiceHost;
+                    m_ServiceHost.Close();
+                    m_ServiceHost = null;
+                }
+                createServiceHost();
+            }
+        }
+ 
+        private void createServiceHost()
+        {
+            lock (m_ServiceHostLock)
+            {
+                m_ServiceHost = new ServiceHost(this);
+
+
+                var debug = m_ServiceHost.Description.Behaviors.Find<ServiceDebugBehavior>();
+
+                // if not found - add behavior with setting turned on 
+                if (debug == null)
+                    m_ServiceHost.Description.Behaviors.Add(new ServiceDebugBehavior {IncludeExceptionDetailInFaults = true});
+                else
+                    debug.IncludeExceptionDetailInFaults = true;
+                //TODO: need to do it in better way. String based type resolving is a bug source
+                m_ServiceHost.AddServiceEndpoint(typeof (IApplicationHost), WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), m_ServiceAddress);
+
+
+                m_ServiceHost.Open();
+                m_ServiceHost.Faulted += resetServiceHost;
+            }
         }
 
         private void onUnhandledException(object sender, UnhandledExceptionEventArgs args)
@@ -293,9 +317,14 @@ namespace Inceptum.AppServer.Hosting
             ((ICommunicationObject)m_LogCache).Faulted += clientFault;
         }
 
-        #endregion
+        private object parseCommandParameterValue(ParameterInfo parameter,InstanceCommand command)
+        {
+            var instanceCommandParam = command.Parameters.FirstOrDefault(p => p.Name == parameter.Name);
+            if (instanceCommandParam == null || instanceCommandParam.Value==null)
+                return parameter.ParameterType.IsValueType ? Activator.CreateInstance(parameter.ParameterType) : null;
 
-        #region IApplicationHost Members
+            return Convert.ChangeType(instanceCommandParam.Value, parameter.ParameterType);
+        }
 
         private InstanceCommand[] initContainer(Type appType, string logLevel, long maxLogSize, LogLimitReachedAction logLimitReachedAction)
         {
@@ -322,8 +351,8 @@ namespace Inceptum.AppServer.Hosting
 
                 var logFolder = new[] { m_Context.BaseDirectory, "logs", m_InstanceName }.Aggregate(Path.Combine);
                 var oversizedLogFolder = new[] { m_Context.BaseDirectory, "logs.oversized", m_InstanceName }.Aggregate(Path.Combine);
-                GlobalDiagnosticsContext.Set("logfolder",logFolder);
-                GlobalDiagnosticsContext.Set("oversizedLogFolder",oversizedLogFolder);
+                GlobalDiagnosticsContext.Set("logfolder", logFolder);
+                GlobalDiagnosticsContext.Set("oversizedLogFolder", oversizedLogFolder);
                 ConfigurationItemFactory.Default.Targets.RegisterDefinition("ManagementConsole", typeof(ManagementConsoleTarget));
                 var createInstanceOriginal = ConfigurationItemFactory.Default.CreateInstance;
                 ConfigurationItemFactory.Default.CreateInstance = type => container.Kernel.HasComponent(type) ? container.Resolve(type) : createInstanceOriginal(type);
@@ -334,7 +363,7 @@ namespace Inceptum.AppServer.Hosting
                 container
                     .AddFacility<LoggingFacility>(f => f.LogUsing(new GenericsAwareNLoggerFactory(
                         nlogConfigPath,
-                        config => updateLoggingConfig(config,logLevel, maxLogSize, logLimitReachedAction))));
+                        config => updateLoggingConfig(config, logLevel, maxLogSize, logLimitReachedAction))));
                 container
                     .Register(
                         Component.For<AppServerContext>().Instance(m_Context),
@@ -359,13 +388,13 @@ namespace Inceptum.AppServer.Hosting
 
 
                 m_HostedApplication = container.Resolve<IHostedApplication>();
-                var allowedTypes = new []{typeof(string),typeof(int),typeof(DateTime),typeof(decimal),typeof(bool)};
+                var allowedTypes = new[] { typeof(string), typeof(int), typeof(DateTime), typeof(decimal), typeof(bool) };
                 var commands =
                     m_HostedApplication.GetType()
                                      .GetMethods()
                                      .Where(m => m.Name != "Start" && m.Name != "ToString" && m.Name != "GetHashCode" && m.Name != "GetType")
                                      .Where(m => m.GetParameters().All(p => allowedTypes.Contains(p.ParameterType)))
-                                     .Select(m => new InstanceCommand( m.Name,m.GetParameters().Select(p => new InstanceCommandParam{Name = p.Name,Type = p.ParameterType.Name}).ToArray()));
+                                     .Select(m => new InstanceCommand(m.Name, m.GetParameters().Select(p => new InstanceCommandParam { Name = p.Name, Type = p.ParameterType.Name }).ToArray()));
                 m_HostedApplication.Start();
                 container.Register(Component.For<MisconfiguredComponentsLogger>());
                 container.Resolve<MisconfiguredComponentsLogger>().Log(container.Kernel);
@@ -390,9 +419,9 @@ namespace Inceptum.AppServer.Hosting
                 }
                 string[] strings = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name + " " + a.GetName().Version).OrderBy(a => a).ToArray();
                 throw new ApplicationException(string.Format("Failed to start: {0}", e));
-            } 
+            }
         }
-        
+
         private void updateLoggingConfig(LoggingConfiguration config, string logLevel, long maxLogSize, LogLimitReachedAction logLimitReachedAction)
         {
             m_LoggingConfig = config;
@@ -425,7 +454,7 @@ namespace Inceptum.AppServer.Hosting
             config.AddTarget("logFile", logFile);
             var rule = new LoggingRule("*", minLogLevel, logFile);
             config.LoggingRules.Add(rule);
-            
+
 
             var coloredConsoleTarget = new ColoredConsoleTarget
             {
@@ -447,12 +476,12 @@ namespace Inceptum.AppServer.Hosting
             config.AddTarget("console", console);
             rule = new LoggingRule("*", minLogLevel, console);
             config.LoggingRules.Add(rule);
-            
+
             Target managementConsole = new ManagementConsoleTarget(m_LogCache, m_InstanceName)
             {
                 Layout = @"${pad:padCharacter= :padding=-20:inner=${gdc:AppServer.Instance}}: ${date:format=HH\:mm\:ss.fff} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
             };
-            
+
             config.AddTarget("managementConsole", managementConsole);
             rule = new LoggingRule("*", minLogLevel, managementConsole);
             config.LoggingRules.Add(rule);
@@ -465,56 +494,11 @@ namespace Inceptum.AppServer.Hosting
             try
             {
                 return LogLevel.FromString(logLevel);
-            }catch
+            }
+            catch
             {
                 return LogLevel.Debug;
             }
         }
-
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        public void Stop()
-        {
-            m_StopEvent.Set();
-        }
-
-        public string Execute(InstanceCommand command)
-        {
-            var methodInfo = m_HostedApplication.GetType().GetMethod(command.Name);
-            var result=methodInfo.Invoke(m_HostedApplication, methodInfo.GetParameters().Select(p=>parseCommandParameterValue(p,command)).ToArray());
-            return result == null ? null : result.ToString();
-        }
-
-        public void ChangeLogLevel(string level)
-        {
-            var logLevel = mapLogLevel(level);
-            foreach (var l in new[] {LogLevel.Debug, LogLevel.Info, LogLevel.Warn, LogLevel.Error, LogLevel.Fatal})
-            {
-                foreach (var rule in m_LoggingConfig.LoggingRules)
-                {
-                    if (l < logLevel)
-                        rule.DisableLoggingForLevel(l);
-                    else
-                        rule.EnableLoggingForLevel(l);
-                }
-
-            }
-            LogManager.ReconfigExistingLoggers();
-        }
-
-        public void Debug()
-        {
-            Debugger.Launch();
-        }
-
-        private object parseCommandParameterValue(ParameterInfo parameter,InstanceCommand command)
-        {
-            var instanceCommandParam = command.Parameters.FirstOrDefault(p => p.Name == parameter.Name);
-            if (instanceCommandParam == null || instanceCommandParam.Value==null)
-                return parameter.ParameterType.IsValueType ? Activator.CreateInstance(parameter.ParameterType) : null;
-
-            return Convert.ChangeType(instanceCommandParam.Value, parameter.ParameterType);
-        }
-
-        #endregion
     }
 }
