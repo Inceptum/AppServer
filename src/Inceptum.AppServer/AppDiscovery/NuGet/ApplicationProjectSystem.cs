@@ -32,22 +32,11 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             get { return new FrameworkName(".NETFramework,Version=v4.5"); }
         }
 
-
         public void AddReference(string referencePath, Stream stream)
         {
-/*
-            string fileName = Path.GetFileName(referencePath);
-            string fullPath = this.GetFullPath(GetReferencePath(fileName));
-*/
             var fullPath = GetFullPath(GetReferencePath(referencePath));
-
-/*
-            //nuget provides empty stream for references so this is the only way to get the file
-            using (var fs = new FileStream(Path.Combine(Root, "packages", referencePath), FileMode.Open))
-*/
             AddFile(fullPath, stream);
         }
-
 
         public void AddFrameworkReference(string name)
         {
@@ -65,10 +54,6 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
         public bool IsSupportedFile(string path)
         {
-/*
-            if (!path.StartsWith("tools", StringComparison.OrdinalIgnoreCase))
-                return !Path.GetFileName(path).Equals("app.config", StringComparison.OrdinalIgnoreCase);
-*/
             return true;
         }
 

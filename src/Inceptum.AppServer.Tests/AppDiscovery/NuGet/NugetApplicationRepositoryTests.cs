@@ -5,7 +5,7 @@ using Castle.Core.Logging;
 using Inceptum.AppServer.AppDiscovery;
 using Inceptum.AppServer.AppDiscovery.NuGet;
 using NuGet;
-using NUnit.Framework;
+using NUnit.Framework;                  
 
 namespace Inceptum.AppServer.Tests.AppDiscovery.NuGet
 {
@@ -74,7 +74,26 @@ namespace Inceptum.AppServer.Tests.AppDiscovery.NuGet
             });
         }
 
-        private static void executeInTempDirectory(Action<string> action)
+        [Test]
+        public void ShouldInstallAmazingPackage()
+        {
+            var applicationInfo = new ApplicationInfo
+            {
+                ApplicationId = "Unistream.Accounts",
+                Debug = false,
+                Description = "Unistream accounts",
+                Vendor = "Unistream",
+                Version = Version.Parse("1.0.0.10")
+            };
+            var repository = createRepository(false, DependencyVersion.Lowest);
+
+             executeInTempDirectory(testAppPath =>
+            {
+                repository.Install(testAppPath, applicationInfo);
+            }, clear: true);
+        }
+
+        private static void executeInTempDirectory(Action<string> action, bool clear = true)
         {
             string path = Path.Combine(Directory.GetCurrentDirectory(), DateTime.Now.Ticks.ToString());
 
@@ -86,7 +105,7 @@ namespace Inceptum.AppServer.Tests.AppDiscovery.NuGet
             }
             finally
             {
-                if (Directory.Exists(path))
+                if (clear && Directory.Exists(path))
                 {
                     Directory.Delete(path, true);
                 }

@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Inceptum.AppServer.Runtime;
 using NuGet;
 using NuGet.Resources;
 
@@ -41,12 +42,6 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         protected override void ExtractPackageFilesToProject(IPackage package)
         {
-            // Resolve assembly references and content files first so that if this fails we never do anything to the project
-            /*      List<IPackageFile> assemblyReferences = Project.GetCompatibleItemsCore(package.AssemblyReferences).Cast<IPackageFile>().ToList();
-            IEnumerable<IPackageFile> satellites;
-            VersionUtility.TryGetCompatibleItems(Project.TargetFramework, package.GetLibFiles(), out satellites);
-            assemblyReferences.AddRange(satellites.ToArray());
-*/
             IEnumerable<IPackageFile> satellites;
             VersionUtility.TryGetCompatibleItems(Project.TargetFramework, package.GetLibFiles(), out satellites);
             var assemblyReferences = new List<IPackageFile>();
@@ -54,11 +49,6 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
 
             var contentFiles = Project.GetCompatibleItemsCore(package.GetContentFiles()).ToList();
-            /*     
-            IEnumerable<IPackageFile> satellites;
-            VersionUtility.TryGetCompatibleItems(Project.TargetFramework, package.GetLibFiles(), out satellites);
-            var packageFiles = satellites.ToArray();
-            return refs.Concat(packageFiles);*/
 
             IEnumerable<IPackageFile> configItems;
             Project.TryGetCompatibleItems(package.GetFiles("config"), out configItems);
@@ -71,7 +61,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             {
                 // for portable framework, we want to show the friendly short form (e.g. portable-win8+net45+wp8) instead of ".NETPortable, Profile=Profile104".
                 var targetFramework = Project.TargetFramework;
-                var targetFrameworkString = targetFramework.IsPortableFramework()
+                var targetFrameworkString = FrameworkNameExtensions.IsPortableFramework(targetFramework)
                     ? VersionUtility.GetShortFrameworkName(targetFramework)
                     : targetFramework != null ? targetFramework.ToString() : null;
 

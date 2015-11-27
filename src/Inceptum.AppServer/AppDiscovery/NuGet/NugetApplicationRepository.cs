@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using NuGet;
 using ILogger = Castle.Core.Logging.ILogger;
 
@@ -44,7 +43,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
         public void Install(string path, ApplicationInfo application)
         {
-            var versionFile = Path.Combine(path, "version");
+             var versionFile = Path.Combine(path, "version");
             Version installedVersion = null;
 
             if (File.Exists(versionFile))
