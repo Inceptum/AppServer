@@ -76,23 +76,16 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 package.Version, true, true);
         }
 
-        public IQueryable<IPackage> GetInstalledPackages(string searchTerms)
+        public IQueryable<IPackage> GetInstalledPackages(string searchTerm)
         {
-            return GetPackages(LocalRepository, searchTerms);
-        }
+            var packages = LocalRepository.GetPackages();
 
-        internal static IQueryable<IPackage> GetPackages(IPackageRepository repository, string searchTerm)
-        {
-            return GetPackages(repository.GetPackages(), searchTerm);
-        }
-
-        internal static IQueryable<IPackage> GetPackages(IQueryable<IPackage> packages, string searchTerm)
-        {
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 searchTerm = searchTerm.Trim();
                 packages = packages.Find(searchTerm);
             }
+
             return packages;
         }
 
