@@ -18,7 +18,6 @@ define([
                 this.isFullScreen= false;
                 this.isPreview= false;
                 this.content= "";
-
                 this.configuration=this.options.configuration;
                 _.bindAll(this, "verify", "jumpToLine", "save","togglePreview","toggleFullScreen","switchToPreview");
             }, events:{
@@ -89,7 +88,8 @@ define([
                     var self = this;
                     var action=this.model.isNew()?"create":"update";
                     var content=this.isPreview?this.content:this.codeMirror.getValue()
-                    this.model.set("PureContent",content);
+                    this.model.set("pureContent",content);
+
                     var options = {
                         success: function (model) {
                             self.content=model.get("pureContent");
@@ -108,8 +108,9 @@ define([
                         wait:true
                     };
 
+
                     if(this.model.isNew())
-                        this.configuration.createBundle(this.model,options);
+                        this.model=this.configuration.createBundle(this.model,options);
                     else
                         this.model.save(null, options);
                 }
