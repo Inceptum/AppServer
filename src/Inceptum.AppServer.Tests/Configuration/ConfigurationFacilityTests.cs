@@ -11,43 +11,6 @@ namespace Inceptum.AppServer.Tests.Configuration
     [TestFixture]
     public class ConfigurationFacilityTests
     {
-
-        public interface ITestComponent
-        {
-            long LongDependency { get; }
-            string StrDependency { get; }
-            int IntDependency { get; }
-        }
-
-        public class TestComponent : ITestComponent
-        {
-            private readonly long m_LongDependency;
-            private readonly string m_StrDependency;
-            private int m_IntDependency;
-
-            public long LongDependency
-            {
-                get { return m_LongDependency; }
-            }
-
-            public string StrDependency
-            {
-                get { return m_StrDependency; }
-            }
-
-            public int IntDependency
-            {
-                get { return m_IntDependency; }
-                set { m_IntDependency = value; }
-            }
-
-            public TestComponent(string strDependency, long longDependency, int intDependency)
-            {
-                m_IntDependency = intDependency;
-                m_StrDependency = strDependency;
-                m_LongDependency = longDependency;
-            }
-        }
         [Test]
         public void FacilityConfigurationTest()
         {
@@ -98,6 +61,81 @@ namespace Inceptum.AppServer.Tests.Configuration
             Assert.That(resolved.LongDependency, Is.EqualTo(999999999999));
             Assert.That(resolved.IntDependency, Is.EqualTo(10));
             Assert.That(resolved.StrDependency, Is.EqualTo("str"));
+        }
+
+        [Test]
+        public void DependencyOnConfigurationParameteresTest2()
+        {
+            var configurationProvider = MockRepository.GenerateMock<IConfigurationProvider>();
+
+            configurationProvider.Expect(p => 
+                    p.GetBundle("testConfiguration", "bundle", "dit", "msa-ibdev1"))
+                     .Return("{'prop':{'timeout':'00:00:30', 'connectionString': 'http://never.land/api/v31415'}}");
+
+            TestComponent2 resolved;
+            using (var container = new WindsorContainer())
+            {
+                var windsorContainer = container.AddFacility<ConfigurationFacility>(f =>
+                {
+                    var configurationFacility = f.Remote("http://localhost:8080/").Configuration("testConfiguration").Params(new {environment = "dit", box = "msa-ibdev1"});
+                    configurationFacility.Provider = configurationProvider;
+                });
+
+                resolved = windsorContainer.Register(Component.For<TestComponent2>().DependsOnBundle("bundle", "prop", "{environment}", "{box}")).Resolve<TestComponent2>();
+            }
+
+            Assert.AreEqual(resolved.ConnectionString, "http://never.land/api/v31415");
+            Assert.AreEqual(resolved.Timeout, TimeSpan.FromSeconds(30));
+        }
+
+        public interface ITestComponent
+        {
+            long LongDependency { get; }
+            string StrDependency { get; }
+            int IntDependency { get; }
+        }
+
+        public class TestComponent : ITestComponent
+        {
+            private readonly long m_LongDependency;
+            private readonly string m_StrDependency;
+            private int m_IntDependency;
+
+            public long LongDependency
+            {
+                get { return m_LongDependency; }
+            }
+
+            public string StrDependency
+            {
+                get { return m_StrDependency; }
+            }
+
+            public int IntDependency
+            {
+                get { return m_IntDependency; }
+                set { m_IntDependency = value; }
+            }
+
+            public TestComponent(string strDependency, long longDependency, int intDependency)
+            {
+                m_IntDependency = intDependency;
+                m_StrDependency = strDependency;
+                m_LongDependency = longDependency;
+            }
+        }
+
+        public class TestComponent2
+        {
+            public string ConnectionString { get; set; }
+
+            public TimeSpan Timeout { get; set; }
+
+            public TestComponent2(string connectionString, TimeSpan timeout)
+            {
+                ConnectionString = connectionString;
+                Timeout = timeout;
+            }
         }
     }
 }

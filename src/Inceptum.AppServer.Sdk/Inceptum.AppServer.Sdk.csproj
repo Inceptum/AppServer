@@ -81,6 +81,7 @@
     <Compile Include="AppInfo.cs" />
     <Compile Include="AppServerContext.cs" />
     <Compile Include="Configuration\BundleNotFoundException.cs" />
+    <Compile Include="Configuration\IConfigurationFacility.cs" />
     <Compile Include="Configuration\IConnectionStringProvider.cs" />
     <Compile Include="Configuration\IManageableConfigurationProvider.cs" />
     <Compile Include="Configuration\Providers\CachingRemoteConfigurationProvider.cs" />
