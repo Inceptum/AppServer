@@ -3,6 +3,7 @@ using System.Configuration;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Inceptum.AppServer.Configuration;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Rhino.Mocks;
 
@@ -70,7 +71,7 @@ namespace Inceptum.AppServer.Tests.Configuration
 
             configurationProvider.Expect(p => 
                     p.GetBundle("testConfiguration", "bundle", "dit", "msa-ibdev1"))
-                     .Return("{'prop':{'timeout':'00:00:30', 'connectionString': 'http://never.land/api/v31415'}}");
+                     .Return("{'prop':{'timeout':'00:00:30', 'connectionString': 'http://never.land/api/v31415', 'id': 12345, 'company': { id: 42, name: 'contoso' }, 'response': { headers: [], method: 'post', 'body': 'bober' } }}");
 
             TestComponent2 resolved;
             using (var container = new WindsorContainer())
@@ -86,6 +87,11 @@ namespace Inceptum.AppServer.Tests.Configuration
 
             Assert.AreEqual(resolved.ConnectionString, "http://never.land/api/v31415");
             Assert.AreEqual(resolved.Timeout, TimeSpan.FromSeconds(30));
+            Assert.IsNotNull(resolved.Company);
+            Assert.AreEqual(resolved.Company.Id, 42);
+            Assert.AreEqual(resolved.Company.Name, "contoso");
+            Assert.IsNotNull(resolved.Response);
+            Assert.AreEqual(resolved.Response["method"].ToString(), "post");
         }
 
         public interface ITestComponent
@@ -131,11 +137,26 @@ namespace Inceptum.AppServer.Tests.Configuration
 
             public TimeSpan Timeout { get; set; }
 
-            public TestComponent2(string connectionString, TimeSpan timeout)
+            public int Id { get; set; }
+
+            public Company Company { get; set; }
+
+            public JObject Response { get; set; }
+
+            public TestComponent2(string connectionString, TimeSpan timeout, int id, Company company, JObject response)
             {
                 ConnectionString = connectionString;
                 Timeout = timeout;
+                Id = id;
+                Company = company;
+                Response = response;
             }
+        }
+
+        public class Company
+        {
+            public int Id;
+            public string Name;
         }
     }
 }
