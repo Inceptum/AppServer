@@ -21,6 +21,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             m_Logger = logger;
             m_LocalSharedRepository = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location),@"packages\");
             m_Configuration = configuration;
+            m_Logger.InfoFormat("Nuget cache location: {0}",m_LocalSharedRepository);
 
             m_ApplicationRepository = PackageRepositoryFactory.Default.CreateRepository(getRepositoryPath(m_Configuration.ApplicationRepository));
 
