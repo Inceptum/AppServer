@@ -62,8 +62,9 @@ define([
                     return;
                 if (this.nameFilter!=null && this.nameFilter.val() != '' && 
                     (instance.get('name').toLowerCase().indexOf(this.nameFilter.val().toLowerCase()) == -1 &&
-                    instance.get('environment').toLowerCase().indexOf(this.nameFilter.val().toLowerCase()) == -1)&&
-                    instance.get('applicationId').toLowerCase().indexOf(this.nameFilter.val().toLowerCase()) == -1)
+                    instance.get('environment').toLowerCase().indexOf(this.nameFilter.val().toLowerCase()) == -1 &&
+                    instance.get('applicationId').toLowerCase().indexOf(this.nameFilter.val().toLowerCase()) == -1 &&
+                    instance.get('status').toLowerCase().indexOf(this.nameFilter.val().toLowerCase()) == -1 ))
                     return;
 
                 var view = new instanceView({
