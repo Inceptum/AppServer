@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using NuGet;
 using ILogger = Castle.Core.Logging.ILogger;
 
@@ -18,7 +19,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         public NugetApplicationRepository(ILogger logger, NugetApplicationRepositoryConfiguration configuration)
         {
             m_Logger = logger;
-            m_LocalSharedRepository = Path.GetFullPath(@"packages\");
+            m_LocalSharedRepository = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location),@"packages\");
             m_Configuration = configuration;
 
             m_ApplicationRepository = PackageRepositoryFactory.Default.CreateRepository(getRepositoryPath(m_Configuration.ApplicationRepository));
