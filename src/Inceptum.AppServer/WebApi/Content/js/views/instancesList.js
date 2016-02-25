@@ -30,6 +30,8 @@ define([
 
         var View = Backbone.View.extend({
             el: '#main',
+
+
             initialize: function () {
                 this.nameFilter = null;
                 this.filter=this.options.filter;
@@ -51,8 +53,29 @@ define([
                 this.rendered=false;
             },
             events: {
-                "keyup #nameFilter": "applyNameFilter"
+                "keyup #nameFilter": "applyNameFilter",
+                "click .batch-buttons .start":"batchStart",
+                "click .batch-buttons .stop":"batchStop",
+                "click .batch-buttons .restart":"batchRestart",
+                },
+
+            batchStop:function(e){
+                _(this.subViews).each(function(v) {
+                    v.stop(e);
+                });
             },
+            batchStart:function(e){
+                _(this.subViews).each(function(v) {
+                    v.start(e);
+                });
+            },
+            batchRestart:function(e){
+                _(this.subViews).each(function(v) {
+                    v.restart(e);
+                });
+            },
+
+
             applyNameFilter: function () {
                 store('InstancesList.NameFilter', this.nameFilter.val());
                 this.reset();
