@@ -155,7 +155,8 @@ namespace Inceptum.AppServer.Hosting
                     {typeof (LoggingFacility).Assembly.GetName().FullName, typeof (LoggingFacility).Assembly.Location},
                     {typeof (ILogger).Assembly.GetName().FullName, typeof (ILogger).Assembly.Location},
                     {typeof (WindsorContainer).Assembly.GetName().FullName, typeof (WindsorContainer).Assembly.Location},
-                    {typeof (NLogFactory).Assembly.GetName().FullName, typeof (NLogFactory).Assembly.Location}
+                    {typeof (NLogFactory).Assembly.GetName().FullName, typeof (NLogFactory).Assembly.Location},
+                    {typeof (NLog.LogFactory).Assembly.GetName().FullName, typeof (NLog.LogFactory).Assembly.Location}
                 }
             };
         }
