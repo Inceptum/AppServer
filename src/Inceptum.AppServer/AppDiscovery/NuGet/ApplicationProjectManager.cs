@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using Inceptum.AppServer.Runtime;
 using NuGet;
 using NuGet.Resources;
@@ -23,8 +24,9 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             m_PackageId = packageId;
             m_SharedRepository = sharedRepository;
             m_VersionStrategy = versionStrategy;
+            DependencyVersion = versionStrategy;
         }
-
+/*
         public override void AddPackageReference(IPackage package, bool ignoreDependencies, bool allowPrereleaseVersions)
         {
             var dependentsResolver = new DependentsWalker(SourceRepository, Project.TargetFramework);
@@ -37,8 +39,43 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             walker.DependencyVersion = m_VersionStrategy;
 
             execute(package, walker);
+        }*/
+        public override void AddPackageReference(IPackage package, bool ignoreDependencies, bool allowPrereleaseVersions)
+        {
+            // In case of a scenario like UpdateAll, the graph has already been walked once for all the packages as a bulk operation
+            // But, we walk here again, just for a single package, since, we need to use UpdateWalker for project installs
+            // unlike simple package installs for which InstallWalker is used
+            // Also, it is noteworthy that the DependentsWalker has the same TargetFramework as the package in PackageReferenceRepository
+            // unlike the UpdateWalker whose TargetFramework is the same as that of the Project
+            // This makes it harder to perform a bulk operation for AddPackageReference and we have to go package by package
+            var dependentsWalker = new DependentsWalker(LocalRepository, getPackageTargetFramework(package.Id))
+            {
+                DependencyVersion = DependencyVersion
+            };
+            execute(package, new UpdateWalker(LocalRepository,
+                                              SourceRepository,
+                                              dependentsWalker,
+                                              ConstraintProvider,
+                                              Project.TargetFramework,
+                                              Logger,
+                                              !ignoreDependencies,
+                                              allowPrereleaseVersions)
+            {
+                AcceptedTargets = PackageTargets.Project,
+                DependencyVersion = DependencyVersion
+            });
         }
 
+        private FrameworkName getPackageTargetFramework(string packageId)
+        {
+            var packageReferenceRepository = LocalRepository as IPackageReferenceRepository;
+            if (packageReferenceRepository != null)
+            {
+                return packageReferenceRepository.GetPackageTargetFramework(packageId) ?? Project.TargetFramework;
+            }
+
+            return Project.TargetFramework;
+        }
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         protected override void ExtractPackageFilesToProject(IPackage package)
         {
@@ -119,20 +156,17 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
         private void execute(IPackage package, IPackageOperationResolver resolver)
         {
-            var source = resolver.ResolveOperations(package).ToList();
-            if (source.Any())
+            IEnumerable<PackageOperation> operations = resolver.ResolveOperations(package);
+            if (operations.Any())
             {
-                foreach (PackageOperation operation in source)
+                foreach (PackageOperation operation in operations)
                 {
                     Execute(operation);
                 }
             }
-            else
+            else if (LocalRepository.Exists(package))
             {
-                if (LocalRepository.Exists(package))
-                {
-                    Logger.Log(MessageLevel.Info, NuGetResources.Log_ProjectAlreadyReferencesPackage, Project.ProjectName, package.GetFullName());
-                }
+                Logger.Log(MessageLevel.Info, NuGetResources.Log_ProjectAlreadyReferencesPackage, Project.ProjectName, package.GetFullName());
             }
         }
     }
