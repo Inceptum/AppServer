@@ -75,7 +75,8 @@ namespace FixNuspecVersions
                     backup = nuspec + ".bak." + i;
                     i++;
                 }
-                File.Copy(nuspec, backup);
+                File.Move(nuspec, backup);
+
                 using (var output = File.OpenWrite(nuspec))
                 {
                     manifest.Save(output);
