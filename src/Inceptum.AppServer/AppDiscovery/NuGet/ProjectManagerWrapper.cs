@@ -17,6 +17,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             var sharedRepositoryFileSystem = new PhysicalFileSystem(sharedRepositoryDir);
             var pathResolver = new DefaultPackagePathResolver(sharedRepositoryFileSystem);
             var localSharedRepository = new SharedPackageRepository(pathResolver, sharedRepositoryFileSystem, sharedRepositoryFileSystem);
+            
 
             IProjectSystem project = new ApplicationProjectSystem(applicationRoot) {Logger = this};
             var referenceRepository = new PackageReferenceRepository(project, packageId, localSharedRepository);
