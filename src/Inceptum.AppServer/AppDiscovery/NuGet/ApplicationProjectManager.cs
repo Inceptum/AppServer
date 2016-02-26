@@ -150,7 +150,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             finally
             {
                 m_SharedRepository.AddPackage(package);
-                LocalRepository.AddPackage(package);
+          //      LocalRepository.AddPackage(package);
             }
         }
 
