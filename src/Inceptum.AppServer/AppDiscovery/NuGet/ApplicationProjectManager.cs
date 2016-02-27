@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Threading;
 using Inceptum.AppServer.Runtime;
 using NuGet;
 using NuGet.Resources;
@@ -15,55 +16,52 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
     {
         private readonly string m_PackageId;
         private readonly IPackageRepository m_SharedRepository;
-        private readonly DependencyVersion m_VersionStrategy;
 
         public ApplicationProjectManager(string packageId, IPackageRepository sourceRepository, IPackagePathResolver pathResolver,
-            IProjectSystem project, IPackageRepository localRepository, IPackageRepository sharedRepository, DependencyVersion versionStrategy)
+            IProjectSystem project, IPackageRepository localRepository, IPackageRepository sharedRepository)
             : base(sourceRepository, pathResolver, project, localRepository)
         {
             m_PackageId = packageId;
             m_SharedRepository = sharedRepository;
-            m_VersionStrategy = versionStrategy;
-            DependencyVersion = versionStrategy;
         }
-/*
+
         public override void AddPackageReference(IPackage package, bool ignoreDependencies, bool allowPrereleaseVersions)
         {
-            var dependentsResolver = new DependentsWalker(SourceRepository, Project.TargetFramework);
 
-            var walker = new UpdateWalker(LocalRepository, SourceRepository,
-                dependentsResolver, ConstraintProvider, Project.TargetFramework, Logger,
-                updateDependencies: !ignoreDependencies, allowPrereleaseVersions: allowPrereleaseVersions);
+            
 
-            walker.AcceptedTargets = PackageTargets.All;
-            walker.DependencyVersion = m_VersionStrategy;
-
-            execute(package, walker);
-        }*/
-        public override void AddPackageReference(IPackage package, bool ignoreDependencies, bool allowPrereleaseVersions)
-        {
-            // In case of a scenario like UpdateAll, the graph has already been walked once for all the packages as a bulk operation
-            // But, we walk here again, just for a single package, since, we need to use UpdateWalker for project installs
-            // unlike simple package installs for which InstallWalker is used
-            // Also, it is noteworthy that the DependentsWalker has the same TargetFramework as the package in PackageReferenceRepository
-            // unlike the UpdateWalker whose TargetFramework is the same as that of the Project
-            // This makes it harder to perform a bulk operation for AddPackageReference and we have to go package by package
-            var dependentsWalker = new DependentsWalker(LocalRepository, getPackageTargetFramework(package.Id))
+            //NOTE: looks like there is a bug in nuget - when package is updated in scope of install, dependencies matching previous version are not installed. Double pass helps
+            //sample
+            //A->B->C[1,2]->D1
+            //A->C1->D1
+            //A->D1
+            //installing A, first pass initially sets up C2 and D1 then unisnstalls both and installs C1, but D1 is not installe dfor some reason
+            for (int i = 0; i < 2; i++)
             {
-                DependencyVersion = DependencyVersion
-            };
-            execute(package, new UpdateWalker(LocalRepository,
-                                              SourceRepository,
-                                              dependentsWalker,
-                                              ConstraintProvider,
-                                              Project.TargetFramework,
-                                              Logger,
-                                              !ignoreDependencies,
-                                              allowPrereleaseVersions)
-            {
-                AcceptedTargets = PackageTargets.Project,
-                DependencyVersion = DependencyVersion
-            });
+                // In case of a scenario like UpdateAll, the graph has already been walked once for all the packages as a bulk operation
+                // But, we walk here again, just for a single package, since, we need to use UpdateWalker for project installs
+                // unlike simple package installs for which InstallWalker is used
+                // Also, it is noteworthy that the DependentsWalker has the same TargetFramework as the package in PackageReferenceRepository
+                // unlike the UpdateWalker whose TargetFramework is the same as that of the Project
+                // This makes it harder to perform a bulk operation for AddPackageReference and we have to go package by package
+                var dependentsWalker = new DependentsWalker(LocalRepository, getPackageTargetFramework(package.Id))
+                {
+                    DependencyVersion = DependencyVersion
+                };
+                
+                execute(package, new UpdateWalker(LocalRepository,
+                    SourceRepository,
+                    dependentsWalker,
+                    ConstraintProvider,
+                    Project.TargetFramework,
+                    Logger,
+                    !ignoreDependencies,
+                    allowPrereleaseVersions)
+                {
+                    AcceptedTargets = PackageTargets.Project,
+                    DependencyVersion = DependencyVersion
+                });
+            }
         }
 
         private FrameworkName getPackageTargetFramework(string packageId)
@@ -149,8 +147,22 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             }
             finally
             {
+                //Nuget bug again - some times packages.config is not accessible 
                 m_SharedRepository.AddPackage(package);
-          //      LocalRepository.AddPackage(package);
+                bool success=false;
+                while (!success)
+                {
+                    try
+                    {
+                        LocalRepository.AddPackage(package);
+                        success = true;
+                    }
+                    catch (IOException e)
+                    {
+                        //Logger.Log(MessageLevel.Warning, e.ToString());
+                        Thread.Sleep(500);
+                    }
+                }
             }
         }
 

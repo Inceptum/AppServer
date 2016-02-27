@@ -22,8 +22,12 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             IProjectSystem project = new ApplicationProjectSystem(applicationRoot) {Logger = this};
             var referenceRepository = new PackageReferenceRepository(project, packageId, localSharedRepository);
 
-            m_ProjectManager = new ApplicationProjectManager(packageId, dependenciesRepository, pathResolver, project, referenceRepository, localSharedRepository, versionStrategy);
-            m_ProjectManager.Logger = this;
+            m_ProjectManager = new ApplicationProjectManager(packageId, dependenciesRepository, pathResolver, project, referenceRepository,
+                localSharedRepository)
+            {
+                DependencyVersion = versionStrategy,
+                Logger = this
+            };
         }
 
         public IPackageRepository LocalRepository
