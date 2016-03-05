@@ -15,6 +15,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         private readonly ApplicationProjectManager m_ProjectManager;
         private readonly bool m_AllowPrereleaseVersions;
         private IPackageRepository m_DependenciesRepository;
+        private AggregateRepository m_Repository;
 
         public ProjectManagerWrapper(string packageId, string sharedRepositoryDir, string applicationRoot, Castle.Core.Logging.ILogger logger, IPackageRepository dependenciesRepository, DependencyVersion versionStrategy, bool allowPrereleaseVersions)
         {
@@ -30,7 +31,8 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             var referenceRepository = new PackageReferenceRepository(project, packageId, localSharedRepository);
 
             m_DependenciesRepository = dependenciesRepository;
-            m_ProjectManager = new ApplicationProjectManager(packageId, m_DependenciesRepository, pathResolver, project, referenceRepository,
+            m_Repository = new AggregateRepository(new[] {localSharedRepository, m_DependenciesRepository});
+            m_ProjectManager = new ApplicationProjectManager(packageId, m_Repository, pathResolver, project, referenceRepository,
                 localSharedRepository)
             {
                 DependencyVersion = versionStrategy,
@@ -74,7 +76,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
         public void InstallPackage(string packageId, SemanticVersion version)
         {
-            var packagesConfig = m_DependenciesRepository.FindPackage(packageId, version).GetFiles().FirstOrDefault(f => f.Path.ToLower() == "config\\packages.config");
+            var packagesConfig = m_Repository.FindPackage(packageId, version).GetFiles().FirstOrDefault(f => f.Path.ToLower() == "config\\packages.config");
             if (packagesConfig!=null )
             {
                 
@@ -100,7 +102,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             }
             else
             {
-                m_Logger.WarnFormat("packages.config is not found in config folder of application package. (It is recommended to provide packages.config as part of application package for appserver to install exactly same  dependencies versions, applications was built and tested with. Will attempt to install dependencies following from what is defined in application package nuspec");
+                m_Logger.WarnFormat("packages.config is not found in config folder of application package. It is recommended to provide packages.config as part of application package for appserver to install exactly same  dependencies versions, applications was built and tested with. Will attempt to install dependencies following from what is defined in application package nuspec");
                 m_ProjectManager.AddPackageReference(packageId, ignoreDependencies: false, allowPrereleaseVersions: m_AllowPrereleaseVersions, version: version);
             }
         }
