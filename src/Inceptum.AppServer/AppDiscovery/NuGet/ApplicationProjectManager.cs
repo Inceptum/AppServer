@@ -75,20 +75,6 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             return Project.TargetFramework;
         }
 
-        public void RestorePackages()
-        {
-            
-            foreach (var package in LocalRepository.GetPackages())
-            {
-                var installerWalker = new InstallWalker(
-                    LocalRepository, SourceRepository,
-                    Project.TargetFramework, Logger,
-                    ignoreDependencies: true, allowPrereleaseVersions: true,
-                    dependencyVersion: DependencyVersion);
-                execute(package, installerWalker);
-            }
-        }
-
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         protected override void ExtractPackageFilesToProject(IPackage package)
         {
