@@ -13,6 +13,7 @@
     <tags>Inceptum.AppServer.Application</tags>
   </metadata>
   <files> 
+    <file src="packages.config" target="config" /> 
     <file src="App.config" target="config" /> 
     <file src="nlog.config" target="config" /> 
     <file src="bin\$Configuration$\Content\**\*.*" target="Content" />

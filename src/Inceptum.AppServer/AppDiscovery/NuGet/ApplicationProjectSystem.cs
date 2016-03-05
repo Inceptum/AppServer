@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -90,6 +92,27 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         protected virtual string GetReferencePath(string name)
         {
             return Path.Combine(BIN_DIR, name);
+        }
+
+
+        public override void DeleteFile(string path)
+        {
+            base.DeleteFile(path);
+        }
+
+        public override void DeleteFiles(IEnumerable<IPackageFile> files, string rootDir)
+        {
+            base.DeleteFiles(files, rootDir);
+        }
+
+        public override void DeleteDirectory(string path)
+        {
+            base.DeleteDirectory(path);
+        }
+
+        public override void DeleteDirectory(string path, bool recursive)
+        {
+            base.DeleteDirectory(path, recursive);
         }
     }
 }

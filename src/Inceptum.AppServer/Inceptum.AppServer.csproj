@@ -238,6 +238,7 @@
     <Compile Include="AppDiscovery\ApplicationInfo.cs" />
     <Compile Include="AppDiscovery\FileSystem\FolderApplicationRepository.cs" />
     <Compile Include="AppDiscovery\NuGet\ConfigTransformer.cs" />
+    <Compile Include="AppDiscovery\NuGet\InMemoryPackagesConfigFileSystem.cs" />
     <Compile Include="Runtime\FrameworkNameExtensions.cs" />
     <Compile Include="AppDiscovery\NuGet\NugetApplicationRepositoryConfiguration.cs" />
     <Compile Include="AppDiscovery\NuGet\ProjectSystemCompatibility.cs" />

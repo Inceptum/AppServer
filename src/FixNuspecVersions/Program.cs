@@ -67,6 +67,8 @@ namespace FixNuspecVersions
                     }
                 }
 
+                manifest.Files.Add(new ManifestFile { Source = "packages.config" , Target = "config"});
+
 
                 var backup = nuspec + ".bak";
                 var i = 1;

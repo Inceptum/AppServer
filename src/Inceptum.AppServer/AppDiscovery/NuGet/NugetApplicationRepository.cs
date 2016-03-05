@@ -16,10 +16,10 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         private readonly ILogger m_Logger;
         private readonly NugetApplicationRepositoryConfiguration m_Configuration;
 
-        public NugetApplicationRepository(ILogger logger, NugetApplicationRepositoryConfiguration configuration)
+        public NugetApplicationRepository(ILogger logger, NugetApplicationRepositoryConfiguration configuration,string cacheLocation=null)
         {
             m_Logger = logger;
-            m_LocalSharedRepository = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location),@"packages\");
+            m_LocalSharedRepository = cacheLocation??Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), @"packages\");
             m_Configuration = configuration;
             m_Logger.InfoFormat("Nuget cache location: {0}",m_LocalSharedRepository);
 
@@ -45,7 +45,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
         public void Install(string path, ApplicationInfo application)
         {
-             var versionFile = Path.Combine(path, "version");
+            var versionFile = Path.Combine(path, "version");
             Version installedVersion = null;
 
             if (File.Exists(versionFile))
@@ -71,7 +71,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
                 if (package != null)
                 {
-                    projectManager.UninstallPackage(package, true);
+                    projectManager.Uninstall();
                 }
                 else
                 {
@@ -84,6 +84,10 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 cleanUpInstallFolder(path);
             }
 
+              
+            if (File.Exists(versionFile))
+                    File.Delete(versionFile);
+            
             projectManager.InstallPackage(application.ApplicationId, new SemanticVersion(application.Version));
 
             File.WriteAllText(versionFile, application.Version.ToString());

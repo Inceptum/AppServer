@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using Castle.Core.Logging;
@@ -129,6 +130,62 @@ namespace Inceptum.AppServer.Tests.AppDiscovery.NuGet
             };
 
             var repository = new NugetApplicationRepository(logger, configuration);
+
+            return repository;
+        }
+
+
+
+        [Test]
+        public void RestoreTest()
+        {
+            var applicationInfo = new ApplicationInfo
+            {
+                ApplicationId = "TestApp",
+                Debug = false,
+                Description = "TestApp",
+                Vendor = "Unistream",
+                Version = Version.Parse("1.0.0.23")
+            };
+            executeInTempDirectory(testAppPath =>
+            {
+                var repository = createTestRepository(false, DependencyVersion.Lowest, Path.Combine(testAppPath,"..\\packages"));
+                Stopwatch sw=Stopwatch.StartNew();
+                repository.Install(testAppPath, applicationInfo);
+                applicationInfo.Version = Version.Parse("1.0.0.24");
+                Console.WriteLine(sw.ElapsedMilliseconds+"ms");
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine();
+                sw = Stopwatch.StartNew();
+                repository.Install(testAppPath, applicationInfo);
+                Console.WriteLine(sw.ElapsedMilliseconds + "ms");
+            });
+        }
+        
+        private static NugetApplicationRepository createTestRepository(bool allowPrereleaseVersions, DependencyVersion dependencyVersion, string cacheLocaction)
+        {
+            var logger = new ConsoleLogger();
+
+            var configuration = new NugetApplicationRepositoryConfiguration
+            {
+                AllowPrereleaseVersions = allowPrereleaseVersions,
+                DependencyVersion = dependencyVersion,
+                ApplicationRepository = @"w:/github/AppServer/TestData/NugetRepo",
+                DependenciesRepositories = new[]
+                {
+                    /*
+                    "http://nuget.it.unistreambank.ru/nuget/DEV.Libs",
+                    "http://nuget.it.unistreambank.ru/nuget/DEV.ThirdParty"
+                     */
+                    "https://www.nuget.org/api/v2"
+
+                }
+            };
+
+            var repository = new NugetApplicationRepository(logger, configuration,cacheLocaction);
 
             return repository;
         }

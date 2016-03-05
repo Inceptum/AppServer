@@ -1,5 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using NuGet;
+using OpenFileSystem.IO;
 
 namespace Inceptum.AppServer.AppDiscovery.NuGet
 {
@@ -8,6 +14,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         private readonly Castle.Core.Logging.ILogger m_Logger;
         private readonly ApplicationProjectManager m_ProjectManager;
         private readonly bool m_AllowPrereleaseVersions;
+        private IPackageRepository m_DependenciesRepository;
 
         public ProjectManagerWrapper(string packageId, string sharedRepositoryDir, string applicationRoot, Castle.Core.Logging.ILogger logger, IPackageRepository dependenciesRepository, DependencyVersion versionStrategy, bool allowPrereleaseVersions)
         {
@@ -22,7 +29,8 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             IProjectSystem project = new ApplicationProjectSystem(applicationRoot) {Logger = this};
             var referenceRepository = new PackageReferenceRepository(project, packageId, localSharedRepository);
 
-            m_ProjectManager = new ApplicationProjectManager(packageId, dependenciesRepository, pathResolver, project, referenceRepository,
+            m_DependenciesRepository = dependenciesRepository;
+            m_ProjectManager = new ApplicationProjectManager(packageId, m_DependenciesRepository, pathResolver, project, referenceRepository,
                 localSharedRepository)
             {
                 DependencyVersion = versionStrategy,
@@ -66,12 +74,76 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
         public void InstallPackage(string packageId, SemanticVersion version)
         {
-            m_ProjectManager.AddPackageReference(packageId, ignoreDependencies: false, allowPrereleaseVersions: m_AllowPrereleaseVersions, version: version);
+            var packagesConfig = m_DependenciesRepository.FindPackage(packageId, version).GetFiles().FirstOrDefault(f => f.Path.ToLower() == "config\\packages.config");
+            if (packagesConfig!=null )
+            {
+                
+                m_ProjectManager.AddPackageReference(packageId, ignoreDependencies: true, allowPrereleaseVersions: m_AllowPrereleaseVersions, version: version);
+                var file = new PackageReferenceFile(new InMemoryPackagesConfigFileSystem(packagesConfig.GetStream()),"packages.config");
+                var packageReferences = GetPackageReferences(file, true);
+                foreach (var reference in packageReferences)
+                {
+                    m_ProjectManager.AddPackageReference(reference.Id, ignoreDependencies: true, allowPrereleaseVersions: m_AllowPrereleaseVersions, version: reference.Version);
+                }
+
+                //TODO: investigate parallel installation. Need to synchronize shared repository and packages.config access
+/*
+                var tasks = packageReferences.Select(reference =>
+                           Task.Factory.StartNew(() =>
+                           {
+                               m_ProjectManager.AddPackageReference(reference.Id, ignoreDependencies: true, allowPrereleaseVersions: m_AllowPrereleaseVersions, version: reference.Version);
+                           })).ToArray();
+
+                Task.WaitAll(tasks);*/
+
+                //InstallSatellitePackages(fileSystem, satellitePackages);
+            }
+            else
+            {
+                m_Logger.WarnFormat("packages.config is not found in config folder of application package. (It is recommended to provide packages.config as part of application package for appserver to install exactly same  dependencies versions, applications was built and tested with. Will attempt to install dependencies following from what is defined in application package nuspec");
+                m_ProjectManager.AddPackageReference(packageId, ignoreDependencies: false, allowPrereleaseVersions: m_AllowPrereleaseVersions, version: version);
+            }
         }
+
+
+        public static ICollection<PackageReference> GetPackageReferences(PackageReferenceFile configFile, bool requireVersion)
+        {
+            if (configFile == null)
+            {
+                throw new ArgumentNullException("configFile");
+            }
+
+            var packageReferences = configFile.GetPackageReferences(requireVersion).ToList();
+            foreach (var package in packageReferences)
+            {
+                // GetPackageReferences returns all records without validating values. We'll throw if we encounter packages
+                // with malformed ids / Versions.
+                if (String.IsNullOrEmpty(package.Id))
+                {
+                    throw new InvalidDataException("Invalid package reference:"+configFile.FullPath);
+                }
+                if (requireVersion && (package.Version == null))
+                {
+                    throw new InvalidDataException(String.Format("Package reference has invalid version {0}", package.Id));
+                }
+            }
+
+            return packageReferences;
+        }
+
 
         public void UninstallPackage(IPackage package, bool removeDependencies)
         {
             m_ProjectManager.RemovePackageReference(package.Id, false, removeDependencies);
+        }
+ 
+        public void Uninstall()
+        {
+            foreach (var package in LocalRepository.GetPackages())
+            {
+                m_ProjectManager.RemovePackageReference(package.Id, true, false);                
+            }
+
         }
 
         public void UpdatePackage(IPackage package)
@@ -101,4 +173,5 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 .Where(p => (package.Id == p.Id)).ToArray();
         }
     }
+ 
 }

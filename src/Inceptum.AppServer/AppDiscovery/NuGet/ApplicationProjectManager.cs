@@ -36,7 +36,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             //A->C1->D1
             //A->D1
             //installing A, first pass initially sets up C2 and D1 then unisnstalls both and installs C1, but D1 is not installe dfor some reason
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < (ignoreDependencies?1:2); i++)
             {
                 // In case of a scenario like UpdateAll, the graph has already been walked once for all the packages as a bulk operation
                 // But, we walk here again, just for a single package, since, we need to use UpdateWalker for project installs
@@ -74,6 +74,21 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
             return Project.TargetFramework;
         }
+
+        public void RestorePackages()
+        {
+            
+            foreach (var package in LocalRepository.GetPackages())
+            {
+                var installerWalker = new InstallWalker(
+                    LocalRepository, SourceRepository,
+                    Project.TargetFramework, Logger,
+                    ignoreDependencies: true, allowPrereleaseVersions: true,
+                    dependencyVersion: DependencyVersion);
+                execute(package, installerWalker);
+            }
+        }
+
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         protected override void ExtractPackageFilesToProject(IPackage package)
         {
@@ -87,7 +102,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
 
             IEnumerable<IPackageFile> configItems;
             Project.TryGetCompatibleItems(package.GetFiles("config"), out configItems);
-            var configFiles = configItems.ToArray();
+            var configFiles = configItems.Where(f => f.Path.ToLower() != "config\\packages.config").ToArray();
 
 
             // If the package doesn't have any compatible assembly references or content files,
@@ -154,7 +169,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 {
                     try
                     {
-                        LocalRepository.AddPackage(package);
+                        LocalRepository.AddPackage(package);   
                         success = true;
                     }
                     catch (IOException e)
