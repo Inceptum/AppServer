@@ -48,7 +48,7 @@ namespace Inceptum.AppServer.Tests.AppDiscovery.NuGet
                 sharedRepositoryDir, tempPath, consoleLogger, dependenciesRepository, DependencyVersion.Highest, true);
 
             var sw = Stopwatch.StartNew();
-            applicationProjectManager.InstallPackage("Unistream.Processing.Operations", new SemanticVersion("1.0.9.46"));
+            applicationProjectManager.InstallPackage(new SemanticVersion("1.0.9.46"));
             Console.WriteLine(sw.ElapsedMilliseconds);
         }
 

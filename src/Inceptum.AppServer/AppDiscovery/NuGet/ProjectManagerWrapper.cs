@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using NuGet;
-using OpenFileSystem.IO;
 
 namespace Inceptum.AppServer.AppDiscovery.NuGet
 {
@@ -14,11 +11,12 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         private readonly Castle.Core.Logging.ILogger m_Logger;
         private readonly ApplicationProjectManager m_ProjectManager;
         private readonly bool m_AllowPrereleaseVersions;
-        private IPackageRepository m_DependenciesRepository;
-        private AggregateRepository m_Repository;
+        private readonly AggregateRepository m_Repository;
+        private string m_PackageId;
 
         public ProjectManagerWrapper(string packageId, string sharedRepositoryDir, string applicationRoot, Castle.Core.Logging.ILogger logger, IPackageRepository dependenciesRepository, DependencyVersion versionStrategy, bool allowPrereleaseVersions)
         {
+            m_PackageId = packageId;
             m_Logger = logger;
             m_AllowPrereleaseVersions = allowPrereleaseVersions;
 
@@ -30,8 +28,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             IProjectSystem project = new ApplicationProjectSystem(applicationRoot) {Logger = this};
             var referenceRepository = new PackageReferenceRepository(project, packageId, localSharedRepository);
 
-            m_DependenciesRepository = dependenciesRepository;
-            m_Repository = new AggregateRepository(new[] {localSharedRepository, m_DependenciesRepository});
+            m_Repository = new AggregateRepository(new[] { localSharedRepository, dependenciesRepository });
             m_ProjectManager = new ApplicationProjectManager(packageId, m_Repository, pathResolver, project, referenceRepository,
                 localSharedRepository)
             {
@@ -74,13 +71,13 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             }
         }
 
-        public void InstallPackage(string packageId, SemanticVersion version)
+        public void InstallPackage(SemanticVersion version)
         {
-            var packagesConfig = m_Repository.FindPackage(packageId, version).GetFiles().FirstOrDefault(f => f.Path.ToLower() == "config\\packages.config");
+            var packagesConfig = m_Repository.FindPackage(m_PackageId, version).GetFiles().FirstOrDefault(f => f.Path.ToLower() == "config\\packages.config");
             if (packagesConfig!=null )
             {
-                
-                m_ProjectManager.AddPackageReference(packageId, ignoreDependencies: true, allowPrereleaseVersions: m_AllowPrereleaseVersions, version: version);
+
+                m_ProjectManager.AddPackageReference(m_PackageId, ignoreDependencies: true, allowPrereleaseVersions: m_AllowPrereleaseVersions, version: version);
                 var file = new PackageReferenceFile(new InMemoryPackagesConfigFileSystem(packagesConfig.GetStream()),"packages.config");
                 var packageReferences = GetPackageReferences(file, true);
                 foreach (var reference in packageReferences)
@@ -103,7 +100,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             else
             {
                 m_Logger.WarnFormat("packages.config is not found in config folder of application package. It is recommended to provide packages.config as part of application package for appserver to install exactly same  dependencies versions, applications was built and tested with. Will attempt to install dependencies following from what is defined in application package nuspec");
-                m_ProjectManager.AddPackageReference(packageId, ignoreDependencies: false, allowPrereleaseVersions: m_AllowPrereleaseVersions, version: version);
+                m_ProjectManager.AddPackageReference(m_PackageId, ignoreDependencies: false, allowPrereleaseVersions: m_AllowPrereleaseVersions, version: version);
             }
         }
 
@@ -133,12 +130,6 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             return packageReferences;
         }
 
-
-        public void UninstallPackage(IPackage package, bool removeDependencies)
-        {
-            m_ProjectManager.RemovePackageReference(package.Id, false, removeDependencies);
-        }
- 
         public void Uninstall()
         {
             foreach (var package in LocalRepository.GetPackages())
@@ -166,6 +157,16 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             }
 
             return packages;
+        }
+
+ 
+        public SemanticVersion GetInstalledApplicationVersion()
+        {
+            var packages = LocalRepository.GetPackages();
+                
+            var package = packages.Find(m_PackageId).FirstOrDefault();
+
+            return package==null?null:package.Version;
         }
 
         public IPackage[] GetUpdate(IPackage package)
