@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet;
@@ -51,6 +52,12 @@ namespace FixNuspecVersions
                 var packages = file.GetPackageReferences().Select(r => new ManifestDependency() {Id = r.Id, Version = "[" + r.Version.ToString() + "]"});
 
                 var manifest = Manifest.ReadFrom(ms,true);
+                if (manifest.Metadata.Tags == null || !manifest.Metadata.Tags.Split(new[] {','}).Select(t => t.Trim().ToLower()).Contains("inceptum.appserver.application"))
+                {
+                    Console.WriteLine("Nuspec does not contain tag");
+                    return;
+                }
+
                 foreach (var dependencySet in manifest.Metadata.DependencySets)
                 {
                     foreach (var package in packages.ToArray())
@@ -66,7 +73,8 @@ namespace FixNuspecVersions
                         }
                     }
                 }
-
+                if (manifest.Files==null)
+                    manifest.Files=new List<ManifestFile>();
                 manifest.Files.Add(new ManifestFile { Source = "packages.config" , Target = "config"});
 
 
