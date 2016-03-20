@@ -54,8 +54,13 @@ namespace FixNuspecVersions
                 var manifest = Manifest.ReadFrom(ms,true);
                 if (manifest.Metadata.Tags == null || !manifest.Metadata.Tags.Split(new[] {','}).Select(t => t.Trim().ToLower()).Contains("inceptum.appserver.application"))
                 {
-                    Console.WriteLine("Nuspec does not contain tag");
+                    Console.WriteLine("Nuspec does not contain tag 'inceptum.appserver.application'. Will not process.");
                     return;
+                }
+
+                if (!manifest.Metadata.DependencySets.Any())
+                {
+                    manifest.Metadata.DependencySets.Add(new ManifestDependencySet(){Dependencies = new List<ManifestDependency>()});
                 }
 
                 foreach (var dependencySet in manifest.Metadata.DependencySets)
