@@ -108,6 +108,7 @@ namespace Inceptum.AppServer.TestApp
             {
                 new Thread(() =>
                 {
+                    Thread.Sleep(2000);
                     m_Logger.Error("FAIL!!!");
                     throw new Exception();
                 }).Start();
@@ -130,6 +131,12 @@ namespace Inceptum.AppServer.TestApp
             if (bool.TryParse(ConfigurationManager.AppSettings["hangOnStart"], out hangOnStart) && hangOnStart)
             {
                 Console.ReadLine();
+            }
+            bool failOnStart;
+            if (bool.TryParse(ConfigurationManager.AppSettings["failOnStart"], out failOnStart) && failOnStart)
+            {
+                throw new Exception("Fail on start");
+                
             }
             m_Logger.InfoFormat("log record");
             m_Logger.DebugFormat("Debug");
