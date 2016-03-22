@@ -102,7 +102,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Inceptum.AppServer.Sdk.Cqrs.nuspec" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Inceptum.AppServer.Sdk\Inceptum.AppServer.Sdk.csproj">

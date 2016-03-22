@@ -56,16 +56,18 @@ namespace Inceptum.AppServer.TestApp
             int i = 0;
             while (!m_Stop.WaitOne(1000))
             {
-                if(i%5==0)
+                if(i%6==0)
                     m_Logger.DebugFormat("Log record #{0}", i);
-                if(i%5==1)
+                if(i%6==1)
                     m_Logger.InfoFormat("Log record #{0}", i);
-                if(i%5==2)
+                if(i%6==2)
                     m_Logger.WarnFormat("Log record #{0}", i);
-                if(i%5==3)
+                if(i%6==3)
                     m_Logger.ErrorFormat("Log record #{0}", i);
-                if(i%5==4)
+                if (i % 6 == 4)
                     m_Logger.FatalFormat("Log record #{0}", i);
+                if (i % 6 == 5)
+                    m_Logger.InfoFormat("Log record eith html <b>#{0}</b>", i);
                 i++;
             }
         }

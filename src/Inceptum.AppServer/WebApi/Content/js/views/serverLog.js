@@ -83,10 +83,11 @@ define([
                     p.show();
                 else
                     p.hide();
+                var message = logEvent.message;
                 if(logEvent.level=="Fatal"){
-                    p.prepend($('<span class="label label-important">'+logEvent.message+'</span>'));
+                    p.prepend($('<span class="label label-important"></span>').text(message));
                 }else{
-                    p.addClass(this.levelMap[logEvent.level]).html(logEvent.message);
+                    p.addClass(this.levelMap[logEvent.level]).text(message);
                 }
                 return p;
             },
