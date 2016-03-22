@@ -38,7 +38,7 @@ namespace Inceptum.AppServer.Hosting
                 EventHandler faulted = null;
                 faulted = (o, args) =>
                 {
-                    m_Logger.DebugFormat("Recreating {0} service host.",m_Name);
+                    m_Logger.InfoFormat("Recreating {0} service host.", m_Name);
                     serviceHost.Faulted -= faulted;
                     reset();
                 };

@@ -281,7 +281,7 @@ namespace Inceptum.AppServer.Hosting
 
         public void SetInstanceVersion(string name, Version version)
         {
-            Logger.DebugFormat("Setting instance '{0}' version to {1}", name, version);
+            Logger.InfoFormat("Setting instance '{0}' version to {1}", name, version);
             try
             {
                 string instances;
@@ -299,7 +299,7 @@ namespace Inceptum.AppServer.Hosting
                     instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(c => c.Name != instanceConfig.Name).Concat(new[] { instanceConfig }).ToArray(), Formatting.Indented);
                 }
                 m_ServerConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
-                Logger.DebugFormat("Instance '{0}' version is set to {1}", name, version);
+                Logger.InfoFormat("Instance '{0}' version is set to {1}", name, version);
 
                 updateInstances();
             }
@@ -534,7 +534,7 @@ namespace Inceptum.AppServer.Hosting
 
         private void updateInstances()
         {
-            Logger.DebugFormat("Updating instances");
+            Logger.InfoFormat("Updating instances");
 
             var bundle = m_ServerConfigurationProvider.GetBundle("AppServer", "instances");
             var configs = JsonConvert.DeserializeObject<InstanceConfig[]>(bundle).GroupBy(i => i.Name).Select(g => g.First());
@@ -544,12 +544,12 @@ namespace Inceptum.AppServer.Hosting
                 m_InstancesConfiguration = configs.ToArray();
                 foreach (var config in m_InstancesConfiguration.Where(config => m_Instances.All(i => i.Name != config.Name)))
                 {
-                    Logger.DebugFormat("Creating new instance '{0}'", config.Name);
+                    Logger.InfoFormat("Creating new instance '{0}'", config.Name);
                     createInstance(config);
                 }
                 notifyInstancesChanged();
             }
-            Logger.DebugFormat("Instances are updated");
+            Logger.InfoFormat("Instances are updated");
         }
 
         public Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged

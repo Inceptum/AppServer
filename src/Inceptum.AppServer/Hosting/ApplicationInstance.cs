@@ -87,7 +87,7 @@ namespace Inceptum.AppServer.Hosting
                         return;
                     m_Status = value;
                 }
-                Logger.DebugFormat("Instance '{0}' status changed to {1}", Name, value);
+                Logger.InfoFormat("Instance '{0}' status changed to {1}", Name, value);
                 m_StatusSubject.OnNext(value);
             }
         }
@@ -222,7 +222,7 @@ namespace Inceptum.AppServer.Hosting
                     new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/instances/" + UrlSafeInstanceName));
                 serviceHost.Faulted += (o, args) =>
                 {
-                    Logger.DebugFormat("Creating Host.");
+                    Logger.InfoFormat("Creating Host.");
                     Task.Factory.StartNew(() =>
                     {
                         Thread.Sleep(1000);

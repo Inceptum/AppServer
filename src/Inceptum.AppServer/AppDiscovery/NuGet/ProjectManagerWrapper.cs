@@ -57,7 +57,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             switch (level)
             {
                 case MessageLevel.Debug:
-                    m_Logger.DebugFormat(message, args);
+                    m_Logger.InfoFormat(message, args);
                     break;
                 case MessageLevel.Error:
                     m_Logger.ErrorFormat(message, args);
