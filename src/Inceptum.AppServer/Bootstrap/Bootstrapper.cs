@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
 using System.Web.Http.Filters;
@@ -73,14 +74,15 @@ namespace Inceptum.AppServer.Bootstrap
 
 
                 var confSvcUrl = ConfigurationManager.AppSettings["confSvcUrl"];
-
+                var confCachePath = ConfigurationManager.AppSettings["confCachePath"] ?? Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), @"ConfigsCache");
+                
                 //If remote configuration source is provided in app.config use it by default
                 if (confSvcUrl != null)
                 {
                     container.Register(Component
                                            .For<IConfigurationProvider, IManageableConfigurationProvider>()
                                            .ImplementedBy<CachingRemoteConfigurationProvider>()
-                                           .DependsOn(new {serviceUrl = confSvcUrl, path = "."})
+                                           .DependsOn(new {serviceUrl = confSvcUrl, path = confCachePath })
                                            .Named("cachingRemoteConfigurationProvider"),
                                        Component
                                            .For<IConfigurationProvider, IManageableConfigurationProvider>()

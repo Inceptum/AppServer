@@ -9,7 +9,6 @@ namespace Inceptum.AppServer.Configuration.Providers
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class CachingRemoteConfigurationProvider : IManageableConfigurationProvider
     {
-        private const string CONFIG_CACHE_PATH = "ConfigsCache";
         private readonly FileSystemConfigurationProvider m_FileSystemConfigurationProvider;
         private readonly IManageableConfigurationProvider m_ExternalProvider;
         private readonly ILogger m_Logger;
@@ -26,7 +25,7 @@ namespace Inceptum.AppServer.Configuration.Providers
         }
 
         public CachingRemoteConfigurationProvider(string serviceUrl, string path, ILogger logger)
-            : this(new FileSystemConfigurationProvider(Path.Combine(Path.GetFullPath(path), CONFIG_CACHE_PATH)), new RemoteConfigurationProvider(serviceUrl), logger)
+            : this(new FileSystemConfigurationProvider(Path.GetFullPath(path)), new RemoteConfigurationProvider(serviceUrl), logger)
         {
         }
 
