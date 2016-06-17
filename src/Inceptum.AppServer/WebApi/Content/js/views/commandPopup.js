@@ -46,7 +46,7 @@ define([
                 var deferred = this.deferred = new $.Deferred;
                 this.template = _.template( template, this.command );
                 $(this.el).html(this.template).modal({backdrop:true,show:true});
-                $(this.el).find('.datepicker').datepicker({autoclose:true,format:"dd/mm/yyyy"});
+                $(this.el).find('.datepicker').datepicker({autoclose:true,format:"yyyy-mm-dd"});
                 $('body').append(this.el);
 
                 this.$el.modal({
