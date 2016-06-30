@@ -15,6 +15,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using Inceptum.AppServer.Configuration;
 using Inceptum.AppServer.Utils;
 using Inceptum.AppServer.WebApi.Messages;
+using System.Threading.Tasks;
 
 namespace Inceptum.AppServer.WebApi.Controllers
 {
@@ -210,10 +211,16 @@ namespace Inceptum.AppServer.WebApi.Controllers
         /// <param name="file">The file.</param>
         /// <returns></returns>
         [HttpPost]
-        public IHttpActionResult Import(string id, HttpPostedFileBase file)
+        public async Task<IHttpActionResult> Import(string id)
         {
+            if (!Request.Content.IsMimeMultipartContent())
+            {
+                this.Request.CreateResponse(HttpStatusCode.UnsupportedMediaType);
+            }
+
+
             var memoryStream = new MemoryStream();
-            file.InputStream.CopyTo(memoryStream);
+            await Request.Content.CopyToAsync(memoryStream);
             var zipFile = new ZipFile(memoryStream);
 
             m_Provider.DeleteConfiguration(id);
@@ -227,6 +234,7 @@ namespace Inceptum.AppServer.WebApi.Controllers
                 m_Provider.CreateOrUpdateBundle(id, bundleFile.Name, new StreamReader(zipFile.GetInputStream(bundleFile)).ReadToEnd());
             }
             m_Logger.InfoFormat("{0}", i);
+
             return Ok();
         }
 
