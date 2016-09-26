@@ -164,9 +164,9 @@ namespace Inceptum.AppServer.Hosting
                     startGroup
                             .AsParallel()
                             .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
-                            .ForAll(instance =>
+                            .ForAll(async instance =>
                             {
-                                startInstance(instance.Name, safe: true);
+                                await startInstance(instance.Name, safe: true);
                                 Logger.InfoFormat("Started instance with {0} start order {1}", instance.Name, instance.StartOrder);
                             });
                 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
@@ -125,6 +126,18 @@ namespace Inceptum.AppServer.Tests
         {
             var generateRuntimeProcess = GenerateRuntimeProcess("test", 60000);
             Thread.Sleep(1000000);
+        }
+        [Test]
+        [Ignore]
+        public void Test2()
+        {
+            int c = 0;
+            Enumerable.Range(1, 50).AsParallel().Where(i => i%2 == 0).ForAll(i =>
+            {
+                Console.WriteLine(i);
+                c++;
+            });
+            Console.WriteLine(c);
         }
     }
 }
