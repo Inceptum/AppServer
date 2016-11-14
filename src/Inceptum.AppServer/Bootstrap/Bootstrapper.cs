@@ -34,7 +34,6 @@ namespace Inceptum.AppServer.Bootstrap
     {
         internal static IDisposable Start(IEnumerable<string> debugFolders = null)
         {
-            ConfigureSupportedSslProtocols();
             IWindsorContainer container = new WindsorContainer();
             container.Install(new LoggingInstaller());
             var logger = container.Resolve<ILoggerFactory>().Create(typeof(Bootstrapper));
@@ -158,11 +157,6 @@ namespace Inceptum.AppServer.Bootstrap
                 Component.For<ApiHost.HostConfiguration>().DependsOnBundle("server.host", "ManagementConsole", "{environment}", "{machineName}"),
                 Component.For<ApiHost>()
             );
-        }
-
-        private static void ConfigureSupportedSslProtocols()
-        {
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
         }
 
         private static void createDefaultConfigurationIfRequired(IManageableConfigurationProvider provider)
