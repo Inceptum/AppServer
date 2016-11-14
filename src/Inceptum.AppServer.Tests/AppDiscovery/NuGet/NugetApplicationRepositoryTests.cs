@@ -94,6 +94,23 @@ namespace Inceptum.AppServer.Tests.AppDiscovery.NuGet
             }, clear: true);
         }
 
+        [Test]
+        public void UseHttpsSourceTest()
+        {
+            var configuration = new NugetApplicationRepositoryConfiguration
+            {
+                AllowPrereleaseVersions = false,
+                DependencyVersion = DependencyVersion.Highest,
+                ApplicationRepository = @"https://artifact.finam.ru/artifactory/api/nuget/Etna.Applications",
+                DependenciesRepositories = new string[] { }
+            };
+            executeInTempDirectory(testAppPath =>
+            {
+                var repository = new NugetApplicationRepository(new ConsoleLogger(), configuration, Path.Combine(testAppPath, "..\\packages"));
+                repository.GetAvailableApps();
+            });
+        }
+
         private static void executeInTempDirectory(Action<string> action, bool clear = true)
         {
             string path = Path.Combine(Directory.GetCurrentDirectory(), DateTime.Now.Ticks.ToString());
