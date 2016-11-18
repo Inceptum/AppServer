@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
+using Microsoft.Win32;
 using NuGet;
 
 namespace Inceptum.AppServer.AppDiscovery.NuGet
@@ -14,12 +15,21 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
         private const string BIN_DIR = "bin";
         private static FrameworkName m_FrameworkName;
 
+        private static Dictionary<int, FrameworkName> m_Framework4Names = new Dictionary<int, FrameworkName>()
+        {
+            {378389, new FrameworkName(".NETFramework,Version=v4.5")},
+            {378675, new FrameworkName(".NETFramework,Version=v4.5.1")},
+            {378758, new FrameworkName(".NETFramework,Version=v4.5.1")},
+            {379893, new FrameworkName(".NETFramework,Version=v4.5.2")},
+            {393295, new FrameworkName(".NETFramework,Version=v4.6")},
+            {394254, new FrameworkName(".NETFramework,Version=v4.6.1")},
+            {394802, new FrameworkName(".NETFramework,Version=v4.6.2")}
+        };
+
         static ApplicationProjectSystem()
         {
-            var list = Assembly.GetExecutingAssembly().GetCustomAttributes(true);
-            var attribute = list.OfType<TargetFrameworkAttribute>().First();
-            m_FrameworkName = new FrameworkName(attribute.FrameworkName);
-
+            var net4Release =(int) Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\\").GetValue("Release");
+            m_FrameworkName = m_Framework4Names[m_Framework4Names.Where(p => p.Key <= net4Release).Max(p => p.Key)];
         }
         public ApplicationProjectSystem(string root)
             : base(root)
