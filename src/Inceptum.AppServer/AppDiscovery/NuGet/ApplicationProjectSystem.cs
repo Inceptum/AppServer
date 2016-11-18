@@ -48,7 +48,10 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             return FileExists(path);
         }
 
-        public FrameworkName TargetFramework => m_FrameworkName;
+        public FrameworkName TargetFramework
+        {
+            get { return m_FrameworkName; }
+        }
 
         public void AddReference(string referencePath, Stream stream)
         {
