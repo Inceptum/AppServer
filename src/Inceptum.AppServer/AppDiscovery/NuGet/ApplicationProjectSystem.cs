@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Versioning;
 using NuGet;
 
@@ -11,7 +12,15 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
     public class ApplicationProjectSystem : PhysicalFileSystem, IProjectSystem, IFileSystem
     {
         private const string BIN_DIR = "bin";
+        private static FrameworkName m_FrameworkName;
 
+        static ApplicationProjectSystem()
+        {
+            var list = Assembly.GetExecutingAssembly().GetCustomAttributes(true);
+            var attribute = list.OfType<TargetFrameworkAttribute>().First();
+            m_FrameworkName = new FrameworkName(attribute.FrameworkName);
+
+        }
         public ApplicationProjectSystem(string root)
             : base(root)
         {
@@ -29,10 +38,7 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             return FileExists(path);
         }
 
-        public FrameworkName TargetFramework
-        {
-            get { return new FrameworkName(".NETFramework,Version=v4.5"); }
-        }
+        public FrameworkName TargetFramework => m_FrameworkName;
 
         public void AddReference(string referencePath, Stream stream)
         {
