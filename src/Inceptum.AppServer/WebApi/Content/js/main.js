@@ -20,6 +20,7 @@ require.config({
         "signalr": "libs/jquery.signalR-1.1.2",
         "json2": "libs/json2.min",
         "fileupload": "libs/jquery.fileupload",
+        "deepmerge": "libs/deepmerge",
         "jquery.ui.widget": "libs/jquery.ui.widget",
         "bootbox": "libs/bootbox",
         "jsonlint":"libs/jsonlint",

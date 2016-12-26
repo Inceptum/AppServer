@@ -5,13 +5,14 @@ define([
     'text!templates/bundle.html',
     'views/alerts',
     'jsonlint',
+    'deepmerge',
     'codemirror',
     'codemirror/mode/javascript/javascript',
     'codemirror/addon/search/search',
     'codemirror/addon/search/matchesonscrollbar',
 	'libs/prettify',
     'shortcut'],
-    function ($, Backbone, _, template, alerts, jsonlint, CodeMirror) {
+    function ($, Backbone, _, template, alerts, jsonlint, deepmerge, CodeMirror) {
         var View = Backbone.View.extend({
             el:'#content',
             initialize:function () {
@@ -42,11 +43,16 @@ define([
                     this.switchToPreview();
                 }
             },
+            replaceArrayMerge: function (destinationArray, sourceArray, options) {
+                return sourceArray;
+            },
             switchToPreview:function(){
                 var parentContent = (this.model.attributes.parent!=null)
                     ?this.configuration.getBundle(this.model.attributes.parent).attributes.content
                     :{};
-                var merged = $.extend(true,{},JSON.parse(parentContent), JSON.parse(this.codeMirror.getValue()));
+                //var merged = $.extend(true,{},JSON.parse(parentContent), JSON.parse(this.codeMirror.getValue()));
+                var merged = deepmerge.all([{}, JSON.parse(parentContent), JSON.parse(this.codeMirror.getValue())],
+                           { arrayMerge: this.replaceArrayMerge });
                 this.codeMirror.setValue(JSON.stringify(merged, null, "  "));
                 this.codeMirror.setOption("readOnly",true);
                 this.isPreview=true;
