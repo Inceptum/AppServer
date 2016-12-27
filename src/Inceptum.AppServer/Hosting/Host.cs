@@ -161,14 +161,18 @@ namespace Inceptum.AppServer.Hosting
             {
                 foreach (var startGroup in startGroups)
                 {
-                    startGroup
-                            .AsParallel()
-                            .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
-                            .ForAll(async instance =>
-                            {
-                                await startInstance(instance.Name, safe: true);
-                                Logger.InfoFormat("Started instance with {0} start order {1}", instance.Name, instance.StartOrder);
-                            });
+                    var groupTasks = startGroup
+                        .AsParallel()
+                        .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
+                        .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
+                        .Select(async instance =>
+                        {
+                            await startInstance(instance.Name, safe: true);
+                            Logger.InfoFormat("Started instance with {0} start order {1}", instance.Name,
+                                instance.StartOrder);
+                        })
+                        .ToArray();
+                    Task.WaitAll(groupTasks);
                 }
             }).ContinueWith(t =>
             {
