@@ -367,10 +367,11 @@ namespace Inceptum.AppServer.Hosting
             }
 
             string directoryName = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? "";
-            File.Copy(Path.Combine(directoryName, "AppHost", "AppHost.exe"), Path.Combine(directoryName, "AppHost", Name + ".exe"), true);
+            var instanceHostExe = Path.Combine(directoryName, "AppHost", "AppHost-"+Name + ".exe");
+            File.Copy(Path.Combine(directoryName, "AppHost", "AppHost.exe"), instanceHostExe, true);
             var procSetup = new ProcessStartInfo
             {
-                FileName = Path.Combine(directoryName, "AppHost", Name + ".exe"),
+                FileName = instanceHostExe,
                 Arguments = args,
                 WorkingDirectory = path
             };
