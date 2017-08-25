@@ -38,13 +38,13 @@
     <Reference Include="Castle.Windsor">
       <HintPath>..\packages\Castle.Windsor.3.2.1\lib\net45\Castle.Windsor.dll</HintPath>
     </Reference>
-    <Reference Include="Inceptum.Messaging, Version=1.0.8.11, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Inceptum.Messaging.1.0.8.11\lib\net40\Inceptum.Messaging.dll</HintPath>
+    <Reference Include="Inceptum.Messaging, Version=2.1.0.5, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Inceptum.Messaging.2.1.0.5\lib\net45\Inceptum.Messaging.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Inceptum.Messaging.Castle, Version=1.0.8.11, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Inceptum.Messaging.Castle.1.0.8.11\lib\net40\Inceptum.Messaging.Castle.dll</HintPath>
+    <Reference Include="Inceptum.Messaging.Castle, Version=2.1.0.5, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Inceptum.Messaging.Castle.2.1.0.5\lib\net45\Inceptum.Messaging.Castle.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -90,7 +90,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Inceptum.AppServer.Sdk.Messaging.nuspec" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Inceptum.AppServer.Sdk\Inceptum.AppServer.Sdk.csproj">
