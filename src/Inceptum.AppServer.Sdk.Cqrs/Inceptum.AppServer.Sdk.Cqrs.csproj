@@ -46,9 +46,9 @@
     <Reference Include="EventStore.ClientAPI">
       <HintPath>..\packages\EventStore.Client.2.0.2\lib\net40\EventStore.ClientAPI.dll</HintPath>
     </Reference>
-    <Reference Include="Inceptum.Cqrs, Version=1.0.7.20, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Inceptum.Cqrs.1.0.7.20\lib\net45\Inceptum.Cqrs.dll</HintPath>
+    <Reference Include="Inceptum.Cqrs, Version=1.0.9.19, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Inceptum.Cqrs.1.0.9.19\lib\net45\Inceptum.Cqrs.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Inceptum.Messaging, Version=2.1.0.5, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Inceptum.Messaging.2.1.0.5\lib\net45\Inceptum.Messaging.dll</HintPath>
