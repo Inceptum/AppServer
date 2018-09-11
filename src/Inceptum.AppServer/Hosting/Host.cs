@@ -41,8 +41,6 @@ namespace Inceptum.AppServer.Hosting
         public Host(ILogCache logCache, IManageableConfigurationProvider serverConfigurationProvider, IConfigurationProvider applicationConfigurationProvider, IApplicationInstanceFactory instanceFactory, IEnumerable<IHostNotificationListener> listeners, ApplicationRepository applicationRepository, ILogger logger = null)
         {
             m_JobObject = new JobObject();
-
-
             m_ApplicationRepository = applicationRepository;
             m_ServerConfigurationProvider = serverConfigurationProvider;
             m_Listeners = listeners;
@@ -55,9 +53,13 @@ namespace Inceptum.AppServer.Hosting
                 var bundleString = serverConfigurationProvider.GetBundle("AppServer", "server.host", "{machineName}");
                 var setup = JsonConvert.DeserializeObject<AppServerSetup>(bundleString);
                 if (setup.Name != null)
+                {
                     Name = setup.Name;
+                }
                 else
+                {
                     Logger.WarnFormat("Failed to get server name from configuration , using default:{0}", Name);
+                }
             }
             catch (Exception e)
             {
@@ -74,7 +76,6 @@ namespace Inceptum.AppServer.Hosting
 
             m_ConfigurationProviderServiceHost = new ServiceHostWrapper<IConfigurationProvider>(Logger, applicationConfigurationProvider, "ConfigurationProvider");
             m_LogCacheServiceHost = new ServiceHostWrapper<ILogCache>(Logger, logCache, "LogCache");
-          
         }
 
         private void checkInstances()
@@ -124,6 +125,7 @@ namespace Inceptum.AppServer.Hosting
                                            Status = instance.Status,
                                            Version = cfg.Version,
                                            AutoStart = cfg.AutoStart,
+                                           StartOrder = cfg.StartOrder??int.MaxValue,
                                            ActualVersion = instance.ActualVersion,
                                            Commands = instance.Commands,
                                            User = cfg.User,
@@ -137,23 +139,46 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-
         public void Start()
         {
             m_IsStopped = false;
+
             RediscoverApps();
+
             Logger.Info("Reading instances config");
             updateInstances();
-            IEnumerable<Task> tasks;
+            IGrouping<int, InstanceConfig>[] startGroups;
             lock (m_SyncRoot)
             {
-                tasks = m_InstancesConfiguration
-                        .Where(c => c.AutoStart)
-                        .Select(c => c.Name)
-                        .Select(instance => Task.Factory.StartNew(() => startInstance(instance, true)));
+                startGroups = m_InstancesConfiguration
+                    .Where(c => c.AutoStart)
+                    .GroupBy(c => c.StartOrder ?? Int32.MaxValue)
+                    .OrderBy(c => c.Key).ToArray();
             }
-            Logger.InfoFormat("Starting instances");
-            Task.WaitAll(tasks.ToArray());
+
+            var sw = Stopwatch.StartNew();
+            Task.Factory.StartNew(() =>
+            {
+                foreach (var startGroup in startGroups)
+                {
+                    var groupTasks = startGroup
+                        .AsParallel()
+                        .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
+                        .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
+                        .Select(async instance =>
+                        {
+                            await startInstance(instance.Name, safe: true);
+                            Logger.InfoFormat("Started instance with {0} start order {1}", instance.Name,
+                                instance.StartOrder);
+                        })
+                        .ToArray();
+                    Task.WaitAll(groupTasks);
+                }
+            }).ContinueWith(t =>
+            {
+                sw.Stop();
+                Logger.InfoFormat("Started all instances, time = {0}", sw.Elapsed);
+            });
         }
 
         public void RediscoverApps()
@@ -164,7 +189,6 @@ namespace Inceptum.AppServer.Hosting
             m_ApplicationRepository.RediscoverApps();
             notifyApplicationsChanged();
         }
-
 
         private void createInstance(InstanceConfig config)
         {
@@ -188,7 +212,6 @@ namespace Inceptum.AppServer.Hosting
                 throw new ArgumentException("Application '" + config.ApplicationVendor + "(c) " + config.ApplicationId + "' not found");
 
         }
-
 
         private void notifyInstancesChanged(string comment = null)
         {
@@ -239,6 +262,7 @@ namespace Inceptum.AppServer.Hosting
                     ApplicationVendor = config.ApplicationVendor,
                     Environment = config.Environment,
                     AutoStart = config.AutoStart,
+                    StartOrder = config.StartOrder,
                     User = config.User,
                     Password = string.IsNullOrEmpty(config.Password)
                                     ? null
@@ -261,7 +285,7 @@ namespace Inceptum.AppServer.Hosting
 
         public void SetInstanceVersion(string name, Version version)
         {
-            Logger.DebugFormat("Setting instance '{0}' version to {1}", name, version);
+            Logger.InfoFormat("Setting instance '{0}' version to {1}", name, version);
             try
             {
                 string instances;
@@ -279,7 +303,7 @@ namespace Inceptum.AppServer.Hosting
                     instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(c => c.Name != instanceConfig.Name).Concat(new[] { instanceConfig }).ToArray(), Formatting.Indented);
                 }
                 m_ServerConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
-                Logger.DebugFormat("Instance '{0}' version is set to {1}", name, version);
+                Logger.InfoFormat("Instance '{0}' version is set to {1}", name, version);
 
                 updateInstances();
             }
@@ -313,6 +337,7 @@ namespace Inceptum.AppServer.Hosting
                     ApplicationVendor = config.ApplicationVendor,
                     Environment = config.Environment,
                     AutoStart = config.AutoStart,
+                    StartOrder=config.StartOrder,
                     User = config.User,
                     Password = string.IsNullOrEmpty(config.Password)
                         ? originalPassword
@@ -324,7 +349,9 @@ namespace Inceptum.AppServer.Hosting
                 };
 
                 instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(c => c.Name != config.Id).Concat(new[] { cfg }).ToArray(), Formatting.Indented);
-                m_Instances.First(i => i.Name == config.Id).Rename(cfg.Name);
+                var instance = m_Instances.First(i => i.Name == config.Id);
+                instance.ChangeLogLevel(config.LogLevel.ToString());
+                instance.Rename(cfg.Name);
             }
 
             m_ServerConfigurationProvider.CreateOrUpdateBundle("AppServer", "instances", instances);
@@ -391,6 +418,38 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
+        public void Debug(string name)
+        {
+            try
+            {
+                Task task=null;
+                lock (m_SyncRoot)
+                {
+                    if (m_IsStopped)
+                        throw new ObjectDisposedException("Host is disposed");
+
+                    ApplicationInstance instance = m_Instances.FirstOrDefault(i => i.Name == name);
+                    if (instance == null)
+                        return;
+                    if(instance.Status==HostedAppStatus.Stopped)
+                        task=startInstance(name, false, true);
+                    else if(instance.Status==HostedAppStatus.Started)
+                        task = instance.Debug();
+                }
+                if (task != null)
+                    task.ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            catch (AggregateException ae)
+            {
+                Logger.WarnFormat(ae.Flatten(), "Failed to lounch debugger for instance {0} ", name);
+                throw ae.Flatten();
+            }
+            catch (Exception e)
+            {
+                Logger.WarnFormat(e, "Failed to lounch debugger for instance", name);
+                throw;
+            }
+        }
 
         public Task StopInstance(string name)
         {
@@ -479,7 +538,7 @@ namespace Inceptum.AppServer.Hosting
 
         private void updateInstances()
         {
-            Logger.DebugFormat("Updating instances");
+            Logger.InfoFormat("Updating instances");
 
             var bundle = m_ServerConfigurationProvider.GetBundle("AppServer", "instances");
             var configs = JsonConvert.DeserializeObject<InstanceConfig[]>(bundle).GroupBy(i => i.Name).Select(g => g.First());
@@ -489,21 +548,19 @@ namespace Inceptum.AppServer.Hosting
                 m_InstancesConfiguration = configs.ToArray();
                 foreach (var config in m_InstancesConfiguration.Where(config => m_Instances.All(i => i.Name != config.Name)))
                 {
-                    Logger.DebugFormat("Creating new instance '{0}'", config.Name);
+                    Logger.InfoFormat("Creating new instance '{0}'", config.Name);
                     createInstance(config);
                 }
                 notifyInstancesChanged();
             }
-            Logger.DebugFormat("Instances are updated");
+            Logger.InfoFormat("Instances are updated");
         }
-
 
         public Subject<Tuple<HostedAppInfo, HostedAppStatus>[]> AppsStateChanged
         {
             //TODO: fake!!!
             get { return new Subject<Tuple<HostedAppInfo, HostedAppStatus>[]>(); }
         }
-
 
         public void Stop()
         {
@@ -526,12 +583,18 @@ namespace Inceptum.AppServer.Hosting
             m_Instances.Clear();
             Logger.InfoFormat("Host is stopped");
         }
+
         public void Dispose()
         {
             m_InstanceChecker.Dispose();
             m_JobObject.Dispose();
             m_ConfigurationProviderServiceHost.Dispose();
             m_LogCacheServiceHost.Dispose();
+        }
+
+        class AppServerSetup
+        {
+            public string Name { get; set; }
         }
     }
 }

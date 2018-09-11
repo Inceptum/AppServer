@@ -1,23 +1,14 @@
 ﻿using System;
+using System.Reactive.Disposables;
 using Castle.Core;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Inceptum.AppServer.Configuration;
 using NUnit.Framework;
 using Rhino.Mocks;
-using System.Reactive.Disposables;
 
-namespace Inceptum.Configuration.Tests.Client
+namespace Inceptum.AppServer.Tests.Configuration
 {
-    public class Config
-    {
-        public virtual  string Value { get; set; }
-    }
-    public class ConfigWithNonVirtualMembers
-    {
-        public string Value { get; set; }
-    }
-
     [TestFixture]
     public class ComponentRegistrationExtentionsTests
     {
@@ -73,7 +64,7 @@ namespace Inceptum.Configuration.Tests.Client
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException), ExpectedMessage = "All property getters of type Inceptum.Configuration.Tests.Client.ConfigWithNonVirtualMembers should be virtual")]
+        [ExpectedException(typeof(InvalidOperationException), ExpectedMessage = "All property getters of type Inceptum.AppServer.Tests.Configuration.ConfigWithNonVirtualMembers should be virtual")]
         public void FromConfigurationLiveNonVirtualMembersFailureTest()
         {
             var windsorContainer = new WindsorContainer();

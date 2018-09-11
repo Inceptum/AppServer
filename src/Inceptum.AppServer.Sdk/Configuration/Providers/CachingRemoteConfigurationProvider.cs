@@ -9,10 +9,10 @@ namespace Inceptum.AppServer.Configuration.Providers
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class CachingRemoteConfigurationProvider : IManageableConfigurationProvider
     {
-        private const string CONFIG_CACHE_PATH = "ConfigsCache";
         private readonly FileSystemConfigurationProvider m_FileSystemConfigurationProvider;
         private readonly IManageableConfigurationProvider m_ExternalProvider;
         private readonly ILogger m_Logger;
+        private bool m_IsContentOutputToLog=false;
 
         public CachingRemoteConfigurationProvider(string serviceUrl)
             : this(serviceUrl, ".")
@@ -25,7 +25,7 @@ namespace Inceptum.AppServer.Configuration.Providers
         }
 
         public CachingRemoteConfigurationProvider(string serviceUrl, string path, ILogger logger)
-            : this(new FileSystemConfigurationProvider(Path.Combine(Path.GetFullPath(path), CONFIG_CACHE_PATH)), new RemoteConfigurationProvider(serviceUrl), logger)
+            : this(new FileSystemConfigurationProvider(Path.GetFullPath(path)), new RemoteConfigurationProvider(serviceUrl), logger)
         {
         }
 
@@ -33,6 +33,7 @@ namespace Inceptum.AppServer.Configuration.Providers
         {
             m_ExternalProvider = externalProvider;
             m_Logger = logger;
+            //m_IsContentOutputToLog = m_Logger.IsDebugEnabled;
             m_FileSystemConfigurationProvider = fileSystemConfigurationProvider;
         }
 
@@ -64,14 +65,14 @@ namespace Inceptum.AppServer.Configuration.Providers
 
                 if (content != null)
                 {
-                    m_Logger.InfoFormat("Bundle '{0}' with extra params {1}  was loaded from cache." + (m_Logger.IsDebugEnabled ? " Bundle Content:\r\n{2}":""), bundleName, string.Join(",", extraParams.Select(p => "'" + p + "'").ToArray()), content);
+                    m_Logger.InfoFormat("Bundle '{0}' with extra params {1}  was loaded from cache." + (m_IsContentOutputToLog ? " Bundle Content:\r\n{2}":""), bundleName, string.Join(",", extraParams.Select(p => "'" + p + "'").ToArray()), content);
                 }
                 else
                     m_Logger.WarnFormat("Bundle '{0}' with extra params {1}  was not found in cache.", bundleName, string.Join(",", extraParams.Select(p => "'" + p + "'").ToArray()));
                 return content;
             }
 
-            m_Logger.DebugFormat("Bundle '{0}' with extra params {1}  was received from remote source." + (m_Logger.IsDebugEnabled ? " Bundle Content:\r\n{2}":""), bundleName, string.Join(",", extraParams.Select(p => "'" + p + "'").ToArray()), content);
+            m_Logger.InfoFormat("Bundle '{0}' with extra params {1}  was received from remote source." + (m_IsContentOutputToLog ? " Bundle Content:\r\n{2}" : ""), bundleName, string.Join(",", extraParams.Select(p => "'" + p + "'").ToArray()), content);
             
             try
             {

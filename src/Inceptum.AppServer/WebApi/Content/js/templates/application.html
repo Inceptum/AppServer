@@ -1,0 +1,69 @@
+<style>
+    .app-versions   .tab-content > .active, .pill-content > .active {
+        display: block;
+        margin-top: -1px;
+    }
+
+
+    /*.app-versions  .tab-pane {
+        padding: 20px; margin-bottom: 30px; border: 1px solid #ddd;
+        -webkit-border-radius:0 0 4px 4px;
+        -moz-border-radius: 0 0 4px 4px;
+        border-radius: 0 0 4px 4px; }*/
+    .app-versions  ul.nav-tabs { margin-bottom: 0;}
+
+    .app-versions .tab-content > .active, .pill-content > .active {
+        display: block;
+        margin-top: -1px;
+    }
+
+</style>
+
+<div class="page-header">
+    <h3>
+        <%= model.name %>&nbsp;
+        <span class="pull-right">
+            <a href="#/applications/<%= model.vendor %>/<%= model.name %>/instances/create"  class="btn btn-mini" type="button">Create instance</a>
+        </span>
+    </h3>
+</div>
+
+<dl>
+    <dt>Vendor</dt>
+    <dd><a href="http://inceptumsoft.com"><%= model.vendor %></a></dd>
+    <dt>Available versions  <%
+            if(model.versions.length>10)
+                {
+            %>
+            <a id="more" style="font-weight: 100" href="#">more...</a>
+                <%
+                }
+                %></dt>
+    <dd class="app-versions">
+        <div class="tabbable">
+            <ul class="nav nav-pills">
+                <%
+                var cnt=0;
+                _.each(model.versions,function(ver) { %>
+                <li class="<%= ver.version.split('.').join('_')%> <% if(cnt>9){%>oldVersion hide<%}%>"><a  data-toggle="tab" data-version="<%=ver.version%>"  href="#<%= ver.version.split('.').join('_')%>"><%= ver.version%></a></li>
+                <% cnt++; }); %>
+            </ul>
+           
+            <dt>Description</dt>
+            <dd>
+                <div class="tab-content"  >
+                    <% _.each(model.versions,function(ver) { %>
+                    <div class="tab-pane active" id="<%= ver.version.split('.').join('_')%>">
+                        <p><%=ver.Description%>.</p>
+                    </div>
+                    <% }); %>
+                </div>
+            </dd>
+        </div>
+    </dd>
+
+    <dt >Instances</dt>
+    <dd class="instances">
+
+    </dd>
+</dl>

@@ -1,0 +1,42 @@
+
+    <td style="white-space: nowrap"><%=model.environment%></td>
+    <td class="text-span"><a href="#/instances/<%=model.name%>"><%=model.name%></a></td>
+    <td style="white-space: nowrap"><a href="#/applications/<%=model.applicationVendor%>/<%=model.applicationId%>"><%=model.applicationId%></a></td>
+    <td style="white-space: nowrap"><%=model.actualVersion%></td>
+    <td style="white-space: nowrap"><%=model.version%><%if(!model.version || model.version==""){%>latest<%}%></td>
+    <td style="white-space: nowrap"><%if(model.effectiveUser!=''){%><%=model.effectiveUser%><%}else{%><span style="color:grey">Same as server</span><%}%></td>
+    <td style="white-space: nowrap"><span class="label label-<%if(model.status=="Starting"){%>warning<%}%><%if(model.status=="Stopping"){%>inverse<%}%><%if(model.status=="Started"){%>success<%}%>"><%=model.status%></span></td>
+    <td style="white-space: nowrap"><%if(!model.autoStart){%>do not start<%}else{%><%=model.startOrder%><%}%></td>
+    <td style="white-space: nowrap">
+        <div class="btn-group actions pull-right">
+        <% if(model.commands && model.commands.length>0) {%>
+            <div class="btn btn-group commands">
+            <a class="btn  btn-mini  dropdown-toggle" data-toggle="dropdown" href="#">
+                <i class="icon-wrench"></i>
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <% _.each(model.commands, function(command) { %>  <li><a data-command="<%= command.name %>" class="command" href="#"><%= command.name %></a></li> <% }); %>
+            </ul>
+            </div>
+        <%}%>
+
+        <% if(model.defaultConfiguration!=null) {%>
+            <a class="btn btn-mini" title="Configuration" href="#configurations/<%= model.defaultConfiguration %>"><i class="icon-cog"></i></a>
+        <%}%>
+            
+            <a class="btn btn-mini" title="Logs" href="#serverLog/<%=model.name%>"><i class="icon-warning-sign"></i></a>
+
+        <% if(model.isDebuggable) {%>
+            <a class="btn btn-mini cmd debug" title="Debug"><i class="icon-random"></i></a>
+        <%}%>
+            <a class="btn btn-mini cmd start" title="Start"><i class="icon-play"></i></a>
+            <a class="btn btn-mini cmd stop" title="Stop"><i class="icon-stop"></i></a>
+            <a class="btn btn-mini cmd restart" title="Restart"><i class="icon-refresh"></i></a>
+        <% if(model.status=='Stopped') {%>
+            <a class="btn btn-mini cmd btn-danger delete" title="Delete"><i class="icon-trash"></i></a>
+        <%} else {%>
+            <a class="btn btn-mini cmd btn-danger kill" title="Kill process"><i class="icon-remove"></i></a>
+        <%}%>
+        </div>
+    </td>

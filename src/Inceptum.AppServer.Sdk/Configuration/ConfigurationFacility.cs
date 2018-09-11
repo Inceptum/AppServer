@@ -8,18 +8,13 @@ using Castle.Core;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Facilities;
 using Castle.MicroKernel.Registration;
+using Castle.MicroKernel.SubSystems.Conversion;
+using Inceptum.AppServer.Configuration.Convertion;
 using Inceptum.AppServer.Configuration.Providers;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Inceptum.AppServer.Configuration
 {
-    //TODO: changed from internal to public for testing. Need to take a closer look .
-    public interface IConfigurationFacility
-    {
-        T DeserializeFromBundle<T>(string configuration,string bundleName, string jsonPath, IEnumerable<string> parameters);
-    }
-
     public class ConfigurationFacility : AbstractFacility, IConfigurationFacility
     {
         private string m_DefaultConfiguration;
@@ -28,7 +23,23 @@ namespace Inceptum.AppServer.Configuration
         private Dictionary<string, string> m_Params = new Dictionary<string, string>();
         private IConfigurationProvider m_Provider;
         private Regex m_ParamRegex;
-        private readonly List<Action<IKernel>> m_InitSteps=new List<Action<IKernel>>();
+        private readonly List<Action<IKernel>> m_InitSteps = new List<Action<IKernel>>();
+
+        internal IConfigurationProvider Provider
+        {
+            get { return m_Provider; }
+            set { m_Provider = value; }
+        }
+
+        private IConversionManager ConversionManager
+        {
+            get { return (IConversionManager) Kernel.GetSubSystem(SubSystemConstants.ConversionManagerKey); }
+        }
+
+        private IJsonObjectAccessor JsonObjectAccessor
+        {
+            get { return Kernel.Resolve<IJsonObjectAccessor>(); }
+        }
 
         protected override void Init()
         {
@@ -37,6 +48,15 @@ namespace Inceptum.AppServer.Configuration
                 string defaultConfiguration = Kernel.Resolve<InstanceContext>().DefaultConfiguration;
                 if(!string.IsNullOrEmpty(defaultConfiguration))
                     m_DefaultConfiguration = defaultConfiguration;
+            }
+
+            if (!Kernel.HasComponent(typeof (IJsonObjectAccessor)))
+            {
+                Kernel.Register(
+                    Component.For<IJsonObjectAccessor>()
+                        .ImplementedBy<JsonObjectAccessor>()
+                        .LifeStyle.Singleton
+                    );
             }
 
             if (m_DefaultConfiguration == null)
@@ -70,80 +90,6 @@ namespace Inceptum.AppServer.Configuration
                 initStep(Kernel);
             }
         }
-
-        private void onComponentModelCreated(ComponentModel model)
-        {
-        	var dependsOnBundle = (string) model.ExtendedProperties["dependsOnBundle"];
-        	if (dependsOnBundle == null)
-        		return;
-
-
-        	var configuration = getConfigurationName((string) model.ExtendedProperties["configuration"]);
-        	var jsonPath = (string) model.ExtendedProperties["jsonPath"];
-        	var parameters = (string[]) model.ExtendedProperties["bundleParameters"];
-        	var values = DeserializeFromBundle<Dictionary<string, object>>(configuration, dependsOnBundle, jsonPath, parameters);
-			
-        	foreach (var value in values)
-        	{
-        		var val = value.Value;
-        		if (val is long)
-        		{
-        			var l = (long) val;
-        			if (int.MinValue < l && l < int.MaxValue)
-        				val = (int) l;
-        		}
-        		//TODO: needs to be tested
-        		if (val is JObject || val is JArray)
-        		{
-        			var dependency =
-        				//Main dependedncy
-        				model.Dependencies.FirstOrDefault(d => d.DependencyKey.ToLower() == value.Key.ToLower())
-        				//Ctor dependency
-        				?? model.Constructors.SelectMany(c => c.Dependencies.Where(d => d.DependencyKey.ToLower() == value.Key.ToLower())).FirstOrDefault();
-        			if (dependency != null)
-        			{
-        				val = JsonConvert.DeserializeObject(val.ToString(), dependency.TargetItemType);
-        			}
-        		}
-        		model.CustomDependencies[value.Key] = val;
-        	}
-        	return;
-        }
-
-    	internal IConfigurationProvider Provider
-        {
-            get { return m_Provider; }
-            set { m_Provider = value; }
-        }
-
-        private string replaceParams(string paramName, bool strict = true)
-        {
-            if (!strict && (m_ParamRegex == null || !m_ParamRegex.IsMatch(paramName)))
-                return paramName;
-            return m_Params.Aggregate(paramName,
-                                      (current, param) =>
-                                      current.Replace(string.Format("{{{0}}}", param.Key), param.Value));
-        }
-
-        
-/*                private Dictionary<string, object> deserializeToDictionary(string jo)
-                {
-                    var values = JsonConvert.DeserializeObject<Dictionary<string, object>>(jo);
-                    var values2 = new Dictionary<string, object>();
-                    foreach (KeyValuePair<string, object> d in values)
-                    {
-                        if (d.Value.GetType().FullName.Contains("Newtonsoft.Json.Linq.JObject"))
-                        {
-                            values2.Add(d.Key, deserializeToDictionary(d.Value.ToString()));
-                        }
-                        else
-                        {
-                            values2.Add(d.Key, d.Value);
-                        }
-
-                    }
-                    return values2;
-                } */
         
         public T DeserializeFromBundle<T>(string configuration,string bundleName, string jsonPath, IEnumerable<string> parameters)
         {
@@ -153,22 +99,16 @@ namespace Inceptum.AppServer.Configuration
 
             var bundle = m_Provider.GetBundle(configurationName,bundleName, extraParams);
             if (bundle == null)
+            {
                 throw new ConfigurationErrorsException(string.Format("bundle '{0}' not found", bundleName));
+            }
 
-            var token = JObject.Parse(bundle).SelectToken(jsonPath);
+            var token = JsonObjectAccessor.SelectToken(bundle, jsonPath);
             if (token == null)
-                throw new ConfigurationErrorsException(string.Format("property path {0} in bundle '{1}' not found",
-                                                                     jsonPath, bundleName));
-            return JsonConvert.DeserializeObject<T>(token.ToString());
-        }
-
-        private string getConfigurationName(string configuration)
-        {
-            string configurationName = configuration ?? m_DefaultConfiguration;
-            if (configurationName == null)
-                throw new ConfigurationErrorsException(
-                    "Configuration is not provided, provide it explicitley in component registration or as default in ConfigurationFacility registration");
-            return configurationName;
+            {
+                throw new ConfigurationErrorsException(string.Format("property path {0} in bundle '{1}' not found", jsonPath, bundleName));
+            }
+            return (T)JsonObjectAccessor.ConvertTo(token, typeof(T));
         }
 
         public ConfigurationFacility Configuration(string configurationName)
@@ -216,8 +156,77 @@ namespace Inceptum.AppServer.Configuration
         {
             m_InitSteps.Add(step);
         }
+
+        private void onComponentModelCreated(ComponentModel component)
+        {
+            var dependsOnBundle = (string)component.ExtendedProperties["dependsOnBundle"];
+            if (dependsOnBundle != null)
+            {
+                var configuration = getConfigurationName((string)component.ExtendedProperties["configuration"]);
+                var jsonPath = (string)component.ExtendedProperties["jsonPath"];
+                var parameters = (string[])component.ExtendedProperties["bundleParameters"];
+                var values = DeserializeFromBundle<Dictionary<string, object>>(configuration, dependsOnBundle, jsonPath, parameters);
+                foreach (var keyValuePair in values)
+                {
+                    object value = changeValueTypeIfNeeded(component, keyValuePair.Key, keyValuePair.Value);
+
+                    component.CustomDependencies[keyValuePair.Key] = value;
+                }
+            }
+        }
+
+        private object changeValueTypeIfNeeded(ComponentModel component, string key, object value)
+        {
+            if (value != null)
+            {
+                Func<DependencyModel, bool> dependencyPredicate = dm => string.Equals(dm.DependencyKey, key, StringComparison.InvariantCultureIgnoreCase);
+
+                DependencyModel dependency = component.Dependencies.FirstOrDefault(dependencyPredicate);
+                if (dependency == null)
+                {
+                    dependency = component.Constructors
+                        .SelectMany(c => c.Dependencies)
+                        .Where(dependencyPredicate)
+                        .FirstOrDefault();
+                }
+
+                if (dependency != null)
+                {
+                    if (dependency.TargetItemType != value.GetType())
+                    {
+                        var jToken = value as JToken;
+                        if (jToken != null)
+                        {
+                            value = JsonObjectAccessor.ConvertTo(jToken, dependency.TargetItemType);
+                        }
+                        else if (ConversionManager.CanHandleType(dependency.TargetItemType))
+                        {
+                            value = ConversionManager.PerformConversion(value.ToString(), dependency.TargetItemType);
+                        }
+                    }
+                }
+            }
+
+            return value;
+        }
+
+        private string replaceParams(string paramName, bool strict = true)
+        {
+            if (!strict && (m_ParamRegex == null || !m_ParamRegex.IsMatch(paramName)))
+            {
+                return paramName;
+            }
+
+            return m_Params.Aggregate(paramName, (current, param) => current.Replace(string.Format("{{{0}}}", param.Key), param.Value));
+        }
+
+        private string getConfigurationName(string configuration)
+        {
+            string configurationName = configuration ?? m_DefaultConfiguration;
+            if (configurationName == null)
+                throw new ConfigurationErrorsException(
+                    "Configuration is not provided, provide it explicitley in component registration or as default in ConfigurationFacility registration");
+            return configurationName;
+        }
     }
-
-
-
 }

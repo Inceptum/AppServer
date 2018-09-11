@@ -6,95 +6,214 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.Text;
 using System.Threading;
-using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Castle.Windsor.Installer;
+using Inceptum.AppServer.AppHost.Configuration;
+using Inceptum.AppServer.AppHost.Container;
 using Inceptum.AppServer.Configuration;
-using Inceptum.AppServer.AppHost;
+using Inceptum.AppServer.AppHost.Interop;
+using Inceptum.AppServer.AppHost.Logging.Targets;
+using Inceptum.AppServer.AppHost.Wcf;
 using Inceptum.AppServer.Logging;
 using Inceptum.AppServer.Model;
-using Inceptum.AppServer.Utils;
-using Inceptum.AppServer.Windsor;
-using Mono.Cecil;
 using NLog;
-using NLog.Conditions;
 using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
-using InstanceContext=Inceptum.AppServer.InstanceContext;
 
 namespace Inceptum.AppServer.Hosting
 {
-    public static class CeceilExtencions
-    {
-        public static AssemblyDefinition TryReadAssembly(string file)
-        {
-            try
-            {
-                return AssemblyDefinition.ReadAssembly(file);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-        public static AssemblyDefinition TryReadAssembly(Stream assemblyStream)
-        {
-            try
-            {
-                return AssemblyDefinition.ReadAssembly(assemblyStream);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-    }
-    
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single,IncludeExceptionDetailInFaults = true)]
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, IncludeExceptionDetailInFaults = true)]
     internal class ApplicationHost : IApplicationHost 
     {
         private IDisposable m_Container;
         private IHostedApplication m_HostedApplication;
-        private   ILogCache m_LogCache;
-        private   IConfigurationProvider m_ConfigurationProvider;
+        private ILogCache m_LogCache;
+        private IConfigurationProvider m_ConfigurationProvider;
         private string m_Environment;
         private readonly string m_InstanceName;
         private AppServerContext m_Context;
-        readonly ManualResetEvent m_StopEvent=new ManualResetEvent(false);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr LoadLibrary(string lpFileName);
-
-        public string UrlSafeInstanceName
-        {
-            get
-            {
-                return  WebUtility.UrlEncode(m_InstanceName);
-            }
-        }
-
+        private readonly ManualResetEvent m_StopEvent = new ManualResetEvent(false);
         private Dictionary<AssemblyName, Lazy<Assembly>> m_LoadedAssemblies;
         private IApplicationInstance m_Instance;
         private ServiceHost m_ServiceHost;
         private InstanceContext m_InstanceContext;
         private readonly string m_ServiceAddress;
-        private readonly object m_ServiceHostLock=new object();
+        private readonly object m_ServiceHostLock = new object();
+        private LoggingConfiguration m_LoggingConfig;
 
         public ApplicationHost(string instanceName)
         {
             m_InstanceName = instanceName;
-            m_ServiceAddress = new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/" + UrlSafeInstanceName).ToString();
+            m_ServiceAddress = new Uri("net.pipe://localhost/AppServer/" + Process.GetCurrentProcess().Id + "/" + WebUtility.UrlEncode(m_InstanceName)).ToString();
         }
 
-        #region Initialization
+        /// <exception cref="InvalidOperationException"></exception>
+        public void Run()
+        {
+            createServiceHost();
+
+            var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/instances/" + WebUtility.UrlEncode(m_InstanceName);
+            var factory = new ChannelFactory<IApplicationInstance>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), new EndpointAddress(uri));
+            m_Instance = factory.CreateChannel();
+            var instanceParams = m_Instance.GetInstanceParams();
+
+            AppDomain.CurrentDomain.UnhandledException += onUnhandledException;
+
+            m_Environment = instanceParams.Environment;
+            m_Context = instanceParams.AppServerContext;
+            m_InstanceContext = new InstanceContext
+            {
+                Name = m_InstanceName,
+                AppServerName = instanceParams.AppServerContext.Name,
+                Environment = m_Environment,
+                DefaultConfiguration = instanceParams.DefaultConfiguration
+            };
+
+            IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
+
+            var folder = Path.Combine(m_Context.AppsDirectory, m_InstanceName, "bin");
+            var dlls = new[] { "*.dll", "*.exe" }
+                .SelectMany(searchPattern => Directory.GetFiles(folder, searchPattern, SearchOption.AllDirectories))
+                .Select(file => new { path = file, AssemblyDefinition = AssemblyDefinitionFactory.ReadAssemblySafe(file) }).ToArray();
+
+            var injectedAssemblies = instanceParams.AssembliesToLoad;
+            m_LoadedAssemblies = dlls.Where(d => d.AssemblyDefinition != null)
+                                     .Where(asm => loadedAssemblies.All(a => a.Name != asm.AssemblyDefinition.Name.Name))
+                                     .Where(asm => injectedAssemblies.All(a => a.Key != asm.AssemblyDefinition.Name.Name))
+                                     .ToDictionary(asm => new AssemblyName(asm.AssemblyDefinition.FullName), asm => new Lazy<Assembly>(() => loadAssembly(asm.path)));
+            foreach (var injectedAssembly in injectedAssemblies)
+            {
+                var path = injectedAssembly.Value;
+                var assemblyName = injectedAssembly.Key;
+                m_LoadedAssemblies.Add(new AssemblyName(assemblyName), new Lazy<Assembly>(() => loadAssembly(path)));
+            }
+
+            foreach (string dll in dlls.Where(d => d.AssemblyDefinition == null).Select(d => d.path))
+            {
+                if (WndUtils.LoadLibrary(dll) == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Failed to load unmanaged dll " + Path.GetFileName(dll) + " from package");
+                }
+            }
+
+            AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
+            createCongigurationProviderProxy();
+            createLogCacheProxy();
+
+
+            var appAssemblies =
+                dlls.Select(file => new { file, asm = file.AssemblyDefinition })
+                    .Where(@t => @t.asm != null)
+                    .Select(@t => new { @t, attribute = @t.asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof(HostedApplicationAttribute).FullName) })
+                    .Where(@t => @t.attribute != null)
+                    .Select(@t => @t.@t.asm);
+
+            var appTypes = appAssemblies.SelectMany(
+                                    a => a.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof(IHostedApplication).FullName))
+                                        .Select(t => t.FullName + ", " + a.FullName)
+                                    ).ToArray();
+
+            if (appTypes.Length > 1)
+                throw new InvalidOperationException(string.Format("Instance {0} bin folder contains several types implementing IHostedApplication: {1}", m_InstanceName, string.Join(",", appTypes)));
+
+            if (appTypes.Length == 0)
+                throw new InvalidOperationException(string.Format("Instance {0} bin folder does not contain type implementing IHostedApplication", m_InstanceName));
+
+            string appType = appTypes[0];
+
+            var instanceCommands = initContainer(Type.GetType(appType), instanceParams.LogLevel, instanceParams.MaxLogSize, instanceParams.LogLimitReachedAction);
+
+            m_Instance.RegisterApplicationHost(m_ServiceAddress, instanceCommands);
+
+            m_StopEvent.WaitOne();
+            if (m_Container == null)
+            {
+                throw new InvalidOperationException("Host is not started");
+            }
+
+            if (m_ServiceHost != null)
+            {
+                try
+                {
+                    m_ServiceHost.Close();
+                }
+                catch
+                {
+                    //There is nothing to do with it
+                }
+            }
+
+            m_Container.Dispose();
+            if (m_ConfigurationProvider != null)
+            {
+                try
+                {
+
+                    ((ICommunicationObject)m_ConfigurationProvider).Close();
+                }
+                catch
+                {
+                    //There is nothing to do with it
+                }
+            }
+
+            if (m_LogCache != null)
+            {
+                try
+                {
+                    ((ICommunicationObject)m_LogCache).Close();
+                }
+                catch
+                {
+                    //There is nothing to do with it
+                }
+            }
+
+            m_Container = null;
+            m_HostedApplication = null;
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void Stop()
+        {
+            m_StopEvent.Set();
+        }
+
+        public string Execute(InstanceCommand command)
+        {
+            var methodInfo = m_HostedApplication.GetType().GetMethod(command.Name);
+            var result = methodInfo.Invoke(m_HostedApplication, methodInfo.GetParameters().Select(p => parseCommandParameterValue(p, command)).ToArray());
+            return result == null ? null : result.ToString();
+        }
+
+        public void ChangeLogLevel(string level)
+        {
+            var logLevel = mapLogLevel(level);
+            foreach (var l in new[] { LogLevel.Debug, LogLevel.Info, LogLevel.Warn, LogLevel.Error, LogLevel.Fatal })
+            {
+                foreach (var rule in m_LoggingConfig.LoggingRules)
+                {
+                    if (l < logLevel)
+                        rule.DisableLoggingForLevel(l);
+                    else
+                        rule.EnableLoggingForLevel(l);
+                }
+
+            }
+            LogManager.ReconfigExistingLoggers();
+        }
+
+        public void Debug()
+        {
+            Debugger.Launch();
+        }
 
         private void resetServiceHost(object sender, EventArgs e)
         {
@@ -110,7 +229,6 @@ namespace Inceptum.AppServer.Hosting
             }
         }
  
-
         private void createServiceHost()
         {
             lock (m_ServiceHostLock)
@@ -134,132 +252,6 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-        public void Run()
-        {
-             createServiceHost();
-
-
-             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/instances/" + UrlSafeInstanceName;
-            var factory = new ChannelFactory<IApplicationInstance>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), new EndpointAddress(uri));
-            m_Instance = factory.CreateChannel();
-            var instanceParams = m_Instance.GetInstanceParams();
-
-            
-            AppDomain.CurrentDomain.UnhandledException += onUnhandledException;
-
-            
-           
-
-
-            m_Environment = instanceParams.Environment;
-            m_Context = instanceParams.AppServerContext;
-            m_InstanceContext = new InstanceContext
-            {
-                Name = m_InstanceName,
-                AppServerName= instanceParams.AppServerContext.Name,
-                Environment=m_Environment,
-                DefaultConfiguration = instanceParams.DefaultConfiguration
-            };
- 
-            IEnumerable<AssemblyName> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName());
-
-            var folder = Path.Combine(m_Context.AppsDirectory, m_InstanceName, "bin");
-            var dlls = new[]{"*.dll","*.exe"}
-                .SelectMany(searchPattern => Directory.GetFiles(folder, searchPattern,SearchOption.AllDirectories))
-                .Select(file => new {path = file, AssemblyDefinition = CeceilExtencions.TryReadAssembly(file)  }).ToArray();
-                
-            var injectedAssemblies = instanceParams.AssembliesToLoad;
-            m_LoadedAssemblies = dlls.Where(d => d.AssemblyDefinition!=null)
-                                     .Where(asm => loadedAssemblies.All(a => a.Name != asm.AssemblyDefinition.Name.Name))
-                                     .Where(asm => injectedAssemblies.All(a => a.Key  != asm.AssemblyDefinition.Name.Name))
-                                     .ToDictionary(asm => new AssemblyName(asm.AssemblyDefinition.FullName), asm => new Lazy<Assembly>(() => loadAssembly(asm.path)));
-            foreach (var injectedAssembly in injectedAssemblies)
-            {
-                var path = injectedAssembly.Value;
-                var assemblyName = injectedAssembly.Key;
-                m_LoadedAssemblies.Add(new AssemblyName(assemblyName), new Lazy<Assembly>(() => loadAssembly(path)));
-            }
-
- 
-            foreach (string dll in dlls.Where(d => d.AssemblyDefinition == null).Select(d=>d.path))
-            {
-                if (LoadLibrary(dll) == IntPtr.Zero)
-                {
-                    throw new InvalidOperationException("Failed to load unmanaged dll " + Path.GetFileName(dll) + " from package");
-                }
-            }
-
-            AppDomain.CurrentDomain.AssemblyResolve += onAssemblyResolve;
-            createCongigurationProviderProxy();
-            createLogCacheProxy();
-
-
-            var appAssemblies = from file in dlls
-                                let asm = file.AssemblyDefinition
-                                where asm != null
-                                let attribute = asm.CustomAttributes.FirstOrDefault(a => a.AttributeType.FullName == typeof (HostedApplicationAttribute).FullName)
-                                where attribute != null
-                                select asm;
-                            
-            var appTypes=appAssemblies.SelectMany(
-                                    a=>a.MainModule.Types.Where(t => t.Interfaces.Any(i => i.FullName == typeof(IHostedApplication).FullName))
-                                        .Select(t => t.FullName + ", " + a.FullName)
-                                    ).ToArray();
-            
-            if (appTypes.Length > 1)
-                throw new  InvalidOperationException(string.Format("Instance {0} bin folder contains several types implementing IHostedApplication: {1}",m_InstanceName, string.Join(",",appTypes)));
-
-            if (appTypes.Length == 0)
-                throw new  InvalidOperationException(string.Format("Instance {0} bin folder does not contain type implementing IHostedApplication",m_InstanceName));
-
-            string appType = appTypes[0];
-
-            var instanceCommands = initContainer(Type.GetType(appType), instanceParams.LogLevel,instanceParams.MaxLogSize,instanceParams.LogLimitReachedAction);
-
-            m_Instance.RegisterApplicationHost(m_ServiceAddress, instanceCommands);
-
-            m_StopEvent.WaitOne();
-            if (m_Container == null)
-                throw new InvalidOperationException("Host is not started");
-            
-            if (m_ServiceHost != null) try
-                {
-                    m_ServiceHost.Close();
-                }
-                catch (Exception e)
-                {
-                    //There is nothing to do with it
-                }
-
-
-            m_Container.Dispose();
-            if (m_ConfigurationProvider != null)
-            {
-                try
-                {
-
-                    ((ICommunicationObject)m_ConfigurationProvider).Close();
-                }
-                catch (Exception e)
-                {
-                    //There is nothing to do with it
-                }
-            }
-            if (m_LogCache != null)
-            {
-                try
-                {
-                    ((ICommunicationObject)m_LogCache).Close();
-                }
-                catch (Exception e)
-                {
-                    //There is nothing to do with it
-                }
-            }
-            m_Container = null;
-            m_HostedApplication = null;
-        }
-
         private void onUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
             m_Instance.ReportFailure(args.ExceptionObject.ToString());
@@ -267,44 +259,30 @@ namespace Inceptum.AppServer.Hosting
 
         private static Assembly loadAssembly(string path)
         {
-            return Assembly.LoadFile(path);
-           /* if (Path.GetFileName(path).Contains("Raven.Database"))
-            {
-                return Assembly.LoadFile(path);
-            }
-            byte[] assemblyBytes = File.ReadAllBytes(path);
-            var pdb = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path) + ".pdb");
-            if (File.Exists(pdb))
-            {
-                byte[] pdbBytes = File.ReadAllBytes(pdb);
-                return Assembly.Load(assemblyBytes, pdbBytes);
-            }
-
-            return Assembly.Load(assemblyBytes);*/
+            return Assembly.LoadFile(Path.GetFullPath(path));
         }
 
         private Assembly onAssemblyResolve(object sender, ResolveEventArgs args)
         {
+            var requestedAssemblyName = new AssemblyName(args.Name);
+
             Assembly[] loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            Assembly assembly =
-                loadedAssemblies.FirstOrDefault(
-                    a => a.FullName == args.Name || a.GetName().Name == new AssemblyName(args.Name).Name || a.GetName().Name == args.Name
-                    );
+            Assembly assembly = loadedAssemblies.FirstOrDefault(a => a.FullName == args.Name || a.GetName().Name == requestedAssemblyName.Name || a.GetName().Name == args.Name);
 
             if (assembly != null)
+            {
                 return assembly;
+            }
 
-            assembly = (from asm in m_LoadedAssemblies
-                        where asm.Key.Name == new AssemblyName(args.Name).Name
-                        orderby asm.Key.Version descending
-                        select asm.Value.Value).FirstOrDefault();
-
+            assembly = m_LoadedAssemblies
+                .Where(asm => asm.Key.Name == requestedAssemblyName.Name)
+                .OrderByDescending(asm => asm.Key.Version)
+                .Select(asm => asm.Value.Value).FirstOrDefault();
 
             return assembly;
         }
 
-
-        private   void createCongigurationProviderProxy()
+        private void createCongigurationProviderProxy()
         {
             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/ConfigurationProvider";
             var factory = new ChannelFactory<IConfigurationProvider>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(),
@@ -322,11 +300,10 @@ namespace Inceptum.AppServer.Hosting
             ((ICommunicationObject)m_ConfigurationProvider).Faulted += clientFault;
         }
 
-        private   void createLogCacheProxy()
+        private void createLogCacheProxy()
         {
             var uri = "net.pipe://localhost/AppServer/" + WndUtils.GetParentProcess(Process.GetCurrentProcess().Handle).Id + "/LogCache";
-            var factory = new ChannelFactory<ILogCache>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(),
-                new EndpointAddress(uri));
+            var factory = new ChannelFactory<ILogCache>(WcfHelper.CreateUnlimitedQuotaNamedPipeLineBinding(), new EndpointAddress(uri));
             m_LogCache= factory.CreateChannel();
 
             EventHandler clientFault = null;
@@ -340,9 +317,14 @@ namespace Inceptum.AppServer.Hosting
             ((ICommunicationObject)m_LogCache).Faulted += clientFault;
         }
 
-        #endregion
+        private object parseCommandParameterValue(ParameterInfo parameter,InstanceCommand command)
+        {
+            var instanceCommandParam = command.Parameters.FirstOrDefault(p => p.Name == parameter.Name);
+            if (instanceCommandParam == null || instanceCommandParam.Value==null)
+                return parameter.ParameterType.IsValueType ? Activator.CreateInstance(parameter.ParameterType) : null;
 
-        #region IApplicationHost Members
+            return Convert.ChangeType(instanceCommandParam.Value, parameter.ParameterType);
+        }
 
         private InstanceCommand[] initContainer(Type appType, string logLevel, long maxLogSize, LogLimitReachedAction logLimitReachedAction)
         {
@@ -369,8 +351,8 @@ namespace Inceptum.AppServer.Hosting
 
                 var logFolder = new[] { m_Context.BaseDirectory, "logs", m_InstanceName }.Aggregate(Path.Combine);
                 var oversizedLogFolder = new[] { m_Context.BaseDirectory, "logs.oversized", m_InstanceName }.Aggregate(Path.Combine);
-                GlobalDiagnosticsContext.Set("logfolder",logFolder);
-                GlobalDiagnosticsContext.Set("oversizedLogFolder",oversizedLogFolder);
+                GlobalDiagnosticsContext.Set("logfolder", logFolder);
+                GlobalDiagnosticsContext.Set("oversizedLogFolder", oversizedLogFolder);
                 ConfigurationItemFactory.Default.Targets.RegisterDefinition("ManagementConsole", typeof(ManagementConsoleTarget));
                 var createInstanceOriginal = ConfigurationItemFactory.Default.CreateInstance;
                 ConfigurationItemFactory.Default.CreateInstance = type => container.Kernel.HasComponent(type) ? container.Resolve(type) : createInstanceOriginal(type);
@@ -381,7 +363,7 @@ namespace Inceptum.AppServer.Hosting
                 container
                     .AddFacility<LoggingFacility>(f => f.LogUsing(new GenericsAwareNLoggerFactory(
                         nlogConfigPath,
-                        config => updateLoggingConfig(config,logLevel, maxLogSize, logLimitReachedAction))));
+                        config => updateLoggingConfig(config, logLevel, maxLogSize, logLimitReachedAction))));
                 container
                     .Register(
                         Component.For<AppServerContext>().Instance(m_Context),
@@ -406,14 +388,16 @@ namespace Inceptum.AppServer.Hosting
 
 
                 m_HostedApplication = container.Resolve<IHostedApplication>();
-                var allowedTypes = new []{typeof(string),typeof(int),typeof(DateTime),typeof(decimal),typeof(bool)};
+                var allowedTypes = new[] { typeof(string), typeof(int), typeof(DateTime), typeof(decimal), typeof(bool) };
                 var commands =
                     m_HostedApplication.GetType()
                                      .GetMethods()
                                      .Where(m => m.Name != "Start" && m.Name != "ToString" && m.Name != "GetHashCode" && m.Name != "GetType")
                                      .Where(m => m.GetParameters().All(p => allowedTypes.Contains(p.ParameterType)))
-                                     .Select(m => new InstanceCommand( m.Name,m.GetParameters().Select(p => new InstanceCommandParam{Name = p.Name,Type = p.ParameterType.Name}).ToArray()));
+                                     .Select(m => new InstanceCommand(m.Name, m.GetParameters().Select(p => new InstanceCommandParam { Name = p.Name, Type = p.ParameterType.Name }).ToArray()));
                 m_HostedApplication.Start();
+                container.Register(Component.For<MisconfiguredComponentsLogger>());
+                container.Resolve<MisconfiguredComponentsLogger>().Log(container.Kernel);
                 m_Container = container;
                 return commands.ToArray();
             }
@@ -435,13 +419,12 @@ namespace Inceptum.AppServer.Hosting
                 }
                 string[] strings = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name + " " + a.GetName().Version).OrderBy(a => a).ToArray();
                 throw new ApplicationException(string.Format("Failed to start: {0}", e));
-            } 
+            }
         }
-
-
 
         private void updateLoggingConfig(LoggingConfiguration config, string logLevel, long maxLogSize, LogLimitReachedAction logLimitReachedAction)
         {
+            m_LoggingConfig = config;
             var minLogLevel = mapLogLevel(logLevel);
 
             var fileTarget = new FileTarget
@@ -471,7 +454,7 @@ namespace Inceptum.AppServer.Hosting
             config.AddTarget("logFile", logFile);
             var rule = new LoggingRule("*", minLogLevel, logFile);
             config.LoggingRules.Add(rule);
-            
+
 
             var coloredConsoleTarget = new ColoredConsoleTarget
             {
@@ -493,12 +476,12 @@ namespace Inceptum.AppServer.Hosting
             config.AddTarget("console", console);
             rule = new LoggingRule("*", minLogLevel, console);
             config.LoggingRules.Add(rule);
-            
+
             Target managementConsole = new ManagementConsoleTarget(m_LogCache, m_InstanceName)
             {
                 Layout = @"${pad:padCharacter= :padding=-20:inner=${gdc:AppServer.Instance}}: ${date:format=HH\:mm\:ss.fff} ${uppercase:inner=${pad:padCharacter= :padding=-5:inner=${level}}} [${threadid}][${threadname}] [${logger:shortName=true}] ${message} ${exception:format=tostring}"
             };
-            
+
             config.AddTarget("managementConsole", managementConsole);
             rule = new LoggingRule("*", minLogLevel, managementConsole);
             config.LoggingRules.Add(rule);
@@ -511,34 +494,11 @@ namespace Inceptum.AppServer.Hosting
             try
             {
                 return LogLevel.FromString(logLevel);
-            }catch
+            }
+            catch
             {
                 return LogLevel.Debug;
             }
         }
-
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        public void Stop()
-        {
-            m_StopEvent.Set();
-        }
-
-        public string Execute(InstanceCommand command)
-        {
-            var methodInfo = m_HostedApplication.GetType().GetMethod(command.Name);
-            var result=methodInfo.Invoke(m_HostedApplication, methodInfo.GetParameters().Select(p=>parseCommandParameterValue(p,command)).ToArray());
-            return result == null ? null : result.ToString();
-        }
-
-        private object parseCommandParameterValue(ParameterInfo parameter,InstanceCommand command)
-        {
-            var instanceCommandParam = command.Parameters.FirstOrDefault(p => p.Name == parameter.Name);
-            if (instanceCommandParam == null || instanceCommandParam.Value==null)
-                return parameter.ParameterType.IsValueType ? Activator.CreateInstance(parameter.ParameterType) : null;
-
-            return Convert.ChangeType(instanceCommandParam.Value, parameter.ParameterType);
-        }
-
-        #endregion
     }
 }

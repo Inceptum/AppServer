@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -58,6 +58,8 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Debug\AppServer.XML</DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
@@ -75,6 +77,7 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\AppServer.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>inceptumsoft.ico</ApplicationIcon>
@@ -98,22 +101,44 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.1.1.2\lib\net40\Microsoft.AspNet.SignalR.Core.dll</HintPath>
+    <Reference Include="Inceptum.WebApi.Help">
+      <HintPath>..\packages\Inceptum.WebApi.Help.1.0.1.2\lib\net45\Inceptum.WebApi.Help.dll</HintPath>
+    </Reference>
+    <Reference Include="itextsharp">
+      <HintPath>..\packages\iTextSharp.5.5.5\lib\itextsharp.dll</HintPath>
+    </Reference>
+    <Reference Include="MarkdownDeep">
+      <HintPath>..\packages\MarkdownDeep.Full.1.5\lib\.NetFramework 3.5\MarkdownDeep.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.SignalR.Core">
+      <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.2.0\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Owin, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Owin.1.1.2\lib\net40\Microsoft.AspNet.SignalR.Owin.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Owin">
+      <HintPath>..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Cors">
+      <HintPath>..\packages\Microsoft.Owin.Cors.3.0.1\lib\net45\Microsoft.Owin.Cors.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Diagnostics">
+      <HintPath>..\packages\Microsoft.Owin.Diagnostics.2.1.0\lib\net40\Microsoft.Owin.Diagnostics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Owin.Host.HttpListener">
-      <HintPath>..\packages\Microsoft.Owin.Host.HttpListener.0.21.0-pre\lib\net40\Microsoft.Owin.Host.HttpListener.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Owin.Host.HttpListener.2.1.0\lib\net45\Microsoft.Owin.Host.HttpListener.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Hosting">
-      <HintPath>..\packages\Microsoft.Owin.Hosting.0.21.0-pre\lib\net40\Microsoft.Owin.Hosting.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Owin.Hosting.2.1.0\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security">
+      <HintPath>..\packages\Microsoft.Owin.Security.2.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Web.XmlTransform">
-      <HintPath>..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Web.Xdt.2.1.0\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -132,14 +157,14 @@
       <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog">
-      <HintPath>..\packages\NLog.2.1.0\lib\net40\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.4.2.3\lib\net45\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Core, Version=2.8.50926.602, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NuGet.Core.2.8.3\lib\net40-Client\NuGet.Core.dll</HintPath>
+    <Reference Include="NuGet.Core, Version=2.14.0.832, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\NuGet.Core.2.14.0\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="OpenFileSystem, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -154,6 +179,11 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Services.Client" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
     <Reference Include="System.Reactive.Core">
       <HintPath>..\packages\Rx-Core.2.2.2\lib\net40\System.Reactive.Core.dll</HintPath>
     </Reference>
@@ -171,7 +201,24 @@
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Cors">
+      <HintPath>..\packages\Microsoft.AspNet.Cors.5.2.3\lib\net45\System.Web.Cors.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.Cors">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Cors.5.2.3\lib\net45\System.Web.Http.Cors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.Owin">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Owin.5.2.3\lib\net45\System.Web.Http.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.SelfHost, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.SelfHost.5.2.3\lib\net45\System.Web.Http.SelfHost.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -188,9 +235,14 @@
     <Compile Include="..\WcfHelper.cs">
       <Link>Utils\WcfHelper.cs</Link>
     </Compile>
-    <Compile Include="AppDiscovery\FolderApplicationRepository.cs" />
-    <Compile Include="AppServerSetup.cs" />
-    <Compile Include="AppServerExternalConfigurationProvider.cs" />
+    <Compile Include="AppDiscovery\ApplicationInfo.cs" />
+    <Compile Include="AppDiscovery\FileSystem\FolderApplicationRepository.cs" />
+    <Compile Include="AppDiscovery\NuGet\ConfigTransformer.cs" />
+    <Compile Include="AppDiscovery\NuGet\InMemoryPackagesConfigFileSystem.cs" />
+    <Compile Include="Runtime\FrameworkNameExtensions.cs" />
+    <Compile Include="AppDiscovery\NuGet\NugetApplicationRepositoryConfiguration.cs" />
+    <Compile Include="AppDiscovery\NuGet\ProjectSystemCompatibility.cs" />
+    <Compile Include="Configuration\AppServerExternalConfigurationProvider.cs" />
     <Compile Include="Hosting\JobObject.cs" />
     <Compile Include="AppDiscovery\NuGet\ProjectManagerWrapper.cs" />
     <Compile Include="AppDiscovery\NuGet\ApplicationProjectSystem.cs" />
@@ -198,6 +250,8 @@
     <Compile Include="AppDiscovery\NuGet\ApplicationProjectManager.cs" />
     <Compile Include="AppDiscovery\NuGet\NugetApplicationRepository.cs" />
     <Compile Include="Hosting\ServiceHostWrapper.cs" />
+    <Compile Include="Utils\ActionDisposable.cs" />
+    <Compile Include="Utils\AppDomainDataRendererImpl.cs" />
     <Compile Include="Utils\AppDomainRenderer.cs" />
     <Compile Include="Bootstrap\LoggingInstaller.cs" />
     <Compile Include="Hosting\ApplicationInstance.cs" />
@@ -208,7 +262,24 @@
     <Compile Include="Logging\LogConnection.cs" />
     <Compile Include="Logging\SignalRhost.cs" />
     <Compile Include="Notification\UiNotificationHub.cs" />
+    <Compile Include="Utils\AppDomainRendererImpl.cs" />
     <Compile Include="Utils\PeriodicalBackgroundWorker.cs" />
+    <Compile Include="WebApi\ApiHost.cs" />
+    <Compile Include="WebApi\Controllers\ApplicationsController.cs" />
+    <Compile Include="Utils\EnumerableExtensions.cs" />
+    <Compile Include="Utils\SearchUtils.cs" />
+    <Compile Include="WebApi\Messages\CommandResult.cs" />
+    <Compile Include="WebApi\Controllers\ConfigurationsController.cs" />
+    <Compile Include="WebApi\Messages\FileResult.cs" />
+    <Compile Include="WebApi\Controllers\HostController.cs" />
+    <Compile Include="WebApi\Controllers\InstancesController.cs" />
+    <Compile Include="WebApi\Binders\VersionModelBinder.cs" />
+    <Compile Include="WebApi\Filters\CustomExceptionFilter.cs" />
+    <Compile Include="WebApi\MessageHandlers\DefaultContentTypeMessageHandler.cs" />
+    <Compile Include="WebApi\MessageHandlers\DefaultHeadersMessageHandler.cs" />
+    <Compile Include="WebApi\HelpStaticContentProvider.cs" />
+    <Compile Include="WebApi\MessageHandlers\StaticContentMessageHandler.cs" />
+    <Compile Include="WebApi\WindsorHttpControllerActivator.cs" />
     <Compile Include="Windsor\IApplicationInstanceFactory.cs" />
     <Compile Include="Hosting\MarshalableProxy.cs" />
     <Compile Include="Windsor\WindsorToSignalRAdapter.cs" />
@@ -248,7 +319,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Inceptum.AppServer.AppHost\Inceptum.AppServer.AppHost.csproj">
@@ -259,10 +332,6 @@
       <Project>{CDA6F8B1-546B-4D98-8B09-8297DB3CAD9F}</Project>
       <Name>Inceptum.AppServer.Configuration</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Inceptum.AppServer.Management\Inceptum.AppServer.Management.csproj">
-      <Project>{0F7D48A2-BAA8-4FCF-AA11-FFEA5891ED27}</Project>
-      <Name>Inceptum.AppServer.Management</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Inceptum.AppServer.Sdk\Inceptum.AppServer.Sdk.csproj">
       <Project>{CAFF34B8-90CD-46D6-BCE8-C7B275473346}</Project>
       <Name>Inceptum.AppServer.Sdk</Name>
@@ -272,7 +341,184 @@
     <Content Include="inceptum.ico" />
     <Content Include="inceptumsoft.ico" />
     <Content Include="ISlogo.ico" />
+    <Content Include="Scripts\MarkdownDeep License.txt" />
+    <Content Include="Scripts\MarkdownDeep Quick Reference.txt" />
+    <Content Include="Scripts\MarkdownDeepLib.min.js" />
+    <Content Include="Scripts\mdd_ajax_loader.gif" />
+    <Content Include="Scripts\mdd_gripper.png" />
+    <Content Include="Scripts\mdd_help.htm" />
+    <Content Include="Scripts\mdd_modal_background.png" />
+    <Content Include="Scripts\mdd_styles.css" />
+    <Content Include="Scripts\mdd_toolbar.png" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\deepmerge.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\search.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\applications.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\comment\comment.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\comment\continuecomment.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\dialog\dialog.css" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\dialog\dialog.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\display\autorefresh.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\display\fullscreen.css" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\display\fullscreen.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\display\panel.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\display\placeholder.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\display\rulers.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\edit\closebrackets.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\edit\closetag.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\edit\continuelist.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\edit\matchbrackets.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\edit\matchtags.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\edit\trailingspace.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\fold\brace-fold.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\fold\comment-fold.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\fold\foldcode.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\fold\foldgutter.css" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\fold\foldgutter.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\fold\indent-fold.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\fold\markdown-fold.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\fold\xml-fold.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\hint\anyword-hint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\hint\css-hint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\hint\html-hint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\hint\javascript-hint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\hint\show-hint.css" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\hint\show-hint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\hint\sql-hint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\hint\xml-hint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\lint\coffeescript-lint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\lint\css-lint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\lint\html-lint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\lint\javascript-lint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\lint\json-lint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\lint\lint.css" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\lint\lint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\lint\yaml-lint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\merge\merge.css" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\merge\merge.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\mode\loadmode.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\mode\multiplex.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\mode\multiplex_test.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\mode\overlay.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\mode\simple.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\runmode\colorize.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\runmode\runmode-standalone.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\runmode\runmode.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\runmode\runmode.node.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\scroll\annotatescrollbar.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\scroll\scrollpastend.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\scroll\simplescrollbars.css" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\scroll\simplescrollbars.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\search\match-highlighter.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\search\matchesonscrollbar.css" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\search\matchesonscrollbar.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\search\search.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\search\searchcursor.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\selection\active-line.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\selection\mark-selection.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\selection\selection-pointer.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\tern\tern.css" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\tern\tern.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\tern\worker.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\addon\wrap\hardwrap.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\lib\codemirror.css" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\lib\codemirror.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\codemirror\mode\javascript\javascript.js" />
+    <EmbeddedResource Include="WebApi\Content\css\bootstrap-spinedit.css" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\bootstrap-spinedit.js" />
+    <EmbeddedResource Include="WebApi\Content\css\bootstrap-datepicker.css" />
+    <EmbeddedResource Include="WebApi\Content\css\bootstrap-notify.css" />
+    <EmbeddedResource Include="WebApi\Content\css\bootstrap-responsive.css" />
+    <EmbeddedResource Include="WebApi\Content\css\bootstrap-responsive.min.css" />
+    <EmbeddedResource Include="WebApi\Content\css\bootstrap.css" />
+    <EmbeddedResource Include="WebApi\Content\css\bootstrap.min.css" />
+    <EmbeddedResource Include="WebApi\Content\css\docs.css" />
+    <EmbeddedResource Include="WebApi\Content\css\prettify.css" />
+    <EmbeddedResource Include="WebApi\Content\favicon.ico" />
+    <EmbeddedResource Include="WebApi\Content\img\glyphicons-halflings-white.png" />
+    <EmbeddedResource Include="WebApi\Content\img\glyphicons-halflings.png" />
+    <EmbeddedResource Include="WebApi\Content\img\led.png" />
+    <EmbeddedResource Include="WebApi\Content\index.html" />
+    <EmbeddedResource Include="WebApi\Content\js\app.build.js" />
+    <EmbeddedResource Include="WebApi\Content\js\app.js" />
+    <EmbeddedResource Include="WebApi\Content\js\collections\applications.js" />
+    <EmbeddedResource Include="WebApi\Content\js\collections\applicationVersions.js" />
+    <EmbeddedResource Include="WebApi\Content\js\collections\bundles.js" />
+    <EmbeddedResource Include="WebApi\Content\js\collections\configurations.js" />
+    <EmbeddedResource Include="WebApi\Content\js\collections\instances.js" />
+    <EmbeddedResource Include="WebApi\Content\js\context.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\backbone-composite-keys.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\backbone-localstorage.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\backbone-min.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\backbone.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\bootbox.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\bootbox.min.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\bootstrap-datepicker.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\bootstrap-notify.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\bootstrap.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\console-log-wrapper.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\jquery.ba-throttle-debounce.min.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\jquery.fileupload.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\jquery.iframe-transport.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\jquery.signalR-1.1.2.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\jquery.signalR-1.1.2.min.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\jquery.ui.widget.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\json2.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\json2.min.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\json3.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\json3.min.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\jsonlint.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\modernizr-latest.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\noext.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\prettify.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\shortcut.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\underscore-min.js" />
+    <EmbeddedResource Include="WebApi\Content\js\libs\underscore.js" />
+    <EmbeddedResource Include="WebApi\Content\js\main.js" />
+    <EmbeddedResource Include="WebApi\Content\js\models\application.js" />
+    <EmbeddedResource Include="WebApi\Content\js\models\applicationVersion.js" />
+    <EmbeddedResource Include="WebApi\Content\js\models\bundle.js" />
+    <EmbeddedResource Include="WebApi\Content\js\models\configuration.js" />
+    <EmbeddedResource Include="WebApi\Content\js\models\host.js" />
+    <EmbeddedResource Include="WebApi\Content\js\models\instance.js" />
+    <EmbeddedResource Include="WebApi\Content\js\require-jquery.js" />
+    <EmbeddedResource Include="WebApi\Content\js\routers\home.js" />
+    <EmbeddedResource Include="WebApi\Content\js\services\notificationsListener.js" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\application.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\appsSideBar.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\bundle.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\commandPopup.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\configuration\configuration.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\configuration\configurationsSideBar.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\configuration\treeNode.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\confirm.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\header.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\instance.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\instanceEdit.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\instanceRow.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\instancesList.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\serverLog.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\serverSideBar.html" />
+    <EmbeddedResource Include="WebApi\Content\js\templates\serverStatus.html" />
+    <EmbeddedResource Include="WebApi\Content\js\text.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\alerts.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\application.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\appsSideBar.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\bundle.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\commandPopup.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\configuration.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\configurationsSideBar.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\confirm.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\header.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\instance.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\instanceEdit.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\instanceRow.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\instancesList.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\serverLog.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\serverSideBar.js" />
+    <EmbeddedResource Include="WebApi\Content\js\views\serverStatus.js" />
+    <EmbeddedResource Include="WebApi\Content\robots.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

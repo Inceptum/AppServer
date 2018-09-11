@@ -31,6 +31,7 @@ namespace Inceptum.AppServer
         Task StopInstance(string name);
         void KillInstanceProcess(string name);
         string ExecuteCommand(string instance, InstanceCommand command);
+        void Debug(string name);
 
     }
 }

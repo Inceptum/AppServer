@@ -1,0 +1,104 @@
+<style>
+    .CodeMirror{
+            border: 1px solid #E1E1E8;
+            -webkit-border-radius: 4px;
+            -moz-border-radius: 4px;
+            border-radius: 4px;
+            line-height: 20px;
+             height:600px;
+        }
+ 
+    .CodeMirror-fullscreen {
+        display: block;
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        z-index: 9999;
+        background: #FFFFFF!important;
+    }
+    .cm-s-default span.cm-string{
+        color: #D14;
+    }
+    #verificationErrors{
+        white-space:pre;
+    }
+
+    .error{
+        background: #F2DEDE!important;
+    }
+
+    #code{
+        position: relative;
+
+    } 
+</style>
+
+<div class="page-header">
+    <h3>
+        <% if(!model.id){%>
+            New bundle
+        <% }else {%>
+            <%=model.id%>
+        <% }%>
+        <span class="pull-right">
+            <div class="btn-group">
+                <a id="preview" class="btn btn-mini" title="Ctrl+P"><i class="icon-eye-open"></i> <strong>Preview</strong></a>
+                <a id="fullScreen" class="btn btn-mini" title="F11"><i class="icon-fullscreen"></i> <strong>Full Screen</strong></a>
+                <a id="verify" class="btn btn-mini" title="Ctrl+Alt+F"><i class="icon-align-left"></i> <strong>Format</strong></a>
+                <a id="save" class="btn btn-mini" title="Ctrl+S"><i class=" icon-ok"></i> <strong>Save</strong></a>
+    <!--            <% if(model.id){%>
+                <a class="btn btn-mini btn-danger"><i class="icon-trash"></i> <strong>Delete</strong></a>
+            <% }%>-->
+            </div>
+        </span>
+    </h3>
+</div>
+<%if(model.parent){%>
+<div class="alert alert-info">
+    <strong>Note:</strong> This bundle is child of <a href="#/configurations/<%=model.configuration%>/bundles/<%=model.parent%>"><%=model.parent%></a>. Child bundles are treated as overrides. That means consumer would receive content of child bundle merged to parent content.
+    <a  data-toggle="modal" href="#example">Example</a>
+</div>
+
+<%}%>
+
+<div id="verificationErrors" class="alert alert-error">
+
+</div>
+
+<% if(!model.id){%>
+    Name:<input type="text" id="inputName" name="name" value="<%=model.name%>" >
+<% }%>
+
+<textarea id="code" name="content" ><%=model.pureContent%></textarea>
+        <br>
+
+
+<div class="modal hide fade"  id="example">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Example</h3>
+    </div>
+    <div class="modal-body" style="max-height: 500px;">
+        If parent content is:
+        <pre >            {
+              "someValue":1,
+              "someOtherValue":true
+            }</pre>
+        and child content is:
+        <pre>            {
+              "someValue":2,
+              "someExtraValue":"value"
+            }</pre>
+        consumer would get
+            <pre>            {
+              "someValue":2,
+              "someOtherValue":true,
+              "someExtraValue":"value"
+            }</pre>
+    </div>
+    <div class="modal-footer">
+        <a  class="btn" class="close" data-dismiss="modal" aria-hidden="true">Close</a>
+    </div>
+</div>
+
+

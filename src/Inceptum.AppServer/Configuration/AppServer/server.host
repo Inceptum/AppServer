@@ -1,10 +1,13 @@
 {
   "ManagementConsole": {
     "port": 9223,
+	"host": "*",
     "enabled": true
   },
   "nuget":{
 		"applicationRepository":"..\\..\\..\\..\\TestData\\NugetRepo",
-		"dependenciesRepositories":["https://nuget.org/api/v2/"]
+		"dependenciesRepositories":["https://nuget.org/api/v2/"],
+		"dependencyVersion": "Highest",
+		"allowPrereleaseVersions": false,
   }
 }

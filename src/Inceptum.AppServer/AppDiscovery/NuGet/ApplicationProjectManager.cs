@@ -1,139 +1,109 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Threading;
+using Inceptum.AppServer.Runtime;
 using NuGet;
 using NuGet.Resources;
 
 namespace Inceptum.AppServer.AppDiscovery.NuGet
 {
-
-    static class NugetExtensions
+    internal class ApplicationProjectManager : ProjectManager
     {
-        internal static IEnumerable<T> GetCompatibleItemsCore<T>(this IProjectSystem projectSystem, IEnumerable<T> items) where T : IFrameworkTargetable
-        {
-            IEnumerable<T> compatibleItems;
-            if (VersionUtility.TryGetCompatibleItems<T>(projectSystem.TargetFramework, items, out compatibleItems))
-                return compatibleItems;
-                
-            return Enumerable.Empty<T>();
-        }
-
-
-        internal static bool IsPortableFramework(this FrameworkName framework)
-        {
-            if (framework != null)
-                return ".NETPortable".Equals(framework.Identifier, StringComparison.OrdinalIgnoreCase);
-                
-            return false;
-        }
- 
-
-    }
-
-
-    class ApplicationProjectManager : ProjectManager
-    {
+        private readonly string m_PackageId;
         private readonly IPackageRepository m_SharedRepository;
-        private string m_PackageId;
 
-        public ApplicationProjectManager(string packageId, IPackageRepository sourceRepository, IPackagePathResolver pathResolver, IProjectSystem project, IPackageRepository localRepository, IPackageRepository sharedRepository)
+        public ApplicationProjectManager(string packageId, IPackageRepository sourceRepository, IPackagePathResolver pathResolver,
+            IProjectSystem project, IPackageRepository localRepository, IPackageRepository sharedRepository)
             : base(sourceRepository, pathResolver, project, localRepository)
         {
             m_PackageId = packageId;
             m_SharedRepository = sharedRepository;
         }
 
-        private void execute(IPackage package, IPackageOperationResolver resolver)
-        {
-            IEnumerable<PackageOperation> source = resolver.ResolveOperations(package);
-            if (source.Any())
-            {
-                foreach (PackageOperation operation in source)
-                    Execute(operation);
-            }
-            else
-            {
-                if (!LocalRepository.Exists(package))
-                    return;
-                Logger.Log(MessageLevel.Info, NuGetResources.Log_ProjectAlreadyReferencesPackage, Project.ProjectName, package.GetFullName());
-            }
-        }
-
         public override void AddPackageReference(IPackage package, bool ignoreDependencies, bool allowPrereleaseVersions)
         {
-            //TODO[KN]: crappy nuget does not install some packages. Second run helps
-            for (int i = 0; i < 1; i++)
+
+            
+
+            //NOTE: looks like there is a bug in nuget - when package is updated in scope of install, dependencies matching previous version are not installed. Double pass helps
+            //sample
+            //A->B->C[1,2]->D1
+            //A->C1->D1
+            //A->D1
+            //installing A, first pass initially sets up C2 and D1 then unisnstalls both and installs C1, but D1 is not installe dfor some reason
+            for (int i = 0; i < (ignoreDependencies?1:2); i++)
             {
-                var walker = new UpdateWalker(LocalRepository, SourceRepository,
-                    new DependentsWalker(SourceRepository, Project.TargetFramework), ConstraintProvider,
-                    Project.TargetFramework, Logger, !ignoreDependencies, allowPrereleaseVersions)
+                // In case of a scenario like UpdateAll, the graph has already been walked once for all the packages as a bulk operation
+                // But, we walk here again, just for a single package, since, we need to use UpdateWalker for project installs
+                // unlike simple package installs for which InstallWalker is used
+                // Also, it is noteworthy that the DependentsWalker has the same TargetFramework as the package in PackageReferenceRepository
+                // unlike the UpdateWalker whose TargetFramework is the same as that of the Project
+                // This makes it harder to perform a bulk operation for AddPackageReference and we have to go package by package
+                var dependentsWalker = new DependentsWalker(LocalRepository, getPackageTargetFramework(package.Id))
                 {
-                    AcceptedTargets = PackageTargets.All,
-                    DependencyVersion = DependencyVersion.Highest
+                    DependencyVersion = DependencyVersion
                 };
-                execute(package, walker);
-            }
-        }
-
-
-        private void filterAssemblyReferences(List<IPackageAssemblyReference> assemblyReferences, ICollection<PackageReferenceSet> packageAssemblyReferences)
-        {
-            if (packageAssemblyReferences != null && packageAssemblyReferences.Count > 0)
-            {
-                var packageReferences = Project.GetCompatibleItemsCore(packageAssemblyReferences).FirstOrDefault();
-                if (packageReferences != null)
+                
+                execute(package, new UpdateWalker(LocalRepository,
+                    SourceRepository,
+                    dependentsWalker,
+                    ConstraintProvider,
+                    Project.TargetFramework,
+                    Logger,
+                    !ignoreDependencies,
+                    allowPrereleaseVersions)
                 {
-                    // remove all assemblies of which names do not appear in the References list
-                    assemblyReferences.RemoveAll(assembly => !packageReferences.References.Contains(assembly.Name, StringComparer.OrdinalIgnoreCase));
-                }
+                    AcceptedTargets = PackageTargets.Project,
+                    DependencyVersion = DependencyVersion
+                });
             }
         }
-     
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+        private FrameworkName getPackageTargetFramework(string packageId)
+        {
+            var packageReferenceRepository = LocalRepository as IPackageReferenceRepository;
+            if (packageReferenceRepository != null)
+            {
+                return packageReferenceRepository.GetPackageTargetFramework(packageId) ?? Project.TargetFramework;
+            }
+
+            return Project.TargetFramework;
+        }
+
+        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         protected override void ExtractPackageFilesToProject(IPackage package)
         {
-            // Resolve assembly references and content files first so that if this fails we never do anything to the project
-      /*      List<IPackageFile> assemblyReferences = Project.GetCompatibleItemsCore(package.AssemblyReferences).Cast<IPackageFile>().ToList();
             IEnumerable<IPackageFile> satellites;
             VersionUtility.TryGetCompatibleItems(Project.TargetFramework, package.GetLibFiles(), out satellites);
-            assemblyReferences.AddRange(satellites.ToArray());
-*/
-            IEnumerable<IPackageFile> satellites;
-            VersionUtility.TryGetCompatibleItems(Project.TargetFramework, package.GetLibFiles(), out satellites);
-            var assemblyReferences =new List<IPackageFile>();
+            var assemblyReferences = new List<IPackageFile>();
             assemblyReferences.AddRange(satellites.ToArray());
 
 
-
-            List<IPackageFile> contentFiles = Project.GetCompatibleItemsCore(package.GetContentFiles()).ToList();
-        /*     
-            IEnumerable<IPackageFile> satellites;
-            VersionUtility.TryGetCompatibleItems(Project.TargetFramework, package.GetLibFiles(), out satellites);
-            var packageFiles = satellites.ToArray();
-            return refs.Concat(packageFiles);*/
+            var contentFiles = Project.GetCompatibleItemsCore(package.GetContentFiles()).ToList();
 
             IEnumerable<IPackageFile> configItems;
             Project.TryGetCompatibleItems(package.GetFiles("config"), out configItems);
-            var configFiles = configItems.ToArray();
+            var configFiles = configItems.Where(f => f.Path.ToLower() != "config\\packages.config").ToArray();
 
 
             // If the package doesn't have any compatible assembly references or content files,
             // throw, unless it's a meta package.
-            if (assemblyReferences.Count == 0  && contentFiles.Count == 0  &&( package.AssemblyReferences.Any() || package.GetContentFiles().Any()  ))
+            if (assemblyReferences.Count == 0 && contentFiles.Count == 0 && (package.AssemblyReferences.Any() || package.GetContentFiles().Any()))
             {
                 // for portable framework, we want to show the friendly short form (e.g. portable-win8+net45+wp8) instead of ".NETPortable, Profile=Profile104".
-                FrameworkName targetFramework = Project.TargetFramework;
-                string targetFrameworkString = targetFramework.IsPortableFramework()
-                                                    ? VersionUtility.GetShortFrameworkName(targetFramework)
-                                                    : targetFramework != null ? targetFramework.ToString() : null;
+                var targetFramework = Project.TargetFramework;
+                var targetFrameworkString = FrameworkNameExtensions.IsPortableFramework(targetFramework)
+                    ? VersionUtility.GetShortFrameworkName(targetFramework)
+                    : targetFramework != null ? targetFramework.ToString() : null;
 
                 throw new InvalidOperationException(
-                           String.Format(CultureInfo.CurrentCulture,
-                           NuGetResources.UnableToFindCompatibleItems, package.GetFullName(), targetFrameworkString));
+                    string.Format(CultureInfo.CurrentCulture,
+                        NuGetResources.UnableToFindCompatibleItems, package.GetFullName(), targetFrameworkString));
             }
 
             // IMPORTANT: this filtering has to be done AFTER the 'if' statement above,
@@ -144,13 +114,15 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             try
             {
                 // Add content files
-                if (m_PackageId==package.Id)
-                    Project.AddFiles(contentFiles,"");
+                if (m_PackageId == package.Id)
+                    Project.AddFiles(contentFiles, "");
 
                 // Add config files
-                var configTransformers = configFiles.Select(f => Path.GetExtension(f.Path)).Distinct().ToDictionary(e => new FileTransformExtensions(e, e), e => (IPackageFileTransformer)new ConfigTransformer(e));
+                var configTransformers = configFiles.Select(f => Path.GetExtension(f.Path))
+                    .Distinct()
+                    .ToDictionary(e => new FileTransformExtensions(e, e), e => (IPackageFileTransformer) new ConfigTransformer(e));
                 Project.AddFiles(configFiles, configTransformers);
-    
+
 
                 // Add the references to the reference path
                 foreach (var assemblyReference in assemblyReferences)
@@ -161,8 +133,8 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                     }
 
                     // Get the physical path of the assembly reference
-                    string referencePath = Path.Combine(PathResolver.GetInstallPath(package), assemblyReference.Path);
-                    string relativeReferencePath = PathUtility.GetRelativePath(Project.Root, referencePath);
+                    var referencePath = Path.Combine(PathResolver.GetInstallPath(package), assemblyReference.Path);
+                    var relativeReferencePath = PathUtility.GetRelativePath(Project.Root, referencePath);
 
                     if (Project.ReferenceExists(assemblyReference.EffectivePath))
                     {
@@ -173,48 +145,42 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                     // We can't change the API now, so just pass in a null stream.
                     Project.AddReference(assemblyReference.EffectivePath, assemblyReference.GetStream());
                 }
-
-
             }
             finally
             {
+                //Nuget bug again - some times packages.config is not accessible 
                 m_SharedRepository.AddPackage(package);
-                LocalRepository.AddPackage(package);
+                bool success=false;
+                while (!success)
+                {
+                    try
+                    {
+                        LocalRepository.AddPackage(package);   
+                        success = true;
+                    }
+                    catch (IOException e)
+                    {
+                        //Logger.Log(MessageLevel.Warning, e.ToString());
+                        Thread.Sleep(500);
+                    }
+                }
             }
         }
- 
-        public static string GetTargetFrameworkLogString(FrameworkName targetFramework)
+
+        private void execute(IPackage package, IPackageOperationResolver resolver)
         {
-            return (targetFramework == null || targetFramework == VersionUtility.EmptyFramework) ? "(not framework-specific)" : String.Empty;
+            IEnumerable<PackageOperation> operations = resolver.ResolveOperations(package);
+            if (operations.Any())
+            {
+                foreach (PackageOperation operation in operations)
+                {
+                    Execute(operation);
+                }
+            }
+            else if (LocalRepository.Exists(package))
+            {
+                Logger.Log(MessageLevel.Info, NuGetResources.Log_ProjectAlreadyReferencesPackage, Project.ProjectName, package.GetFullName());
+            }
         }
-
-
-
     }
-
-     internal class ConfigTransformer : IPackageFileTransformer
-    {
-         private string m_Extension;
-
-         public ConfigTransformer(string extension)
-         {
-             m_Extension = extension;
-         }
-
-         public void TransformFile(IPackageFile file, string targetPath, IProjectSystem projectSystem)
-         {
-             var path = targetPath + m_Extension;
-             if (path.ToLower().StartsWith("config\\"))
-                 path = path.Substring(7);
-             if (projectSystem.FileExists(path))
-                projectSystem.AddFile(path + ".default", file.GetStream());
-            else
-                projectSystem.AddFile(path, file.GetStream());
-         }
-
-         public void RevertFile(IPackageFile file, string targetPath, IEnumerable<IPackageFile> matchingFiles, IProjectSystem projectSystem)
-        {
-         
-        }
-    } 
 }

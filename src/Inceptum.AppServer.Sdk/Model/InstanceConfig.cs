@@ -30,6 +30,7 @@ namespace Inceptum.AppServer.Model
             set { m_LogLevel = value; }
         }
 
+        public int? StartOrder { get; set; }
         public string DefaultConfiguration { get; set; }
         public long MaxLogSize { get; set; }
         [JsonConverter(typeof(StringEnumConverter))]

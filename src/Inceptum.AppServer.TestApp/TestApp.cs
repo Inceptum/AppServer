@@ -56,7 +56,19 @@ namespace Inceptum.AppServer.TestApp
             int i = 0;
             while (!m_Stop.WaitOne(1000))
             {
-                m_Logger.InfoFormat("Log record #{0}", i++);
+                if(i%6==0)
+                    m_Logger.DebugFormat("Log record #{0}", i);
+                if(i%6==1)
+                    m_Logger.InfoFormat("Log record #{0}", i);
+                if(i%6==2)
+                    m_Logger.WarnFormat("Log record #{0}", i);
+                if(i%6==3)
+                    m_Logger.ErrorFormat("Log record #{0}", i);
+                if (i % 6 == 4)
+                    m_Logger.FatalFormat("Log record #{0}", i);
+                if (i % 6 == 5)
+                    m_Logger.InfoFormat("Log record eith html <b>#{0}</b>", i);
+                i++;
             }
         }
 
@@ -96,6 +108,7 @@ namespace Inceptum.AppServer.TestApp
             {
                 new Thread(() =>
                 {
+                    Thread.Sleep(2000);
                     m_Logger.Error("FAIL!!!");
                     throw new Exception();
                 }).Start();
@@ -118,6 +131,12 @@ namespace Inceptum.AppServer.TestApp
             if (bool.TryParse(ConfigurationManager.AppSettings["hangOnStart"], out hangOnStart) && hangOnStart)
             {
                 Console.ReadLine();
+            }
+            bool failOnStart;
+            if (bool.TryParse(ConfigurationManager.AppSettings["failOnStart"], out failOnStart) && failOnStart)
+            {
+                throw new Exception("Fail on start");
+                
             }
             m_Logger.InfoFormat("log record");
             m_Logger.DebugFormat("Debug");

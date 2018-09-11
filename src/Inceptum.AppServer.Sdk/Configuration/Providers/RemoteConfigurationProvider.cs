@@ -202,12 +202,12 @@ namespace Inceptum.AppServer.Configuration.Providers
 
         public void DeleteBundle(string configuration, string bundleName)
         {
-            deleteResource("api/configurations/" + configuration + "/" + bundleName);
+            deleteResource("api/configurations/" + configuration + "/bundles/" + bundleName);
         }
 
         public BundleInfo CreateOrUpdateBundle(string configuration, string bundleName, string content)
         {
-            return sendResource("api/configurations/" + configuration + "/" + bundleName,new BundleInfo()
+            return sendResource("api/configurations/" + configuration + "/bundles/" + bundleName,new BundleInfo()
             {
                 Configuration = configuration,
                 id = bundleName,

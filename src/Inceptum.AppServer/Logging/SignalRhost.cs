@@ -3,6 +3,7 @@ using Castle.Core;
 using Castle.Core.Logging;
 using Inceptum.AppServer.Configuration;
 using Microsoft.AspNet.SignalR;
+using Microsoft.Owin.Cors;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json.Linq;
 using Owin;
@@ -14,11 +15,14 @@ namespace Inceptum.AppServer.Logging
         public void Configuration(IAppBuilder app)
         {
             // Turn cross domain on 
-            var config = new HubConfiguration { EnableCrossDomain = true, Resolver = GlobalHost.DependencyResolver,EnableJavaScriptProxies = true};
+            var config = new HubConfiguration {Resolver = GlobalHost.DependencyResolver,EnableJavaScriptProxies = true};
             
             // This will map out to http://localhost:8080/signalr by default
-            app.MapHubs(config).MapConnection<LogConnection>("/log"); 
-            
+            app
+                .UseCors(CorsOptions.AllowAll)
+                .MapSignalR (config)
+                .MapSignalR<LogConnection>("/log");
+
         }
     }
 
@@ -38,6 +42,7 @@ namespace Inceptum.AppServer.Logging
                 var bundleString = configurationProvider.GetBundle("AppServer", "server.host", "{environment}", "{machineName}");
                 dynamic bundle = JObject.Parse(bundleString).SelectToken("ManagementConsole");
                 port = bundle.port;
+ 
             }
             catch (Exception e)
             {
@@ -53,7 +58,8 @@ namespace Inceptum.AppServer.Logging
 
         public void Start()
         {
-            m_Server = WebApplication.Start<Startup>(m_Url);
+            m_Server = WebApp.Start<Startup>(m_Url);
+            //WebApplication.Start<Startup>(m_Url);
         }
 
         public void Stop()

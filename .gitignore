@@ -51,3 +51,4 @@ Inceptum.AppServer-*.wrap
 /*syntax: regexp
 ^[^\/]*.wrap*/
 
+/src/.vs/config/applicationhost.config

@@ -3,7 +3,7 @@ using System.IO;
 using Inceptum.AppServer.Configuration.Providers;
 using NUnit.Framework;
 
-namespace Inceptum.Configuration.Tests.Client
+namespace Inceptum.AppServer.Tests.Configuration
 {
     [TestFixture]
     public class FileSystemConfigurationProviderTests

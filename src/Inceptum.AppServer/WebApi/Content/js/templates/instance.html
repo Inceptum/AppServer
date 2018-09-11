@@ -1,0 +1,20 @@
+
+        <dl>
+            <dt>Name</dt>
+            <dd><%= model.name %></dd>
+            <dt>Application</dt>
+            <dd><a href="#/applications/<%=model.applicationVendor%>-<%=model.applicationId%>"><%=model.applicationVendor%>(c) <%=model.applicationId%></a></a></dd>
+            <dt>Version</dt>
+            <dd><%= model.version %></dd>
+            <dt>Environment</dt>
+            <dd><%= model.environment %></dd>
+            <dt>Start on server startup</dt>
+            <dd><%= model.autoStart %></dd>
+            <dt>Actions</dt>
+            <dd>
+                <div class="btn-group">
+                    <button class="btn">Stop</button>
+                    <button class="btn">Restart</button>
+                </div>
+            </dd>
+        </dl>
