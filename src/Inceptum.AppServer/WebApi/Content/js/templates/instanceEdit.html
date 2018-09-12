@@ -31,7 +31,7 @@
     <div class="control-group">
         <label class="control-label" for="inputVersion">Version</label>
         <div class="controls">
-            <select id="inputVersion" placeholder="Version"  name="version"  value="<%=model.version%>">
+            <select id="inputVersion" placeholder="Version" name="version" value="<%=model.version%>">
                 <option value="">Use latest</option>
             </select>
         </div>
@@ -40,7 +40,8 @@
     <div class="control-group">
         <label class="control-label" for="defaultConfiguration">DefaultConfiguration</label>
         <div class="controls">
-            <select id="defaultConfiguration" name="defaultConfiguration" value="<%=model.defaultConfiguration%>">>
+            <select id="defaultConfiguration" name="defaultConfiguration" value="<%=model.defaultConfiguration%>">
+                >
                 <option value=""></option>
             </select>
         </div>
@@ -70,7 +71,7 @@
     </div>
     <div class="control-group">
         <label class="control-label" for="user">On maximum log sized reached</label>
-        <div class="controls" >
+        <div class="controls">
             <select name="logLimitReachedAction">
                 <%
                 if (model.logLimitReachedAction=="LogToOversizedFolder") { %>
@@ -83,7 +84,7 @@
                 <option selected='selected' value="StopLogging">Stop logging</option>
                 <% }
                 else{ %>
-                <option  value="StopLogging">StopLogging</option>
+                <option value="StopLogging">StopLogging</option>
                 <% } %>
             </select>
         </div>
@@ -91,43 +92,43 @@
 
     <div class="control-group">
         <label class="control-label" for="user">Log level</label>
-        <div class="controls" >
+        <div class="controls">
             <select name="logLevel">
                 <% if (model.logLevel=="Debug") { %>
                 <option selected='selected'>Debug</option>
                 <% }
                 else{ %>
-                <option >Debug</option>
+                <option>Debug</option>
                 <% } %>
                 <% if (model.logLevel=="Info") { %>
                 <option selected='selected'>Info</option>
                 <% }
                 else{ %>
-                <option >Info</option>
+                <option>Info</option>
                 <% } %>
                 <% if (model.logLevel=="Warn") { %>
                 <option selected='selected'>Warn</option>
                 <% }
                 else{ %>
-                <option >Warn</option>
+                <option>Warn</option>
                 <% } %>
                 <% if (model.logLevel=="Error") { %>
                 <option selected='selected'>Error</option>
                 <% }
                 else{ %>
-                <option >Error</option>
+                <option>Error</option>
                 <% } %>
                 <% if (model.logLevel=="Fatal") { %>
                 <option selected='selected'>Fatal</option>
                 <% }
                 else{ %>
-                <option >Fatal</option>
+                <option>Fatal</option>
                 <% } %>
                 <% if (model.logLevel=="Off") { %>
                 <option selected='selected'>Off</option>
                 <% }
                 else{ %>
-                <option >Off</option>
+                <option>Off</option>
                 <% } %>
 
             </select>
@@ -139,18 +140,38 @@
             <label class="checkbox">
                 Start on server startup <input type="checkbox" id="inputAutostart" name="autostart" <% if (model.autoStart) { %>checked<%}%>>
             </label>
-         </div>
+        </div>
     </div>
-     <div class="control-group">
+    <div class="control-group">
         <label class="control-label" for="maxLogSize">Start order</label>
-         <div class="controls">
-             <input  type="text" id="inputStartOrder"  name="startOrder" value="<%=model.startOrder%>">
-         </div>
+        <div class="controls">
+            <input type="text" id="inputStartOrder" name="startOrder" value="<%=model.startOrder%>">
+        </div>
     </div>
-     <div class="control-group">
-         <div class="controls">
-                <a id="submit" class="btn"><i class=" icon-ok"></i> <span>Save</span></a>
-            </div>
-     </div>
+    <div class="control-group">
+        <label class="control-label" for="user">Restart policy</label>
+        <div class="controls">
+            <select name="restartPolicy">
+                <%
+                if (model.restartPolicy=="DoNothing") { %>
+                <option selected='selected' value="DoNothing">Do nothing</option>
+                <% }
+                else{ %>
+                <option value="DoNothing">Do nothing</option>
+                <% } %>
+                <% if (model.restartPolicy=="RestartOnFailure") { %>
+                <option selected='selected' value="RestartOnFailure">Restart on failure</option>
+                <% }
+                else{ %>
+                <option value="RestartOnFailure">Restart on failure</option>
+                <% } %>
+            </select>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <a id="submit" class="btn"><i class=" icon-ok"></i> <span>Save</span></a>
+        </div>
+    </div>
 
 </form>

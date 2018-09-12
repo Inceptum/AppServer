@@ -133,6 +133,7 @@ namespace Inceptum.AppServer.Hosting
                                            DefaultConfiguration = cfg.DefaultConfiguration,
                                            MaxLogSize = cfg.MaxLogSize,
                                            LogLimitReachedAction = cfg.LogLimitReachedAction,
+                                           RestartPolicy = cfg.RestartPolicy,
                                            IsDebuggable = m_ApplicationRepository.Applications.Where(a => a.Vendor == cfg.ApplicationVendor && a.Name == cfg.ApplicationId).Select(a => a.Debug).FirstOrDefault()
                                        }).ToArray();
                 }
@@ -270,7 +271,8 @@ namespace Inceptum.AppServer.Hosting
                     LogLevel = config.LogLevel,
                     DefaultConfiguration = config.DefaultConfiguration,
                     MaxLogSize = config.MaxLogSize,
-                    LogLimitReachedAction = config.LogLimitReachedAction
+                    LogLimitReachedAction = config.LogLimitReachedAction,
+                    RestartPolicy = config.RestartPolicy
                 };
                 instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Concat(new[] { cfg }).ToArray(), Formatting.Indented);
             }
@@ -345,7 +347,8 @@ namespace Inceptum.AppServer.Hosting
                     LogLevel = config.LogLevel,
                     DefaultConfiguration = config.DefaultConfiguration,
                     MaxLogSize = config.MaxLogSize,
-                    LogLimitReachedAction = config.LogLimitReachedAction
+                    LogLimitReachedAction = config.LogLimitReachedAction,
+                    RestartPolicy = config.RestartPolicy
                 };
 
                 instances = JsonConvert.SerializeObject(m_InstancesConfiguration.Where(c => c.Name != config.Id).Concat(new[] { cfg }).ToArray(), Formatting.Indented);
@@ -523,7 +526,15 @@ namespace Inceptum.AppServer.Hosting
 
                 var version = config.Version ?? application.Versions.Select(v => v.Version).OrderByDescending(v => v).FirstOrDefault();
 
-                instance.UpdateConfig(version, config.Environment, config.User, config.Password, config.LogLevel, config.DefaultConfiguration, config.MaxLogSize, config.LogLimitReachedAction);
+                instance.UpdateConfig(version, 
+                    config.Environment, 
+                    config.User, 
+                    config.Password, 
+                    config.LogLevel, 
+                    config.DefaultConfiguration, 
+                    config.MaxLogSize, 
+                    config.LogLimitReachedAction,
+                    config.RestartPolicy);
 
                 return instance.Start(application.Debug && doDebug, () => m_ApplicationRepository.Install(application, version, Path.Combine(m_Context.AppsDirectory, config.Name) + "\\"));
             }

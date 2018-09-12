@@ -62,6 +62,9 @@ namespace Inceptum.AppServer.Model
         }
 
         public int StartOrder { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public RestartPolicy RestartPolicy { get; set; }
     }
 
    

@@ -118,4 +118,10 @@ namespace Inceptum.AppServer.Model
 
         
     }
+
+    public enum RestartPolicy
+    {
+        DoNothing = 0,
+        RestartOnFailure = 1
+    }
 }

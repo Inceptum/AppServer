@@ -11,6 +11,7 @@
     "LogLevel": "Debug",
     "DefaultConfiguration": "testapp",
     "MaxLogSize": 0,
-    "LogLimitReachedAction": "LogToOversizedFolder"
+    "LogLimitReachedAction": "LogToOversizedFolder",
+    "RestartPolicy": "DoNothing"
   }
 ]

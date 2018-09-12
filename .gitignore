@@ -52,3 +52,6 @@ Inceptum.AppServer-*.wrap
 ^[^\/]*.wrap*/
 
 /src/.vs/config/applicationhost.config
+
+#Ignore VS 2017 files
+/src/.vs/

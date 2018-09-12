@@ -44,6 +44,8 @@ namespace Inceptum.AppServer.Hosting
         private ServiceHost m_ServiceHost;
         private HostedAppStatus m_Status;
         private string m_User;
+        private RestartPolicy m_RestartPolicy;
+        private bool m_Killing;
         private readonly CancellationTokenSource m_CancellationTokenSource = new CancellationTokenSource();
         private readonly AutoResetEvent m_HostRegisteredEvent = new AutoResetEvent(false);
 
@@ -108,7 +110,7 @@ namespace Inceptum.AppServer.Hosting
             Logger.ErrorFormat("Instance '{0}' crashed: {1}", Name, error);
             lock (m_SyncRoot)
             {
-                m_CurrentTask = doStop();
+                m_CurrentTask = doStop(true);
             }
         }
 
@@ -201,8 +203,8 @@ namespace Inceptum.AppServer.Hosting
                 Logger.InfoFormat("Killing process of instance '{0}'", Name);
                 if (m_Process != null && !m_Process.HasExited)
                 {
+                    m_Killing = true;
                     m_Process.Kill();
-
                 }
             }
         }
@@ -235,7 +237,7 @@ namespace Inceptum.AppServer.Hosting
         }
 
         public void UpdateConfig(Version actualVersion, string environment, string user, string password, LoggerLevel logLevel, string defaultConfiguration,
-            long maxLogSize, LogLimitReachedAction logLimitReachedAction)
+            long maxLogSize, LogLimitReachedAction logLimitReachedAction, RestartPolicy restartPolicy)
         {
             m_MaxLogSize = maxLogSize;
             m_LogLimitReachedAction = logLimitReachedAction;
@@ -245,6 +247,7 @@ namespace Inceptum.AppServer.Hosting
             m_Password = password;
             m_User = user;
             Environment = environment;
+            m_RestartPolicy = restartPolicy;
         }
 
         public Task Start(bool debug, Action beforeStart)
@@ -316,7 +319,7 @@ namespace Inceptum.AppServer.Hosting
             }
         }
 
-        private async Task doStop()
+        private async Task doStop(bool failure = false)
         {
             await m_CurrentTask;
             await Task.Yield();
@@ -349,6 +352,25 @@ namespace Inceptum.AppServer.Hosting
             {
                 Status = HostedAppStatus.Stopped;
                 Logger.InfoFormat("Instance '{0}' stopped", Name);
+
+                onInstanceStopped(failure);
+            }
+        }
+
+        private void onInstanceStopped(bool withFailure)
+        {
+            switch (m_RestartPolicy)
+            {
+                case RestartPolicy.RestartOnFailure:
+                    if (withFailure)
+                    {
+                        Logger.InfoFormat("Restarting failed instance '{0}' immediately according to restart policy", Name);
+                        m_CurrentTask = doStart(false, null);
+                    }
+
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -527,10 +549,15 @@ namespace Inceptum.AppServer.Hosting
             {
                 if ((Status != HostedAppStatus.Started && Status != HostedAppStatus.Starting) || m_Process == null || !m_Process.HasExited)
                     return;
-                Logger.ErrorFormat("Instance '{0}' process has unexpectedly stopped", Name);
+
+                Logger.ErrorFormat(
+                    m_Killing ? "Instance '{0}' process has killed" : "Instance '{0}' process has unexpectedly stopped",
+                    Name);
+
                 lock (m_SyncRoot)
                 {
-                    m_CurrentTask = doStop();
+                    m_CurrentTask = doStop(!m_Killing);
+                    m_Killing = false;
                 }
             }
         }
