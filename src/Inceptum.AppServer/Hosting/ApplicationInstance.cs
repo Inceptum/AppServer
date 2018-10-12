@@ -45,7 +45,7 @@ namespace Inceptum.AppServer.Hosting
         private HostedAppStatus m_Status;
         private string m_User;
         private RestartPolicy m_RestartPolicy;
-        private bool m_Killing;
+        private bool m_IsStopping;
         private readonly CancellationTokenSource m_CancellationTokenSource = new CancellationTokenSource();
         private readonly AutoResetEvent m_HostRegisteredEvent = new AutoResetEvent(false);
 
@@ -203,7 +203,7 @@ namespace Inceptum.AppServer.Hosting
                 Logger.InfoFormat("Killing process of instance '{0}'", Name);
                 if (m_Process != null && !m_Process.HasExited)
                 {
-                    m_Killing = true;
+                    m_IsStopping = true;
                     m_Process.Kill();
                 }
             }
@@ -262,6 +262,7 @@ namespace Inceptum.AppServer.Hosting
                     throw new InvalidOperationException("Instance already started");
                 Status = HostedAppStatus.Starting;
 
+                m_IsStopping = false;
                 Logger.InfoFormat("Scheduling starting instance '{0}'. Debug mode: {1}", Name, debug);
                 m_CurrentTask = doStart(debug, beforeStart);
                 return m_CurrentTask;
@@ -314,6 +315,7 @@ namespace Inceptum.AppServer.Hosting
 
                 Status = HostedAppStatus.Stopping;
                 Logger.InfoFormat("Scheduling stopping instance '{0}'", Name);
+                m_IsStopping = true;
                 m_CurrentTask = doStop();
                 return m_CurrentTask;
             }
@@ -353,7 +355,7 @@ namespace Inceptum.AppServer.Hosting
                 Status = HostedAppStatus.Stopped;
                 Logger.InfoFormat("Instance '{0}' stopped", Name);
 
-                onInstanceStopped(failure);
+                onInstanceStopped(failure && !m_IsStopping);
             }
         }
 
@@ -365,13 +367,45 @@ namespace Inceptum.AppServer.Hosting
                     if (withFailure)
                     {
                         Logger.InfoFormat("Restarting failed instance '{0}' immediately according to restart policy", Name);
-                        m_CurrentTask = doStart(false, null);
+                        m_CurrentTask = doStart(false, waitForFullInstanceStop);
                     }
 
                     break;
                 default:
                     break;
             }
+        }
+
+        private void waitForFullInstanceStop()
+        {
+            var instanceHostExe = getInstanceHostExePath();
+
+            while (true)
+            {
+                if (!File.Exists(instanceHostExe)) break;
+
+                try
+                {
+                    File.Delete(instanceHostExe);
+                    break;
+                }
+                catch (Exception)
+                {
+                    Logger.DebugFormat("Waiting instance '{0}' host file to be deleted", Name);
+                    Task.Delay(300).Wait();
+                }
+            }
+        }
+
+        private string getInstanceDirectory()
+        {
+            return Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? "";
+        }
+
+        private string getInstanceHostExePath()
+        {
+            var directoryName = getInstanceDirectory();
+            return Path.Combine(directoryName, "AppHost", "AppHost-" + Name + ".exe");
         }
 
         private void createHost(bool debug)
@@ -388,8 +422,8 @@ namespace Inceptum.AppServer.Hosting
                 args += " -debug";
             }
 
-            string directoryName = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? "";
-            var instanceHostExe = Path.Combine(directoryName, "AppHost", "AppHost-"+Name + ".exe");
+            var directoryName = getInstanceDirectory();
+            var instanceHostExe = getInstanceHostExePath();
             File.Copy(Path.Combine(directoryName, "AppHost", "AppHost.exe"), instanceHostExe, true);
             var procSetup = new ProcessStartInfo
             {
@@ -551,13 +585,12 @@ namespace Inceptum.AppServer.Hosting
                     return;
 
                 Logger.ErrorFormat(
-                    m_Killing ? "Instance '{0}' process has killed" : "Instance '{0}' process has unexpectedly stopped",
+                    m_IsStopping ? "Instance '{0}' process has killed" : "Instance '{0}' process has unexpectedly stopped",
                     Name);
 
                 lock (m_SyncRoot)
                 {
-                    m_CurrentTask = doStop(!m_Killing);
-                    m_Killing = false;
+                    m_CurrentTask = doStop(!m_IsStopping);
                 }
             }
         }
