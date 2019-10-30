@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.ServiceProcess;
+using System.Threading;
+using System.Threading.Tasks;
 using Inceptum.AppServer.Bootstrap;
 
 namespace Inceptum.AppServer
@@ -22,10 +24,25 @@ namespace Inceptum.AppServer
             var host = Bootstrapper.Start(debugFolders);
             if (Environment.UserInteractive)
             {
+                var mre = new ManualResetEvent(false);
                 Console.Title = getProductNameAndVersion();
                 using (host)
                 {
-                    Console.ReadLine();
+                    Console.CancelKeyPress += (sender, eventArgs) =>
+                    {
+                        if (eventArgs.SpecialKey == ConsoleSpecialKey.ControlBreak
+                            || eventArgs.SpecialKey == ConsoleSpecialKey.ControlC)
+                        {
+                            mre.Set();
+                        }
+                    };
+
+                    Task.Run(() => {
+                        Console.ReadLine();
+                        mre.Set();
+                    });
+
+                    mre.WaitOne();
                 }
             }
             else
