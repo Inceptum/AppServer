@@ -34,6 +34,7 @@ namespace Inceptum.AppServer
                             || eventArgs.SpecialKey == ConsoleSpecialKey.ControlC)
                         {
                             mre.Set();
+                            eventArgs.Cancel = true;
                         }
                     };
 
