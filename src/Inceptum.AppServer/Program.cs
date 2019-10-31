@@ -16,13 +16,14 @@ namespace Inceptum.AppServer
         public static void Main(params string[] args)
         {
             List<string> debugFolders;
-            if (!parseCommandLineArgs(args, out debugFolders))
+            bool forceConsole;
+            if (!parseCommandLineArgs(args, out debugFolders, out forceConsole))
             {
                 return;
             }
 
             var host = Bootstrapper.Start(debugFolders);
-            if (Environment.UserInteractive)
+            if (Environment.UserInteractive || forceConsole)
             {
                 var mre = new ManualResetEvent(false);
                 Console.Title = getProductNameAndVersion();
@@ -54,9 +55,10 @@ namespace Inceptum.AppServer
             }
         }
 
-        private static bool parseCommandLineArgs(string[] args, out List<string> debugFolders)
+        private static bool parseCommandLineArgs(string[] args, out List<string> debugFolders, out bool forceConsole)
         {
             debugFolders = new List<string>();
+            forceConsole = false;
             for (var i = 0; i < args.Length; i++)
             {
                 switch (args[i].ToLower())
@@ -67,6 +69,10 @@ namespace Inceptum.AppServer
                         {
                             debugFolders.Add(args[i]);
                         }
+                        break;
+                    case "-force-console":
+                        i++;
+                        forceConsole = true;
                         break;
                     default:
                         Console.WriteLine("Unknown arg: " + args[i]);
