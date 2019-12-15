@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using NuGet;
 using ILogger = Castle.Core.Logging.ILogger;
@@ -31,6 +32,11 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
             m_DependenciesRepository = new AggregateRepository(new[] {m_ApplicationRepository}.Concat(dependencyRepositories)) {ResolveDependenciesVertically = true};
         }
 
+        static NugetApplicationRepository()
+        {
+            ConfigureSupportedSslProtocols();
+        }
+        
         public IEnumerable<ApplicationInfo> GetAvailableApps()
         {
             var packages = from p in m_ApplicationRepository.GetPackages() where p.Tags != null && p.Tags.Contains("Inceptum.AppServer.Application") orderby p.Id select p;
@@ -138,6 +144,11 @@ namespace Inceptum.AppServer.AppDiscovery.NuGet
                 m_Logger.WarnFormat("Deleting {0}", packagesConfig);
                 File.Delete(packagesConfig);
             }
+        }
+
+        private static void ConfigureSupportedSslProtocols()
+        {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
         }
     }
 }
